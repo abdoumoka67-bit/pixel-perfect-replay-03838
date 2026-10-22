@@ -3,11 +3,11 @@ export type Wilaya = { code: number; ar: string; fr: string };
 
 export const WILAYAS: Wilaya[] = [
   { code: 1, ar: "أدرار", fr: "Adrar" },
-  { code: 2, ar: " الشلف", fr: "Chlef" },
+  { code: 2, ar: "الشلف", fr: "Chlef" },
   { code: 3, ar: "الأغواط", fr: "Laghouat" },
   { code: 4, ar: "أم البواقي", fr: "Oum El Bouaghi" },
   { code: 5, ar: "باتنة", fr: "Batna" },
-  { code: 6, ar: " بجاية", fr: "Béjaïa" },
+  { code: 6, ar: "بجاية", fr: "Béjaïa" },
   { code: 7, ar: "بسكرة", fr: "Biskra" },
   { code: 8, ar: "بشار", fr: "Béchar" },
   { code: 9, ar: "البليدة", fr: "Blida" },
