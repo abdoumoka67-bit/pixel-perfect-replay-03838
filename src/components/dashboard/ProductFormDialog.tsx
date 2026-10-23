@@ -92,7 +92,7 @@ export function ProductFormDialog({
         description: description.trim(),
         price: Number(price),
         compare_at_price: compare ? Number(compare) : null,
-        features: splitList(features.replace(/[,،]/g, "\n")).length ? features.split("\n").map((x) => x.trim()).filter(Boolean) : [],
+        features: features.split("\n").map((x) => x.trim()).filter(Boolean),
         sizes: splitList(sizes),
         colors: splitList(colors),
         is_active: active,
