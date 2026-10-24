@@ -93,11 +93,11 @@ function ProductLanding() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setTouched(true);
-    if (name.trim().length < 3) return toast.error("يرجى كتابة الاسم واللقب.");
-    if (!phoneOk) return toast.error("رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.");
-    if (!wCode) return toast.error("يرجى اختيار الولاية.");
-    if (!commune) return toast.error("يرجى اختيار البلدية.");
-    if (currentShip == null) return toast.error("نوع التوصيل هذا غير متوفر في ولايتك.");
+    if (name.trim().length < 3) { toast.error("يرجى كتابة الاسم واللقب."); return; }
+    if (!phoneOk) { toast.error("رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام."); return; }
+    if (!wCode) { toast.error("يرجى اختيار الولاية."); return; }
+    if (!commune) { toast.error("يرجى اختيار البلدية."); return; }
+    if (currentShip == null) { toast.error("نوع التوصيل هذا غير متوفر في ولايتك."); return; }
     setBusy(true);
     const { data, error } = await supabase.rpc("place_order", {
       _product_id: product.id,
@@ -109,11 +109,11 @@ function ProductLanding() {
       _commune: commune,
       _address: address,
       _delivery_type: delivery,
-      _size: product.sizes.length ? size : undefined,
-      _color: product.colors.length ? color : undefined,
+      ...(product.sizes.length ? { _size: size } : {}),
+      ...(product.colors.length ? { _color: color } : {}),
     });
     setBusy(false);
-    if (error) return toast.error(friendlyError(error.message));
+    if (error) { toast.error(friendlyError(error.message)); return; }
     const row = data?.[0];
     navigate({
       to: "/m/$store/thank-you",

@@ -46,7 +46,7 @@ function SettingsPage() {
     if (!f) return;
     const path = `${user.id}/logo-${crypto.randomUUID()}.${fileExt(f)}`;
     const { error } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, f, { contentType: f.type });
-    if (error) return toast.error("تعذر رفع الشعار");
+    if (error) { toast.error("تعذر رفع الشعار"); return; }
     setLogo(path);
   }
 

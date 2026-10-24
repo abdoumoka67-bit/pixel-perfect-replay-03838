@@ -44,7 +44,7 @@ function Onboarding() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValidStoreSlug(effectiveSlug)) {
-      return toast.error("الرابط يجب أن يكون 3 أحرف على الأقل: حروف لاتينية صغيرة وأرقام وشرطات.");
+      { toast.error("الرابط يجب أن يكون 3 أحرف على الأقل: حروف لاتينية صغيرة وأرقام وشرطات."); return; }
     }
     setBusy(true);
     const { error } = await supabase.from("stores").insert({
@@ -55,7 +55,7 @@ function Onboarding() {
       whatsapp: phone || null,
     });
     setBusy(false);
-    if (error) return toast.error(friendlyError(error.message, "تعذر إنشاء المتجر."));
+    if (error) { toast.error(friendlyError(error.message, "تعذر إنشاء المتجر.")); return; }
     await qc.invalidateQueries({ queryKey: ["my-store"] });
     toast.success("تم إنشاء متجرك! بدأت تجربتك المجانية لمدة 7 أيام.");
     navigate({ to: "/dashboard", replace: true });
