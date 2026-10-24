@@ -24,6 +24,9 @@ import { Route as AuthenticatedDashboardOrdersRouteImport } from './routes/_auth
 import { Route as AuthenticatedDashboardProductsRouteImport } from './routes/_authenticated/dashboard.products'
 import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard.settings'
 import { Route as AuthenticatedDashboardYalidineRouteImport } from './routes/_authenticated/dashboard.yalidine'
+import { Route as MStoreIndexRouteImport } from './routes/m.$store.index'
+import { Route as MStoreThankYouRouteImport } from './routes/m.$store.thank-you'
+import { Route as MStorePProductRouteImport } from './routes/m.$store.p.$product'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -107,6 +110,21 @@ const AuthenticatedDashboardYalidineRoute =
     path: '/yalidine',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const MStoreIndexRoute = MStoreIndexRouteImport.update({
+  id: '/m/$store/',
+  path: '/m/$store/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MStoreThankYouRoute = MStoreThankYouRouteImport.update({
+  id: '/m/$store/thank-you',
+  path: '/m/$store/thank-you',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MStorePProductRoute = MStorePProductRouteImport.update({
+  id: '/m/$store/p/$product',
+  path: '/m/$store/p/$product',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -122,7 +140,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/products': typeof AuthenticatedDashboardProductsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard/yalidine': typeof AuthenticatedDashboardYalidineRoute
+  '/m/$store/thank-you': typeof MStoreThankYouRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/m/$store/': typeof MStoreIndexRoute
+  '/m/$store/p/$product': typeof MStorePProductRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -137,7 +158,10 @@ export interface FileRoutesByTo {
   '/dashboard/products': typeof AuthenticatedDashboardProductsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard/yalidine': typeof AuthenticatedDashboardYalidineRoute
+  '/m/$store/thank-you': typeof MStoreThankYouRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/m/$store': typeof MStoreIndexRoute
+  '/m/$store/p/$product': typeof MStorePProductRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -155,7 +179,10 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/products': typeof AuthenticatedDashboardProductsRoute
   '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/_authenticated/dashboard/yalidine': typeof AuthenticatedDashboardYalidineRoute
+  '/m/$store/thank-you': typeof MStoreThankYouRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/m/$store/': typeof MStoreIndexRoute
+  '/m/$store/p/$product': typeof MStorePProductRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -173,7 +200,10 @@ export interface FileRouteTypes {
     | '/dashboard/products'
     | '/dashboard/settings'
     | '/dashboard/yalidine'
+    | '/m/$store/thank-you'
     | '/dashboard/'
+    | '/m/$store/'
+    | '/m/$store/p/$product'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -188,7 +218,10 @@ export interface FileRouteTypes {
     | '/dashboard/products'
     | '/dashboard/settings'
     | '/dashboard/yalidine'
+    | '/m/$store/thank-you'
     | '/dashboard'
+    | '/m/$store'
+    | '/m/$store/p/$product'
   id:
     | '__root__'
     | '/'
@@ -205,7 +238,10 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/products'
     | '/_authenticated/dashboard/settings'
     | '/_authenticated/dashboard/yalidine'
+    | '/m/$store/thank-you'
     | '/_authenticated/dashboard/'
+    | '/m/$store/'
+    | '/m/$store/p/$product'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -213,6 +249,9 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  MStoreThankYouRoute: typeof MStoreThankYouRoute
+  MStoreIndexRoute: typeof MStoreIndexRoute
+  MStorePProductRoute: typeof MStorePProductRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -322,6 +361,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardYalidineRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/m/$store/': {
+      id: '/m/$store/'
+      path: '/m/$store'
+      fullPath: '/m/$store/'
+      preLoaderRoute: typeof MStoreIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/m/$store/thank-you': {
+      id: '/m/$store/thank-you'
+      path: '/m/$store/thank-you'
+      fullPath: '/m/$store/thank-you'
+      preLoaderRoute: typeof MStoreThankYouRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/m/$store/p/$product': {
+      id: '/m/$store/p/$product'
+      path: '/m/$store/p/$product'
+      fullPath: '/m/$store/p/$product'
+      preLoaderRoute: typeof MStorePProductRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -373,6 +433,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  MStoreThankYouRoute: MStoreThankYouRoute,
+  MStoreIndexRoute: MStoreIndexRoute,
+  MStorePProductRoute: MStorePProductRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -121,3 +121,12 @@ export const getProductPage = createServerFn({ method: "GET" })
     const product: PublicProduct = { ...p, images: p.images.map((i) => urls[i]).filter(Boolean) };
     return { store, product, rates: rates ?? [] };
   });
+
+export const getPublicPlans = createServerFn({ method: "GET" }).handler(async () => {
+  const { data, error } = await publicClient().from("plans").select("id,name,months,price").order("sort");
+  if (error) {
+    console.error("plans load failed", error);
+    return [];
+  }
+  return data ?? [];
+});
