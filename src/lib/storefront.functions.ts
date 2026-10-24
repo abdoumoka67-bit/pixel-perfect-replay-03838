@@ -118,6 +118,15 @@ export const getProductPage = createServerFn({ method: "GET" })
       default_desk_price: s.default_desk_price,
       accepting_orders: s.accepting_orders,
     };
-    const product: PublicProduct = { ...p, images: p.images.map((i) => urls[i]).filter(Boolean) };
+    const product: PublicProduct = { ...p, images: p.images.map((i) => urls[i]).filter((x): x is string => !!x) };
     return { store, product, rates: rates ?? [] };
   });
+
+export const getPublicPlans = createServerFn({ method: "GET" }).handler(async () => {
+  const { data, error } = await publicClient().from("plans").select("id,name,months,price").order("sort");
+  if (error) {
+    console.error("plans load failed", error);
+    return [];
+  }
+  return data ?? [];
+});

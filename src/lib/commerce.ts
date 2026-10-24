@@ -150,8 +150,8 @@ const ORDER_ERRORS: Record<string, string> = {
 
 export function friendlyError(message: string | undefined | null, fallback = "حدث خطأ، حاول مرة أخرى."): string {
   if (!message) return fallback;
-  for (const key of Object.keys(ORDER_ERRORS)) {
-    if (message.includes(key)) return ORDER_ERRORS[key];
+  for (const [key, text] of Object.entries(ORDER_ERRORS)) {
+    if (message.includes(key)) return text;
   }
   if (message.includes("INVALID_SLUG")) return "الرابط يجب أن يحتوي على حروف لاتينية صغيرة وأرقام وشرطات فقط.";
   if (message.includes("duplicate key") && message.includes("slug")) return "هذا الرابط مستعمل، اختر رابطاً آخر.";

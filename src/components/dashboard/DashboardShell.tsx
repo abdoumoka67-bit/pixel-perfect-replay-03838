@@ -21,7 +21,7 @@ function useSignOut() {
   };
 }
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { data: isAdmin } = useQuery(isAdminQuery);
   const isActive = (to: string) => (to === "/dashboard" ? path === "/dashboard" || path === "/dashboard/" : path.startsWith(to));
@@ -100,7 +100,7 @@ function MerchantCard() {
   );
 }
 
-function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
   const { store } = useMyStore();
   return (
     <div className="flex h-full flex-col gap-6 bg-sidebar p-4 text-sidebar-foreground">
@@ -126,7 +126,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-const BOTTOM_NAV = [MAIN_NAV[0], MAIN_NAV[1], MAIN_NAV[2], MAIN_NAV[3]];
+const BOTTOM_NAV = MAIN_NAV.slice(0, 4);
 
 function BottomNav() {
   const path = useRouterState({ select: (s) => s.location.pathname });

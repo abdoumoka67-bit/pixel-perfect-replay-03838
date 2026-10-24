@@ -74,7 +74,7 @@ function DeliveryRates() {
         .eq("id", store!.id);
       if (e1) throw e1;
       const payload = WILAYAS.map((w) => {
-        const r = rows[w.code];
+        const r = rows[w.code] ?? { home: "", desk: "", homeOn: false, deskOn: false };
         return {
           store_id: store!.id,
           wilaya_code: w.code,
@@ -93,7 +93,7 @@ function DeliveryRates() {
     onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
   });
 
-  const set = (code: number, patch: Partial<Row>) => setRows((r) => ({ ...r, [code]: { ...r[code], ...patch } }));
+  const set = (code: number, patch: Partial<Row>) => setRows((r) => ({ ...r, [code]: { ...(r[code] as Row), ...patch } }));
 
   return (
     <>

@@ -112,11 +112,11 @@ function OrdersPage() {
     let list: Order[];
     if (selected.size) {
       const { data, error } = await supabase.from("orders").select("*").in("id", Array.from(selected));
-      if (error) return toast.error("تعذر التصدير");
+      if (error) { toast.error("تعذر التصدير"); return; }
       list = data;
     } else {
       const { data, error } = await buildQuery("*").limit(5000);
-      if (error) return toast.error("تعذر التصدير");
+      if (error) { toast.error("تعذر التصدير"); return; }
       list = (data ?? []) as unknown as Order[];
     }
     downloadText(ordersToCsv(list), `oranix-orders-${new Date().toISOString().slice(0, 10)}.csv`);
@@ -434,7 +434,7 @@ function pageNumbers(current: number, total: number): number[] {
   const list = Array.from(set).filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
   const out: number[] = [];
   list.forEach((n, i) => {
-    if (i > 0 && n - list[i - 1] > 1) out.push(-1);
+    if (i > 0 && n - (list[i - 1] ?? n) > 1) out.push(-1);
     out.push(n);
   });
   return out;
