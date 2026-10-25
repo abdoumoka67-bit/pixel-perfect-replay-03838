@@ -51,7 +51,7 @@ function Home() {
         <span className="inline-flex rounded-full border border-brand/40 bg-brand-soft px-4 py-1.5 text-sm font-medium text-brand">
           الدفع عند الاستلام · كل الولايات
         </span>
-        <h1 className="mt-7 text-[2rem] font-bold leading-[1.45] sm:text-5xl sm:leading-[1.35]">
+        <h1 className="mt-7 text-[1.7rem] font-bold leading-[1.5] sm:text-5xl sm:leading-[1.35]">
           صفحة طلب لمنتجك، وطلباتك
           <br />
           مرتبة في مكان واحد.
