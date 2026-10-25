@@ -24,6 +24,17 @@ function useSignOut() {
 function NavLinks({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { data: isAdmin } = useQuery(isAdminQuery);
+  const { store } = useMyStore();
+  const stats = useQuery({
+    queryKey: ["order-stats", store?.id],
+    enabled: !!store,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("order_stats", { _store_id: store!.id });
+      if (error) throw error;
+      return data;
+    },
+  });
+  const newOrders = Number(stats.data?.find((r) => r.status === "new")?.orders_count ?? 0);
   const isActive = (to: string) => (to === "/dashboard" ? path === "/dashboard" || path === "/dashboard/" : path.startsWith(to));
 
   const renderItem = (item: NavItem) => {
@@ -40,9 +51,13 @@ function NavLinks({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
             : "text-sidebar-muted hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
         )}
       >
-        <item.icon className={cn("size-[18px]", active ? "text-sidebar-primary" : "")} />
+        <item.icon className="size-[18px]" />
         <span>{item.label}</span>
-        {active && <span className="ms-auto size-1.5 rounded-full bg-sidebar-primary" />}
+        {item.to === "/dashboard/orders" && newOrders > 0 && (
+          <span className="ms-auto flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-bold text-sidebar-foreground num">
+            {newOrders}
+          </span>
+        )}
       </Link>
     );
   };

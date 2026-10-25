@@ -127,7 +127,7 @@ function DeliveryRates() {
       </div>
 
       <div className="overflow-hidden rounded-2xl bg-card shadow-card">
-        <div className="hidden grid-cols-[2fr_1.5fr_1.5fr] gap-4 border-b bg-muted/50 px-5 py-3 text-xs font-medium text-muted-foreground md:grid">
+        <div className="hidden grid-cols-[2fr_1.5fr_1.5fr] gap-4 border-b bg-table-header px-5 py-3 text-xs font-medium text-muted-foreground md:grid">
           <span>الولاية</span>
           <span>توصيل للمنزل</span>
           <span>توصيل للمكتب (Stopdesk)</span>

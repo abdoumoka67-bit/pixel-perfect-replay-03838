@@ -241,7 +241,7 @@ function OrdersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/50 text-xs text-muted-foreground">
+              <tr className="border-b bg-table-header text-xs text-muted-foreground">
                 <th className="w-10 p-4">
                   <Checkbox checked={allOnPage} onCheckedChange={toggleAll} aria-label="تحديد الكل" />
                 </th>
