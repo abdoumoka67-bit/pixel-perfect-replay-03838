@@ -194,7 +194,7 @@ export function OrderDetailsSheet({
                   <span className="text-muted-foreground">التوصيل</span>
                   <span className="num">{formatDZD(order.shipping_price)}</span>
                 </div>
-                <div className="flex justify-between border-t pt-2 text-base font-bold">
+                <div className="flex justify-between border-t pt-2 text-base font-semibold">
                   <span>الإجمالي</span>
                   <span className="num">{formatDZD(order.total)}</span>
                 </div>

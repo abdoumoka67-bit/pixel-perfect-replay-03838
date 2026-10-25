@@ -69,7 +69,7 @@ function Onboarding() {
           <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand">
             <Sparkles className="size-3.5" /> 7 أيام مجاناً بكل الميزات
           </span>
-          <h1 className="mt-3 text-3xl font-bold">لنُنشئ متجرك</h1>
+          <h1 className="mt-3 text-3xl font-semibold">لنُنشئ متجرك</h1>
           <p className="mt-1 text-muted-foreground">يمكنك تعديل هذه المعلومات لاحقاً من الإعدادات.</p>
         </div>
         <div className="space-y-1.5">

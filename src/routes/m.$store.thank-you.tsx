@@ -33,7 +33,7 @@ function ThankYou() {
         <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-success-soft text-success">
           <CheckCircle2 className="size-11" />
         </div>
-        <h1 className="mt-5 text-2xl font-bold">شكراً لك! تم تسجيل طلبك</h1>
+        <h1 className="mt-5 text-2xl font-semibold">شكراً لك! تم تسجيل طلبك</h1>
         <p className="mt-2 text-muted-foreground">سنتصل بك هاتفياً خلال ساعات لتأكيد الطلب. يرجى إبقاء هاتفك قريباً منك.</p>
         {(n || t) && (
           <div className="mt-6 space-y-2 rounded-2xl bg-muted/70 p-4 text-sm">
@@ -52,7 +52,7 @@ function ThankYou() {
             {t ? (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">المبلغ عند الاستلام</span>
-                <span className="font-bold text-brand num">{formatDZD(t)}</span>
+                <span className="font-semibold text-brand num">{formatDZD(t)}</span>
               </div>
             ) : null}
           </div>

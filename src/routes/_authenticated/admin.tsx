@@ -45,7 +45,7 @@ function AdminPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center">
         <ShieldAlert className="size-10 text-danger" />
-        <h1 className="text-xl font-bold">هذه الصفحة مخصصة لمدير المنصة</h1>
+        <h1 className="text-xl font-semibold">هذه الصفحة مخصصة لمدير المنصة</h1>
         <Button asChild variant="outline">
           <Link to="/dashboard">العودة للوحة التحكم</Link>
         </Button>
@@ -328,7 +328,7 @@ function PlatformSettings() {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4 rounded-2xl bg-card p-6 shadow-card">
-        <h2 className="font-bold">أسعار الخطط (د.ج)</h2>
+        <h2 className="font-semibold">أسعار الخطط (د.ج)</h2>
         {plans.data?.map((p) => (
           <div key={p.id} className="flex items-center gap-3">
             <Label className="w-28 shrink-0">{p.name}</Label>
@@ -337,7 +337,7 @@ function PlatformSettings() {
         ))}
       </div>
       <div className="space-y-4 rounded-2xl bg-card p-6 shadow-card">
-        <h2 className="font-bold">معلومات الدفع المعروضة للتجار</h2>
+        <h2 className="font-semibold">معلومات الدفع المعروضة للتجار</h2>
         {fields.map((f) => (
           <div key={f.key} className="space-y-1.5">
             <Label>{f.label}</Label>
