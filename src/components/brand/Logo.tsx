@@ -4,12 +4,12 @@ export function LogoMark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "relative inline-flex size-9 items-center justify-center rounded-xl bg-gradient-brand shadow-brand",
+        "relative inline-flex size-9 items-center justify-center rounded-full bg-primary",
         className,
       )}
       aria-hidden
     >
-      <svg viewBox="0 0 24 24" className="size-5 text-brand-foreground" fill="none">
+      <svg viewBox="0 0 24 24" className="size-5 text-primary-foreground" fill="none">
         <circle cx="12" cy="12" r="6.5" stroke="currentColor" strokeWidth="2.6" />
         <circle cx="17.5" cy="6.5" r="2.2" fill="currentColor" />
       </svg>
