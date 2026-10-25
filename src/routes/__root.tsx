@@ -19,7 +19,7 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="font-display text-7xl font-bold text-brand">404</h1>
+        <h1 className="font-display text-7xl font-semibold text-brand">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">الصفحة غير موجودة</h2>
         <p className="mt-2 text-sm text-muted-foreground">الرابط الذي فتحته غير صحيح أو تم حذفه.</p>
         <div className="mt-6">

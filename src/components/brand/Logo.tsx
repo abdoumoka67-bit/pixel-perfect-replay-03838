@@ -23,7 +23,7 @@ export function Logo({ className, tone = "dark" }: { className?: string; tone?: 
       <LogoMark />
       <span
         className={cn(
-          "font-display text-xl font-bold tracking-tight",
+          "font-display text-xl font-semibold tracking-tight",
           tone === "light" ? "text-sidebar-foreground" : "text-foreground",
         )}
       >

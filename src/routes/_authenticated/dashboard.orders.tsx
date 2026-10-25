@@ -336,7 +336,7 @@ function OrdersPage() {
                 <span className="text-muted-foreground">
                   {o.commune}، {o.wilaya_name}
                 </span>
-                <span className="font-bold num">{formatDZD(o.total)}</span>
+                <span className="font-semibold num">{formatDZD(o.total)}</span>
               </div>
             </button>
             {o.call_attempts > 0 && (

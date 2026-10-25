@@ -41,7 +41,7 @@ export const Route = createFileRoute("/m/$store/p/$product")({
   },
   notFoundComponent: () => (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2 px-6 text-center">
-      <h1 className="text-2xl font-bold">المنتج غير متوفر</h1>
+      <h1 className="text-2xl font-semibold">المنتج غير متوفر</h1>
       <p className="text-muted-foreground">ربما تم إيقاف هذا المنتج أو تغيير رابطه.</p>
     </div>
   ),
@@ -131,7 +131,7 @@ function ProductLanding() {
           ) : (
             <LogoMark />
           )}
-          <span className="font-display text-lg font-bold">{store.name}</span>
+          <span className="font-display text-lg font-semibold">{store.name}</span>
         </div>
       </header>
 
@@ -145,7 +145,7 @@ function ProductLanding() {
               <div className="flex size-full items-center justify-center bg-muted text-muted-foreground">لا توجد صورة</div>
             )}
             {discount > 0 && (
-              <span className="absolute start-4 top-4 rounded-full bg-gradient-brand px-3 py-1 text-sm font-bold text-brand-foreground shadow-brand">
+              <span className="absolute start-4 top-4 rounded-full bg-gradient-brand px-3 py-1 text-sm font-semibold text-brand-foreground shadow-brand">
                 -{discount}%
               </span>
             )}
@@ -168,9 +168,9 @@ function ProductLanding() {
 
         {/* Info + form */}
         <div>
-          <h1 className="text-2xl font-bold leading-tight sm:text-3xl">{product.name}</h1>
+          <h1 className="text-2xl font-semibold leading-tight sm:text-3xl">{product.name}</h1>
           <div className="mt-3 flex items-baseline gap-3">
-            <span className="font-display text-3xl font-bold text-brand num">{formatDZD(product.price)}</span>
+            <span className="font-display text-3xl font-semibold text-brand num">{formatDZD(product.price)}</span>
             {discount > 0 && <span className="text-lg text-muted-foreground line-through num">{formatDZD(product.compare_at_price!)}</span>}
           </div>
 
@@ -210,7 +210,7 @@ function ProductLanding() {
           ) : (
             <form id="order" onSubmit={submit} className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6">
               <div className="text-center">
-                <h2 className="text-xl font-bold">اطلب الآن — الدفع عند الاستلام</h2>
+                <h2 className="text-xl font-semibold">اطلب الآن — الدفع عند الاستلام</h2>
                 <p className="text-sm text-muted-foreground">املأ معلوماتك وسنتصل بك لتأكيد الطلب</p>
               </div>
 
@@ -320,7 +320,7 @@ function ProductLanding() {
                   <Button type="button" size="icon" variant="ghost" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="إنقاص">
                     <Minus />
                   </Button>
-                  <span className="w-8 text-center font-bold num">{qty}</span>
+                  <span className="w-8 text-center font-semibold num">{qty}</span>
                   <Button type="button" size="icon" variant="ghost" onClick={() => setQty(Math.min(20, qty + 1))} aria-label="زيادة">
                     <Plus />
                   </Button>
@@ -336,7 +336,7 @@ function ProductLanding() {
                   <span className="text-muted-foreground">التوصيل</span>
                   <span className="num">{wCode && currentShip != null ? formatDZD(currentShip) : "—"}</span>
                 </div>
-                <div className="flex justify-between border-t pt-2 text-lg font-bold">
+                <div className="flex justify-between border-t pt-2 text-lg font-semibold">
                   <span>الإجمالي</span>
                   <span className="text-brand num">{formatDZD(total)}</span>
                 </div>

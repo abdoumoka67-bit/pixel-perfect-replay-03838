@@ -106,7 +106,7 @@ function AuthPage() {
               <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-brand-soft text-brand">
                 <MailCheck className="size-7" />
               </div>
-              <h1 className="mt-5 text-2xl font-bold">تحقق من بريدك</h1>
+              <h1 className="mt-5 text-2xl font-semibold">تحقق من بريدك</h1>
               <p className="mt-2 text-muted-foreground">
                 {sent === "confirm"
                   ? "أرسلنا رابط تأكيد إلى بريدك. افتحه لتفعيل حسابك وبدء تجربتك المجانية."
@@ -118,7 +118,7 @@ function AuthPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-3xl font-bold">
+              <h1 className="text-3xl font-semibold">
                 {mode === "signin" ? "مرحباً بعودتك" : mode === "signup" ? "أنشئ متجرك في دقيقة" : "نسيت كلمة المرور؟"}
               </h1>
               <p className="mt-2 text-muted-foreground">
@@ -184,7 +184,7 @@ function AuthPage() {
       <div className="relative hidden overflow-hidden bg-sidebar lg:block">
         <div className="absolute inset-0 bg-hero opacity-20" />
         <div className="relative flex h-full flex-col justify-end p-12 text-sidebar-foreground">
-          <p className="font-display text-4xl font-bold leading-tight">
+          <p className="font-display text-4xl font-semibold leading-tight">
             استقبل طلبات <span className="text-sidebar-primary">الدفع عند الاستلام</span>
             <br /> من 58 ولاية، بلا تعقيد.
           </p>

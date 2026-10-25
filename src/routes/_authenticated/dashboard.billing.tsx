@@ -108,7 +108,7 @@ function Billing() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-card p-5 shadow-card">
         <div>
           <p className="text-sm text-muted-foreground">حالة الحساب</p>
-          <p className="mt-1 text-lg font-bold">
+          <p className="mt-1 text-lg font-semibold">
             {sub?.isActive ? (sub.isTrial ? "تجربة مجانية" : "اشتراك فعّال") : "وضع القراءة فقط"}
           </p>
           {sub && (
@@ -120,7 +120,7 @@ function Billing() {
         {sub?.isActive ? <Badge variant="success">فعّال</Badge> : <Badge variant="danger">منتهي</Badge>}
       </div>
 
-      <h2 className="mb-3 font-bold">اختر الخطة</h2>
+      <h2 className="mb-3 font-semibold">اختر الخطة</h2>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {plans.data?.map((p) => {
           const active = p.id === planId;
@@ -140,7 +140,7 @@ function Billing() {
                 </span>
               )}
               <p className="font-semibold">{p.name}</p>
-              <p className="mt-2 font-display text-2xl font-bold num">{formatDZD(p.price)}</p>
+              <p className="mt-2 font-display text-2xl font-semibold num">{formatDZD(p.price)}</p>
               <p className="text-xs text-muted-foreground num">{formatDZD(perMonth)} / شهر</p>
               {active && (
                 <span className="absolute end-4 top-4 flex size-6 items-center justify-center rounded-full bg-brand text-brand-foreground">
@@ -154,7 +154,7 @@ function Billing() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
-          <h2 className="font-bold">معلومات الدفع</h2>
+          <h2 className="font-semibold">معلومات الدفع</h2>
           <p className="mt-1 text-sm text-sidebar-muted">
             حوّل مبلغ الخطة المختارة ({formatDZD(plans.data?.find((p) => p.id === planId)?.price ?? 0)}) إلى أحد الحسابين:
           </p>
@@ -177,7 +177,7 @@ function Billing() {
             submit.mutate();
           }}
         >
-          <h2 className="font-bold">ارفع وصل الدفع</h2>
+          <h2 className="font-semibold">ارفع وصل الدفع</h2>
           {pending && (
             <p className="rounded-xl bg-warning-soft px-3 py-2 text-sm text-warning">لديك إيصال قيد المراجعة. سنفعّل اشتراكك فور التحقق.</p>
           )}
@@ -204,7 +204,7 @@ function Billing() {
       </div>
 
       <div className="mt-6 rounded-2xl bg-card p-5 shadow-card">
-        <h2 className="mb-3 font-bold">سجل الدفع</h2>
+        <h2 className="mb-3 font-semibold">سجل الدفع</h2>
         {receipts.data?.length ? (
           <ul className="divide-y">
             {receipts.data.map((r) => (

@@ -54,7 +54,7 @@ function NavLinks({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
         <item.icon className="size-[18px]" />
         <span>{item.label}</span>
         {item.to === "/dashboard/orders" && newOrders > 0 && (
-          <span className="ms-auto flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-bold text-sidebar-foreground num">
+          <span className="ms-auto flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-semibold text-sidebar-foreground num">
             {newOrders}
           </span>
         )}
@@ -95,7 +95,7 @@ function MerchantCard() {
   return (
     <div className="rounded-2xl bg-sidebar-accent/70 p-3">
       <div className="flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-brand font-display font-bold text-brand-foreground">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-brand font-display font-semibold text-brand-foreground">
           {initials}
         </div>
         <div className="min-w-0 flex-1">
@@ -244,7 +244,7 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-end md:justify-between">
       <div>
-        <h1 className="text-2xl font-bold md:text-3xl">{title}</h1>
+        <h1 className="text-2xl font-semibold md:text-3xl">{title}</h1>
         {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
