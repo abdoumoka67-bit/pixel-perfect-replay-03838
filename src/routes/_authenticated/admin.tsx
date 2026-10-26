@@ -45,7 +45,7 @@ function AdminPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center">
         <ShieldAlert className="size-10 text-danger" />
-        <h1 className="text-xl font-semibold">هذه الصفحة مخصصة لمدير المنصة</h1>
+        <h1 className="text-xl font-medium">هذه الصفحة مخصصة لمدير المنصة</h1>
         <Button asChild variant="outline">
           <Link to="/dashboard">العودة للوحة التحكم</Link>
         </Button>
@@ -176,7 +176,7 @@ function Receipts() {
               </button>
               <div className="min-w-0 flex-1 space-y-1 text-sm">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="truncate font-semibold">{s?.name}</p>
+                  <p className="truncate font-medium">{s?.name}</p>
                   {r.status === "pending" ? (
                     <Badge variant="warning">معلّق</Badge>
                   ) : r.status === "approved" ? (
@@ -251,7 +251,7 @@ function Merchants() {
           return (
             <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
               <div className="min-w-0">
-                <p className="font-semibold">{s.name}</p>
+                <p className="font-medium">{s.name}</p>
                 <p className="text-xs text-muted-foreground" dir="ltr">
                   /m/{s.slug} · {s.owner_email}
                 </p>
@@ -328,7 +328,7 @@ function PlatformSettings() {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4 rounded-2xl bg-card p-6 shadow-card">
-        <h2 className="font-semibold">أسعار الخطط (د.ج)</h2>
+        <h2 className="font-medium">أسعار الخطط (د.ج)</h2>
         {plans.data?.map((p) => (
           <div key={p.id} className="flex items-center gap-3">
             <Label className="w-28 shrink-0">{p.name}</Label>
@@ -337,7 +337,7 @@ function PlatformSettings() {
         ))}
       </div>
       <div className="space-y-4 rounded-2xl bg-card p-6 shadow-card">
-        <h2 className="font-semibold">معلومات الدفع المعروضة للتجار</h2>
+        <h2 className="font-medium">معلومات الدفع المعروضة للتجار</h2>
         {fields.map((f) => (
           <div key={f.key} className="space-y-1.5">
             <Label>{f.label}</Label>

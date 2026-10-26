@@ -19,8 +19,8 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="font-display text-7xl font-semibold text-brand">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">الصفحة غير موجودة</h2>
+        <h1 className="font-display text-7xl font-medium text-brand">404</h1>
+        <h2 className="mt-4 text-xl font-medium text-foreground">الصفحة غير موجودة</h2>
         <p className="mt-2 text-sm text-muted-foreground">الرابط الذي فتحته غير صحيح أو تم حذفه.</p>
         <div className="mt-6">
           <Link
@@ -45,7 +45,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">تعذر تحميل الصفحة</h1>
+        <h1 className="text-xl font-medium tracking-tight text-foreground">تعذر تحميل الصفحة</h1>
         <p className="mt-2 text-sm text-muted-foreground">حدث خطأ غير متوقع. حاول مجدداً أو عد للرئيسية.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },

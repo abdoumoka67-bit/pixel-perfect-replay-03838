@@ -85,7 +85,7 @@ function YalidinePage() {
           }}
         >
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">مفاتيح الربط</h2>
+            <h2 className="font-medium">مفاتيح الربط</h2>
             {creds.data ? (
               <Badge variant="success">
                 <CheckCircle2 className="size-3" /> مربوط
@@ -117,7 +117,7 @@ function YalidinePage() {
           </div>
         </form>
         <div className="rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
-          <h2 className="font-semibold">كيف تحصل على المفاتيح؟</h2>
+          <h2 className="font-medium">كيف تحصل على المفاتيح؟</h2>
           <ol className="mt-4 list-inside list-decimal space-y-2 text-sm text-sidebar-muted">
             <li>ادخل إلى حسابك في Yalidine.</li>
             <li>افتح قسم «الإعدادات» ثم «API / المطوّرين».</li>

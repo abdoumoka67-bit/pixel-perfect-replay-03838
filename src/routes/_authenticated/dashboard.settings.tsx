@@ -140,7 +140,7 @@ function SettingsPage() {
           </Button>
         </div>
         <div className="h-fit rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
-          <h2 className="font-semibold">رابط متجرك</h2>
+          <h2 className="font-medium">رابط متجرك</h2>
           <p className="mt-1 text-sm text-sidebar-muted">شاركه في البايو على إنستغرام وتيك توك.</p>
           <div className="mt-4 flex items-center gap-2 rounded-xl bg-sidebar-accent px-4 py-3">
             <span className="flex-1 truncate text-sm" dir="ltr">{storeUrl}</span>

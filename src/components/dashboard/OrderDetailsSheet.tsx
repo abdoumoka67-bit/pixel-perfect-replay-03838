@@ -150,7 +150,7 @@ export function OrderDetailsSheet({
 
             <div className="mt-6 space-y-6">
               <section className="rounded-2xl bg-muted/60 p-4">
-                <p className="text-lg font-semibold">{order.customer_name}</p>
+                <p className="text-lg font-medium">{order.customer_name}</p>
                 <p className="mt-0.5 text-sm text-muted-foreground num">{order.phone}</p>
                 <p className="mt-2 text-sm">
                   {order.commune}، {order.wilaya_code} - {order.wilaya_name}
@@ -194,7 +194,7 @@ export function OrderDetailsSheet({
                   <span className="text-muted-foreground">التوصيل</span>
                   <span className="num">{formatDZD(order.shipping_price)}</span>
                 </div>
-                <div className="flex justify-between border-t pt-2 text-base font-semibold">
+                <div className="flex justify-between border-t pt-2 text-base font-medium">
                   <span>الإجمالي</span>
                   <span className="num">{formatDZD(order.total)}</span>
                 </div>
@@ -202,8 +202,8 @@ export function OrderDetailsSheet({
 
               <section>
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="font-semibold">سجل محاولات التأكيد</h3>
-                  <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand">
+                  <h3 className="font-medium">سجل محاولات التأكيد</h3>
+                  <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-medium text-brand">
                     <span className="num">{order.call_attempts}</span> محاولات
                   </span>
                 </div>
@@ -236,7 +236,7 @@ export function OrderDetailsSheet({
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold">حالة الطلب</h3>
+                <h3 className="font-medium">حالة الطلب</h3>
                 <Select
                   value={order.status}
                   disabled={readOnly}
@@ -256,10 +256,10 @@ export function OrderDetailsSheet({
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold">Yalidine</h3>
+                <h3 className="font-medium">Yalidine</h3>
                 {order.tracking_number ? (
                   <p className="rounded-lg bg-success-soft px-3 py-2 text-sm text-success">
-                    رقم التتبع: <span className="font-semibold num">{order.tracking_number}</span>
+                    رقم التتبع: <span className="font-medium num">{order.tracking_number}</span>
                   </p>
                 ) : (
                   <Button
@@ -274,7 +274,7 @@ export function OrderDetailsSheet({
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold">ملاحظات</h3>
+                <h3 className="font-medium">ملاحظات</h3>
                 <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} disabled={readOnly} />
                 <Button size="sm" variant="secondary" disabled={readOnly || saveNotes.isPending} onClick={() => saveNotes.mutate()}>
                   حفظ الملاحظة

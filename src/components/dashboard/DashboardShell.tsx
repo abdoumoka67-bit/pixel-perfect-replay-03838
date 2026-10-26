@@ -21,7 +21,39 @@ function useSignOut() {
   };
 }
 
-function NavLinks({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
+type Tone = "dark" | "light";
+
+const TONES = {
+  dark: {
+    body: "bg-sidebar text-sidebar-foreground",
+    item: "rounded-xl px-3 py-2.5 text-sm",
+    active: "bg-sidebar-accent text-sidebar-accent-foreground",
+    idle: "text-sidebar-muted hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+    label: "text-sidebar-muted/80",
+    group: "space-y-7",
+    divider: "",
+    card: "bg-sidebar-accent/70",
+    name: "text-sidebar-foreground",
+    sub: "text-sidebar-muted",
+    link: "border-sidebar-border text-sidebar-muted hover:text-sidebar-foreground",
+  },
+  light: {
+    body: "bg-background text-foreground",
+    item: "rounded-2xl px-4 py-3.5 text-[15px]",
+    active: "bg-card text-foreground shadow-card font-medium",
+    idle: "text-foreground/80 hover:bg-card/70",
+    label: "text-muted-foreground",
+    group: "space-y-4",
+    divider: "border-t pt-4",
+    card: "bg-card shadow-card",
+    name: "text-foreground",
+    sub: "text-muted-foreground",
+    link: "border-border bg-card text-muted-foreground hover:text-foreground",
+  },
+} as const;
+
+function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | undefined; tone?: Tone }) {
+  const t = TONES[tone];
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { data: isAdmin } = useQuery(isAdminQuery);
   const { store } = useMyStore();
@@ -45,16 +77,15 @@ function NavLinks({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
         to={item.to}
         onClick={onNavigate}
         className={cn(
-          "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-          active
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "text-sidebar-muted hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+          "group flex items-center gap-3 transition-colors",
+          t.item,
+          active ? t.active : t.idle,
         )}
       >
-        <item.icon className="size-[18px]" />
+        <item.icon className="size-[19px]" strokeWidth={1.6} />
         <span>{item.label}</span>
         {item.to === "/dashboard/orders" && newOrders > 0 && (
-          <span className="ms-auto flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-semibold text-sidebar-foreground num">
+          <span className="ms-auto flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-medium text-primary-foreground num">
             {newOrders}
           </span>
         )}
@@ -63,24 +94,24 @@ function NavLinks({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
   };
 
   return (
-    <nav className="space-y-7">
+    <nav className={t.group}>
       <div>
-        <p className="mb-2 px-3 text-[11px] font-semibold tracking-wider text-sidebar-muted/80">لوحة التحكم</p>
+        <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>لوحة التحكم</p>
         <div className="space-y-1">{MAIN_NAV.map(renderItem)}</div>
       </div>
-      <div>
-        <p className="mb-2 px-3 text-[11px] font-semibold tracking-wider text-sidebar-muted/80">الإعدادات والاشتراك</p>
+      <div className={t.divider}>
+        <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>الإعدادات والاشتراك</p>
         <div className="space-y-1">{SETTINGS_NAV.map(renderItem)}</div>
       </div>
       {isAdmin && (
-        <div>
-          <p className="mb-2 px-3 text-[11px] font-semibold tracking-wider text-sidebar-muted/80">المنصة</p>
+        <div className={t.divider}>
+          <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>المنصة</p>
           <Link
             to="/admin"
             onClick={onNavigate}
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-muted hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+            className={cn("flex items-center gap-3", t.item, t.idle)}
           >
-            <ShieldCheck className="size-[18px]" /> لوحة الإدارة
+            <ShieldCheck className="size-[19px]" strokeWidth={1.6} /> لوحة الإدارة
           </Link>
         </div>
       )}
@@ -88,23 +119,24 @@ function NavLinks({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
   );
 }
 
-function MerchantCard() {
+function MerchantCard({ tone = "dark" }: { tone?: Tone }) {
+  const t = TONES[tone];
   const { store } = useMyStore();
   const signOut = useSignOut();
   const initials = (store?.name ?? "؟").trim().slice(0, 1);
   return (
-    <div className="rounded-2xl bg-sidebar-accent/70 p-3">
+    <div className={cn("rounded-2xl p-3", t.card)}>
       <div className="flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-brand font-display font-semibold text-brand-foreground">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary font-display font-medium text-primary-foreground">
           {initials}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-sidebar-foreground">{store?.name}</p>
-          <p className="truncate text-xs text-sidebar-muted" dir="ltr">{store?.owner_email}</p>
+          <p className={cn("truncate text-sm font-medium", t.name)}>{store?.name}</p>
+          <p className={cn("truncate text-xs", t.sub)} dir="ltr">{store?.owner_email}</p>
         </div>
         <button
           onClick={signOut}
-          className="rounded-lg p-2 text-sidebar-muted transition-colors hover:bg-sidebar hover:text-sidebar-foreground"
+          className={cn("rounded-lg p-2 transition-colors hover:bg-secondary/20", t.sub)}
           aria-label="تسجيل الخروج"
           title="تسجيل الخروج"
         >
@@ -115,28 +147,29 @@ function MerchantCard() {
   );
 }
 
-function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
+function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | undefined; tone?: Tone }) {
   const { store } = useMyStore();
+  const t = TONES[tone];
   return (
-    <div className="flex h-full flex-col gap-6 bg-sidebar p-4 text-sidebar-foreground">
+    <div className={cn("flex h-full flex-col gap-6 p-4", t.body)}>
       <div className="flex items-center justify-between px-2 pt-2">
-        <Logo tone="light" />
+        <Logo tone={tone === "dark" ? "light" : "dark"} />
       </div>
       {store && (
         <a
           href={`/m/${store.slug}`}
           target="_blank"
           rel="noreferrer"
-          className="mx-1 flex items-center justify-between rounded-xl border border-sidebar-border px-3 py-2 text-xs text-sidebar-muted hover:text-sidebar-foreground"
+          className={cn("mx-1 flex items-center justify-between rounded-xl border px-3 py-2 text-xs", t.link)}
         >
           <span className="truncate" dir="ltr">/m/{store.slug}</span>
           <ExternalLink className="size-3.5 shrink-0" />
         </a>
       )}
       <div className="flex-1 overflow-y-auto">
-        <NavLinks onNavigate={onNavigate} />
+        <NavLinks onNavigate={onNavigate} tone={tone} />
       </div>
-      <MerchantCard />
+      <MerchantCard tone={tone} />
     </div>
   );
 }
@@ -210,9 +243,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       </aside>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-72 border-0 bg-sidebar p-0 [&>button]:text-sidebar-foreground">
+        <SheetContent side="right" className="w-[82vw] max-w-sm border-0 bg-background p-0">
           <SheetTitle className="sr-only">القائمة</SheetTitle>
-          <SidebarBody onNavigate={() => setOpen(false)} />
+          <SidebarBody tone="light" onNavigate={() => setOpen(false)} />
         </SheetContent>
       </Sheet>
 
@@ -244,7 +277,7 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-end md:justify-between">
       <div>
-        <h1 className="text-2xl font-semibold md:text-3xl">{title}</h1>
+        <h1 className="text-2xl font-medium md:text-3xl">{title}</h1>
         {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}

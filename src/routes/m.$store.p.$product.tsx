@@ -1,4 +1,4 @@
-import { createFileRoute, notFound, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Check, Loader2, Lock, Minus, Plus, ShieldCheck, Truck, Banknote, Home, Building2 } from "lucide-react";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LogoMark } from "@/components/brand/Logo";
+import { StoreChrome, StoreFaq } from "@/components/store/StoreChrome";
 import { formatDZD, friendlyError, isValidDzPhone, orderTotal, shippingPrice, type DeliveryType } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
 
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/m/$store/p/$product")({
   },
   notFoundComponent: () => (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2 px-6 text-center">
-      <h1 className="text-2xl font-semibold">المنتج غير متوفر</h1>
+      <h1 className="text-2xl font-medium">المنتج غير متوفر</h1>
       <p className="text-muted-foreground">ربما تم إيقاف هذا المنتج أو تغيير رابطه.</p>
     </div>
   ),
@@ -123,17 +123,8 @@ function ProductLanding() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-28 lg:pb-12">
-      <header className="border-b bg-card/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-          {store.logo ? (
-            <img src={store.logo} alt={store.name} className="size-9 rounded-xl object-cover" />
-          ) : (
-            <LogoMark />
-          )}
-          <span className="font-display text-lg font-semibold">{store.name}</span>
-        </div>
-      </header>
+    <StoreChrome store={store}>
+    <div className="pb-28 lg:pb-12">
 
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-2 lg:py-10">
         {/* Gallery */}
@@ -145,7 +136,7 @@ function ProductLanding() {
               <div className="flex size-full items-center justify-center bg-muted text-muted-foreground">لا توجد صورة</div>
             )}
             {discount > 0 && (
-              <span className="absolute start-4 top-4 rounded-full bg-gradient-brand px-3 py-1 text-sm font-semibold text-brand-foreground shadow-brand">
+              <span className="absolute start-4 top-4 rounded-full bg-gradient-brand px-3 py-1 text-sm font-medium text-brand-foreground shadow-brand">
                 -{discount}%
               </span>
             )}
@@ -168,9 +159,9 @@ function ProductLanding() {
 
         {/* Info + form */}
         <div>
-          <h1 className="text-2xl font-semibold leading-tight sm:text-3xl">{product.name}</h1>
+          <h1 className="text-2xl font-normal leading-tight sm:text-3xl">{product.name}</h1>
           <div className="mt-3 flex items-baseline gap-3">
-            <span className="font-display text-3xl font-semibold text-brand num">{formatDZD(product.price)}</span>
+            <span className="font-display text-3xl font-medium text-brand num">{formatDZD(product.price)}</span>
             {discount > 0 && <span className="text-lg text-muted-foreground line-through num">{formatDZD(product.compare_at_price!)}</span>}
           </div>
 
@@ -204,13 +195,13 @@ function ProductLanding() {
           {!store.accepting_orders ? (
             <div className="mt-6 rounded-3xl border border-warning/30 bg-warning-soft p-6 text-center text-warning">
               <Lock className="mx-auto mb-2 size-6" />
-              <p className="font-semibold">المتجر متوقف مؤقتاً عن استقبال الطلبات</p>
+              <p className="font-medium">المتجر متوقف مؤقتاً عن استقبال الطلبات</p>
               <p className="mt-1 text-sm">يرجى المحاولة لاحقاً.</p>
             </div>
           ) : (
             <form id="order" onSubmit={submit} className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6">
               <div className="text-center">
-                <h2 className="text-xl font-semibold">اطلب الآن — الدفع عند الاستلام</h2>
+                <h2 className="text-xl font-medium">اطلب الآن — الدفع عند الاستلام</h2>
                 <p className="text-sm text-muted-foreground">املأ معلوماتك وسنتصل بك لتأكيد الطلب</p>
               </div>
 
@@ -304,7 +295,7 @@ function ProductLanding() {
                         )}
                       >
                         <Icon className={cn("mb-1 size-5", delivery === t ? "text-brand" : "text-muted-foreground")} />
-                        <p className="text-sm font-semibold">{t === "home" ? "للمنزل" : "للمكتب (Stopdesk)"}</p>
+                        <p className="text-sm font-medium">{t === "home" ? "للمنزل" : "للمكتب (Stopdesk)"}</p>
                         <p className="text-xs text-muted-foreground num">
                           {!wCode ? "اختر الولاية" : price == null ? "غير متوفر" : price === 0 ? "مجاني" : formatDZD(price)}
                         </p>
@@ -320,7 +311,7 @@ function ProductLanding() {
                   <Button type="button" size="icon" variant="ghost" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="إنقاص">
                     <Minus />
                   </Button>
-                  <span className="w-8 text-center font-semibold num">{qty}</span>
+                  <span className="w-8 text-center font-medium num">{qty}</span>
                   <Button type="button" size="icon" variant="ghost" onClick={() => setQty(Math.min(20, qty + 1))} aria-label="زيادة">
                     <Plus />
                   </Button>
@@ -336,7 +327,7 @@ function ProductLanding() {
                   <span className="text-muted-foreground">التوصيل</span>
                   <span className="num">{wCode && currentShip != null ? formatDZD(currentShip) : "—"}</span>
                 </div>
-                <div className="flex justify-between border-t pt-2 text-lg font-semibold">
+                <div className="flex justify-between border-t pt-2 text-lg font-medium">
                   <span>الإجمالي</span>
                   <span className="text-brand num">{formatDZD(total)}</span>
                 </div>
@@ -360,10 +351,11 @@ function ProductLanding() {
         </div>
       )}
 
-      <footer className="py-6 text-center text-xs text-muted-foreground">
-        <Link to="/" className="hover:text-brand">مدعوم بواسطة oranix</Link>
-      </footer>
+      <div className="border-t">
+        <StoreFaq />
+      </div>
     </div>
+    </StoreChrome>
   );
 }
 

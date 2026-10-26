@@ -139,7 +139,7 @@ function DeliveryRates() {
             return (
               <li key={w.code} className="grid gap-3 px-5 py-3 md:grid-cols-[2fr_1.5fr_1.5fr] md:items-center md:gap-4">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-xs font-semibold num">{w.code}</span>
+                  <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-xs font-medium num">{w.code}</span>
                   <div>
                     <p className="font-medium">{w.ar}</p>
                     <p className="text-xs text-muted-foreground" dir="ltr">{w.fr}</p>
