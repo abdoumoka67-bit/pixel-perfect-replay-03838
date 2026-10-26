@@ -29,7 +29,7 @@ export const Route = createFileRoute("/m/$store/")({
   },
   notFoundComponent: () => (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2 px-6 text-center">
-      <h1 className="text-2xl font-semibold">المتجر غير موجود</h1>
+      <h1 className="text-2xl font-medium">المتجر غير موجود</h1>
       <p className="text-muted-foreground">تأكد من الرابط وحاول مجدداً.</p>
     </div>
   ),
@@ -48,7 +48,7 @@ function Storefront() {
           ) : (
             <LogoMark className="mx-auto size-14" />
           )}
-          <h1 className="mt-4 text-3xl font-semibold">{store.name}</h1>
+          <h1 className="mt-4 text-3xl font-medium">{store.name}</h1>
           <div className="mt-3 flex justify-center gap-4 text-sm text-sidebar-muted">
             <span className="inline-flex items-center gap-1.5"><Banknote className="size-4 text-sidebar-primary" /> الدفع عند الاستلام</span>
             <span className="inline-flex items-center gap-1.5"><Truck className="size-4 text-sidebar-primary" /> 58 ولاية</span>
@@ -80,8 +80,8 @@ function Storefront() {
                   )}
                 </div>
                 <div className="p-3">
-                  <p className="truncate text-sm font-semibold">{p.name}</p>
-                  <p className="mt-1 font-display font-semibold text-brand num">{formatDZD(p.price)}</p>
+                  <p className="truncate text-sm font-medium">{p.name}</p>
+                  <p className="mt-1 font-display font-medium text-brand num">{formatDZD(p.price)}</p>
                 </div>
               </Link>
             ))}

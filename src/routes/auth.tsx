@@ -106,7 +106,7 @@ function AuthPage() {
               <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-brand-soft text-brand">
                 <MailCheck className="size-7" />
               </div>
-              <h1 className="mt-5 text-2xl font-semibold">تحقق من بريدك</h1>
+              <h1 className="mt-5 text-2xl font-medium">تحقق من بريدك</h1>
               <p className="mt-2 text-muted-foreground">
                 {sent === "confirm"
                   ? "أرسلنا رابط تأكيد إلى بريدك. افتحه لتفعيل حسابك وبدء تجربتك المجانية."
@@ -118,7 +118,7 @@ function AuthPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-3xl font-semibold">
+              <h1 className="text-3xl font-medium">
                 {mode === "signin" ? "مرحباً بعودتك" : mode === "signup" ? "أنشئ متجرك في دقيقة" : "نسيت كلمة المرور؟"}
               </h1>
               <p className="mt-2 text-muted-foreground">
@@ -172,9 +172,9 @@ function AuthPage() {
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
                 {mode === "signin" ? (
-                  <>ليس لديك حساب؟ <button className="font-semibold text-brand hover:underline" onClick={() => setMode("signup")}>أنشئ متجرك مجاناً</button></>
+                  <>ليس لديك حساب؟ <button className="font-medium text-brand hover:underline" onClick={() => setMode("signup")}>أنشئ متجرك مجاناً</button></>
                 ) : (
-                  <>لديك حساب؟ <button className="font-semibold text-brand hover:underline" onClick={() => setMode("signin")}>سجّل الدخول</button></>
+                  <>لديك حساب؟ <button className="font-medium text-brand hover:underline" onClick={() => setMode("signin")}>سجّل الدخول</button></>
                 )}
               </p>
             </>
@@ -184,7 +184,7 @@ function AuthPage() {
       <div className="relative hidden overflow-hidden bg-sidebar lg:block">
         <div className="absolute inset-0 bg-hero opacity-20" />
         <div className="relative flex h-full flex-col justify-end p-12 text-sidebar-foreground">
-          <p className="font-display text-4xl font-semibold leading-tight">
+          <p className="font-display text-4xl font-medium leading-tight">
             استقبل طلبات <span className="text-sidebar-primary">الدفع عند الاستلام</span>
             <br /> من 58 ولاية، بلا تعقيد.
           </p>

@@ -42,7 +42,7 @@ function ResetPassword() {
     <div className="flex min-h-screen items-center justify-center px-6">
       <form onSubmit={submit} className="w-full max-w-sm space-y-5 rounded-2xl bg-card p-8 shadow-card">
         <Logo />
-        <h1 className="text-2xl font-semibold">كلمة مرور جديدة</h1>
+        <h1 className="text-2xl font-medium">كلمة مرور جديدة</h1>
         <div className="space-y-1.5">
           <Label htmlFor="pw">كلمة المرور الجديدة</Label>
           <Input id="pw" type="password" dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />

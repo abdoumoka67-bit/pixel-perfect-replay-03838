@@ -82,13 +82,13 @@ function Analytics() {
         {kpis.map((k) => (
           <div key={k.label} className="rounded-2xl bg-card p-5 shadow-card">
             <p className="text-sm text-muted-foreground">{k.label}</p>
-            <p className="mt-1 font-display text-2xl font-semibold num">{k.value}</p>
+            <p className="mt-1 font-display text-2xl font-medium num">{k.value}</p>
           </div>
         ))}
       </div>
 
       <div className="mt-6 rounded-2xl bg-card p-5 shadow-card">
-        <h2 className="mb-4 font-semibold">الطلبات اليومية</h2>
+        <h2 className="mb-4 font-medium">الطلبات اليومية</h2>
         <div className="h-64" dir="ltr">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={m.days}>
@@ -110,7 +110,7 @@ function Analytics() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl bg-card p-5 shadow-card lg:col-span-2">
-          <h2 className="mb-4 font-semibold">أكثر الولايات طلباً</h2>
+          <h2 className="mb-4 font-medium">أكثر الولايات طلباً</h2>
           <div className="h-64" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={m.topWilayas}>
@@ -125,7 +125,7 @@ function Analytics() {
         </div>
         <div className="space-y-6">
           <div className="rounded-2xl bg-card p-5 shadow-card">
-            <h2 className="mb-3 font-semibold">توزيع الحالات</h2>
+            <h2 className="mb-3 font-medium">توزيع الحالات</h2>
             <ul className="space-y-2.5">
               {ORDER_STATUSES.map((s) => {
                 const c = m.status.get(s) ?? 0;
@@ -145,12 +145,12 @@ function Analytics() {
             </ul>
           </div>
           <div className="rounded-2xl bg-card p-5 shadow-card">
-            <h2 className="mb-3 font-semibold">الأكثر مبيعاً</h2>
+            <h2 className="mb-3 font-medium">الأكثر مبيعاً</h2>
             <ul className="space-y-2 text-sm">
               {m.topProducts.map(([name, qty]) => (
                 <li key={name} className="flex justify-between gap-2">
                   <span className="truncate">{name}</span>
-                  <span className="font-semibold num">{qty}</span>
+                  <span className="font-medium num">{qty}</span>
                 </li>
               ))}
               {m.topProducts.length === 0 && <li className="text-muted-foreground">لا توجد بيانات بعد.</li>}

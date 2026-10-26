@@ -51,7 +51,7 @@ function Home() {
         <span className="inline-flex rounded-full border border-brand/40 bg-brand-soft px-4 py-1.5 text-sm font-medium text-brand">
           الدفع عند الاستلام · كل الولايات
         </span>
-        <h1 className="mt-7 text-[1.7rem] font-semibold leading-[1.5] sm:text-5xl sm:leading-[1.35]">
+        <h1 className="mt-7 text-[1.7rem] font-medium leading-[1.5] sm:text-5xl sm:leading-[1.35]">
           صفحة طلب لمنتجك، وطلباتك
           <br />
           مرتبة في مكان واحد.
@@ -74,7 +74,7 @@ function Home() {
               <span className="flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand">
                 <f.icon className="size-6" />
               </span>
-              <h2 className="mt-5 text-2xl font-semibold">{f.title}</h2>
+              <h2 className="mt-5 text-2xl font-medium">{f.title}</h2>
               <p className="mt-2 text-lg leading-8 text-muted-foreground">{f.text}</p>
             </li>
           ))}
@@ -84,13 +84,13 @@ function Home() {
       {plans.length > 0 && (
         <section className="border-t bg-background">
           <div className="mx-auto max-w-3xl px-5 py-16">
-            <h2 className="text-center text-3xl font-semibold">الأسعار</h2>
+            <h2 className="text-center text-3xl font-medium">الأسعار</h2>
             <p className="mt-2 text-center text-muted-foreground">ابدأ بـ 7 أيام مجاناً، ثم اختر المدة المناسبة لك.</p>
             <div className="mt-8 grid grid-cols-2 gap-3">
               {plans.map((p) => (
                 <div key={p.id} className="rounded-3xl bg-card p-5 shadow-card">
                   <p className="text-sm text-muted-foreground">{p.name}</p>
-                  <p className="mt-2 text-2xl font-semibold num">{formatDZD(p.price)}</p>
+                  <p className="mt-2 text-2xl font-medium num">{formatDZD(p.price)}</p>
                   <p className="text-xs text-muted-foreground num">{formatDZD(Math.round(p.price / p.months))} / شهر</p>
                 </div>
               ))}

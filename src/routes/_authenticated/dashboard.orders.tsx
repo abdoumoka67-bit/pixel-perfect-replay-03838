@@ -267,7 +267,7 @@ function OrdersPage() {
                   </td>
                   <td className="p-4 text-muted-foreground num">{(page - 1) * PAGE_SIZE + i + 1}</td>
                   <td className="p-4">
-                    <button className="font-semibold hover:text-brand num" onClick={() => setOpenId(o.id)}>
+                    <button className="font-medium hover:text-brand num" onClick={() => setOpenId(o.id)}>
                       ORX-{o.order_number}
                     </button>
                     <p className="text-xs text-muted-foreground">{o.customer_name}</p>
@@ -288,7 +288,7 @@ function OrdersPage() {
                       )}
                     </p>
                   </td>
-                  <td className="whitespace-nowrap p-4 font-semibold num">{formatDZD(o.total)}</td>
+                  <td className="whitespace-nowrap p-4 font-medium num">{formatDZD(o.total)}</td>
                   <td className="p-4">
                     <PaymentBadge status={o.payment_status} />
                   </td>
@@ -318,7 +318,7 @@ function OrdersPage() {
           <div key={o.id} className="rounded-2xl bg-card p-4 shadow-card">
             <div className="flex items-start justify-between gap-2">
               <button className="min-w-0 text-start" onClick={() => setOpenId(o.id)}>
-                <p className="truncate font-semibold">{o.customer_name}</p>
+                <p className="truncate font-medium">{o.customer_name}</p>
                 <p className="text-xs text-muted-foreground">
                   <span className="num">ORX-{o.order_number}</span> · {new Date(o.created_at).toLocaleDateString("ar-DZ")}
                 </p>
@@ -336,7 +336,7 @@ function OrdersPage() {
                 <span className="text-muted-foreground">
                   {o.commune}، {o.wilaya_name}
                 </span>
-                <span className="font-semibold num">{formatDZD(o.total)}</span>
+                <span className="font-medium num">{formatDZD(o.total)}</span>
               </div>
             </button>
             {o.call_attempts > 0 && (
@@ -422,7 +422,7 @@ function OrdersPage() {
 function EmptyState() {
   return (
     <div className="p-10 text-center">
-      <p className="font-semibold">لا توجد طلبات</p>
+      <p className="font-medium">لا توجد طلبات</p>
       <p className="mt-1 text-sm text-muted-foreground">ستظهر هنا طلبات الزبائن من صفحات الهبوط فور وصولها.</p>
     </div>
   );

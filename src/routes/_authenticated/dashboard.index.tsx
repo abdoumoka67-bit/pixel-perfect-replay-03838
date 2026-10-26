@@ -79,7 +79,7 @@ function Overview() {
                 <c.icon className="size-[18px]" />
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{c.label}</p>
-              <p className="mt-0.5 font-display text-2xl font-semibold num">{Number(row?.orders_count ?? 0)}</p>
+              <p className="mt-0.5 font-display text-2xl font-medium num">{Number(row?.orders_count ?? 0)}</p>
               <p className="text-xs text-muted-foreground num">{formatDZD(Number(row?.orders_total ?? 0))}</p>
             </div>
           );
@@ -89,7 +89,7 @@ function Overview() {
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl bg-card p-5 shadow-card lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">آخر الطلبات</h2>
+            <h2 className="text-lg font-medium">آخر الطلبات</h2>
             <Link to="/dashboard/orders" className="inline-flex items-center gap-1 text-sm text-brand hover:underline">
               عرض الكل <ArrowLeft className="size-4" />
             </Link>
@@ -104,7 +104,7 @@ function Overview() {
                       {o.product_name} · {o.wilaya_name}
                     </p>
                   </div>
-                  <span className="text-sm font-semibold num">{formatDZD(o.total)}</span>
+                  <span className="text-sm font-medium num">{formatDZD(o.total)}</span>
                   <StatusBadge status={o.status} />
                 </li>
               ))}
@@ -117,10 +117,10 @@ function Overview() {
         </div>
         <div className="rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
           <p className="text-sm text-sidebar-muted">إجمالي الطلبات</p>
-          <p className="mt-1 font-display text-4xl font-semibold num">{totalOrders}</p>
+          <p className="mt-1 font-display text-4xl font-medium num">{totalOrders}</p>
           <div className="my-5 h-px bg-sidebar-border" />
           <p className="text-sm text-sidebar-muted">مداخيل الطلبات المسلّمة</p>
-          <p className="mt-1 font-display text-2xl font-semibold text-sidebar-primary num">
+          <p className="mt-1 font-display text-2xl font-medium text-sidebar-primary num">
             {formatDZD(Number(delivered?.orders_total ?? 0))}
           </p>
           <p className="mt-4 text-xs text-sidebar-muted">

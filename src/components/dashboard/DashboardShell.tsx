@@ -243,7 +243,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       </aside>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-72 border-0 bg-sidebar p-0 [&>button]:text-sidebar-foreground">
+        <SheetContent side="right" className="w-[82vw] max-w-sm border-0 bg-background p-0">
           <SheetTitle className="sr-only">القائمة</SheetTitle>
           <SidebarBody tone="light" onNavigate={() => setOpen(false)} />
         </SheetContent>
@@ -277,7 +277,7 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-end md:justify-between">
       <div>
-        <h1 className="text-2xl font-semibold md:text-3xl">{title}</h1>
+        <h1 className="text-2xl font-medium md:text-3xl">{title}</h1>
         {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}

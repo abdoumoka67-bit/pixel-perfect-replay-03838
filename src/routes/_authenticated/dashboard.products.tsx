@@ -102,7 +102,7 @@ function ProductsPage() {
           <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-brand-soft text-brand">
             <Package className="size-7" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold">أضف منتجك الأول</h2>
+          <h2 className="mt-4 text-lg font-medium">أضف منتجك الأول</h2>
           <p className="mt-1 text-sm text-muted-foreground">ستحصل فوراً على صفحة هبوط بنموذج طلب الدفع عند الاستلام.</p>
           <Button className="mt-5" variant="brand" disabled={readOnly} onClick={() => setOpen(true)}>
             <Plus /> منتج جديد
@@ -126,9 +126,9 @@ function ProductsPage() {
               </div>
             </div>
             <div className="p-4">
-              <p className="truncate font-semibold">{p.name}</p>
+              <p className="truncate font-medium">{p.name}</p>
               <div className="mt-1 flex items-baseline gap-2">
-                <span className="font-display text-lg font-semibold text-brand num">{formatDZD(p.price)}</span>
+                <span className="font-display text-lg font-medium text-brand num">{formatDZD(p.price)}</span>
                 {p.compare_at_price ? (
                   <span className="text-sm text-muted-foreground line-through num">{formatDZD(p.compare_at_price)}</span>
                 ) : null}
