@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Package, Truck, Banknote } from "lucide-react";
+import { Package } from "lucide-react";
 import { getStorefront } from "@/lib/storefront.functions";
-import { LogoMark } from "@/components/brand/Logo";
+import { StoreChrome, StoreFaq } from "@/components/store/StoreChrome";
 import { formatDZD } from "@/lib/commerce";
 
 export const Route = createFileRoute("/m/$store/")({
@@ -40,28 +40,28 @@ function Storefront() {
   const { store, products } = Route.useLoaderData();
   if (!store) return null;
   return (
-    <div className="min-h-screen">
-      <header className="bg-sidebar text-sidebar-foreground">
-        <div className="mx-auto max-w-6xl px-4 py-10 text-center">
-          {store.logo ? (
-            <img src={store.logo} alt={store.name} className="mx-auto size-16 rounded-2xl object-cover" />
-          ) : (
-            <LogoMark className="mx-auto size-14" />
-          )}
-          <h1 className="mt-4 text-3xl font-medium">{store.name}</h1>
-          <div className="mt-3 flex justify-center gap-4 text-sm text-sidebar-muted">
-            <span className="inline-flex items-center gap-1.5"><Banknote className="size-4 text-sidebar-primary" /> الدفع عند الاستلام</span>
-            <span className="inline-flex items-center gap-1.5"><Truck className="size-4 text-sidebar-primary" /> 58 ولاية</span>
-          </div>
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 py-8">
+    <StoreChrome store={store}>
+      <section className="bg-dark-hero px-6 py-20 text-center text-primary-foreground sm:py-28">
+        <h1 className="text-[2rem] font-normal leading-tight sm:text-5xl">مرحباً بك في متجرنا</h1>
+        <p className="mx-auto mt-5 max-w-md text-lg font-light leading-9 opacity-90 sm:text-xl">
+          اكتشف أفضل المنتجات بأسعار رائعة مع خدمة التوصيل لجميع ولايات الجزائر
+        </p>
+        <a
+          href="#products"
+          className="mt-9 inline-flex h-14 items-center rounded-xl bg-primary px-12 text-lg font-normal text-primary-foreground shadow-float transition-opacity hover:opacity-90"
+        >
+          تسوق الآن
+        </a>
+      </section>
+
+      <main id="products" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-14">
         {!store.accepting_orders && (
           <p className="mb-6 rounded-2xl bg-warning-soft p-4 text-center text-sm text-warning">المتجر متوقف مؤقتاً عن استقبال الطلبات.</p>
         )}
+        <h2 className="mb-6 px-1 text-2xl font-bold sm:text-3xl">منتجاتنا</h2>
         {products.length === 0 ? (
-          <div className="py-20 text-center text-muted-foreground">
-            <Package className="mx-auto mb-3 size-10" /> لا توجد منتجات حالياً.
+          <div className="py-16 text-center text-muted-foreground">
+            <Package className="mx-auto mb-3 size-10" strokeWidth={1.4} /> لا توجد منتجات حالياً.
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
@@ -70,7 +70,7 @@ function Storefront() {
                 key={p.id}
                 to="/m/$store/p/$product"
                 params={{ store: store.slug, product: p.slug }}
-                className="group overflow-hidden rounded-2xl bg-card shadow-card transition-shadow hover:shadow-float"
+                className="group overflow-hidden rounded-2xl border bg-card transition-shadow hover:shadow-float"
               >
                 <div className="aspect-square overflow-hidden bg-muted">
                   {p.images[0] ? (
@@ -80,17 +80,18 @@ function Storefront() {
                   )}
                 </div>
                 <div className="p-3">
-                  <p className="truncate text-sm font-medium">{p.name}</p>
-                  <p className="mt-1 font-display font-medium text-brand num">{formatDZD(p.price)}</p>
+                  <p className="truncate text-[15px]">{p.name}</p>
+                  <p className="mt-1 font-medium num">{formatDZD(p.price)}</p>
                 </div>
               </Link>
             ))}
           </div>
         )}
       </main>
-      <footer className="py-8 text-center text-xs text-muted-foreground">
-        <Link to="/" className="hover:text-brand">مدعوم بواسطة oranix</Link>
-      </footer>
-    </div>
+
+      <div className="border-t">
+        <StoreFaq />
+      </div>
+    </StoreChrome>
   );
 }
