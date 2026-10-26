@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, MailCheck } from "lucide-react";
@@ -33,6 +33,8 @@ function safePath(p?: string) {
   return p && p.startsWith("/") && !p.startsWith("//") ? p : "/dashboard";
 }
 
+const RESEND_SECONDS = 60;
+
 function AuthPage() {
   const { redirect, mode: initialMode } = Route.useSearch();
   const navigate = useNavigate();
@@ -40,17 +42,22 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState<null | "confirm" | "reset">(null);
+  // Which code the user is entering: account confirmation or password reset.
+  const [step, setStep] = useState<null | "confirm" | "reset">(null);
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [cooldown, setCooldown] = useState(0);
+  const resetting = useRef(false);
 
   const [googleEnabled, setGoogleEnabled] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: safePath(redirect), replace: true });
+      if (data.user && !resetting.current) navigate({ to: safePath(redirect), replace: true });
     });
-    // Arriving from the confirmation email or Google: the session lands after mount.
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) navigate({ to: safePath(redirect), replace: true });
+      // During password reset the code signs the user in before the new password is saved.
+      if (event === "SIGNED_IN" && session && !resetting.current) navigate({ to: safePath(redirect), replace: true });
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate, redirect]);
@@ -66,37 +73,106 @@ function AuthPage() {
       .catch(() => setGoogleEnabled(false));
   }, []);
 
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+
+  function openCodeStep(kind: "confirm" | "reset") {
+    setCode("");
+    setNewPassword("");
+    setStep(kind);
+    setCooldown(RESEND_SECONDS);
+  }
+
+  function showError(err: unknown) {
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("Invalid login")) toast.error("البريد أو كلمة المرور غير صحيحة.");
+    else if (msg.includes("already registered")) toast.error("هذا البريد مسجل مسبقاً. سجّل الدخول.");
+    else if (/expired|invalid/i.test(msg) && step) toast.error("الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزاً جديداً.");
+    else if (/rate limit|security purposes/i.test(msg)) toast.error("طلبات كثيرة. انتظر قليلاً ثم حاول مرة أخرى.");
+    else toast.error(msg || "حدث خطأ، حاول مرة أخرى.");
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes("Email not confirmed")) {
+            const { error: resendError } = await supabase.auth.resend({ type: "signup", email });
+            if (resendError) throw resendError;
+            toast.info("حسابك غير مؤكد بعد. أرسلنا لك رمز التحقق.");
+            openCodeStep("confirm");
+            return;
+          }
+          throw error;
+        }
         navigate({ to: safePath(redirect), replace: true });
       } else if (mode === "signup") {
         if (password.length < 8) throw new Error("كلمة المرور يجب أن تحتوي 8 أحرف على الأقل.");
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/auth?redirect=/dashboard` },
-        });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         if (data.session) navigate({ to: "/dashboard", replace: true });
-        else setSent("confirm");
+        else openCodeStep("confirm");
       } else {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
+        const { error } = await supabase.auth.resetPasswordForEmail(email);
         if (error) throw error;
-        setSent("reset");
+        openCodeStep("reset");
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "";
-      if (msg.includes("Invalid login")) toast.error("البريد أو كلمة المرور غير صحيحة.");
-      else if (msg.includes("already registered")) toast.error("هذا البريد مسجل مسبقاً. سجّل الدخول.");
-      else if (msg.includes("Email not confirmed")) toast.error("أكّد بريدك الإلكتروني أولاً من الرسالة التي وصلتك.");
-      else toast.error(msg || "حدث خطأ، حاول مرة أخرى.");
+      showError(err);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verify(e: React.FormEvent) {
+    e.preventDefault();
+    const token = code.replace(/\D/g, "");
+    if (token.length < 6) { toast.error("اكتب الرمز كاملاً كما وصلك في البريد."); return; }
+    if (step === "reset" && newPassword.length < 8) { toast.error("كلمة المرور يجب أن تحتوي 8 أحرف على الأقل."); return; }
+    setBusy(true);
+    try {
+      if (step === "confirm") {
+        const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+        if (error) throw error;
+        toast.success("تم تأكيد حسابك.");
+        navigate({ to: safePath(redirect), replace: true });
+      } else {
+        resetting.current = true;
+        const { error } = await supabase.auth.verifyOtp({ email, token, type: "recovery" });
+        if (error) throw error;
+        const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+        if (updateError) throw updateError;
+        resetting.current = false;
+        toast.success("تم تحديث كلمة المرور.");
+        navigate({ to: safePath(redirect), replace: true });
+      }
+    } catch (err) {
+      resetting.current = false;
+      showError(err);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resend() {
+    if (cooldown > 0) return;
+    setBusy(true);
+    try {
+      const { error } =
+        step === "confirm"
+          ? await supabase.auth.resend({ type: "signup", email })
+          : await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+      toast.success("أرسلنا رمزاً جديداً.");
+      setCooldown(RESEND_SECONDS);
+    } catch (err) {
+      showError(err);
     } finally {
       setBusy(false);
     }
@@ -119,20 +195,59 @@ function AuthPage() {
           <Logo />
         </Link>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
-          {sent ? (
-            <div className="text-center">
-              <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-brand-soft text-brand">
+          {step ? (
+            <div>
+              <div className="flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand">
                 <MailCheck className="size-7" />
               </div>
-              <h1 className="mt-5 text-2xl font-medium">تحقق من بريدك</h1>
+              <h1 className="mt-5 text-2xl font-medium">
+                {step === "confirm" ? "أدخل رمز التحقق" : "أدخل رمز إعادة التعيين"}
+              </h1>
               <p className="mt-2 text-muted-foreground">
-                {sent === "confirm"
-                  ? "أرسلنا رابط تأكيد إلى بريدك. افتحه لتفعيل حسابك والدخول مباشرة إلى لوحة التحكم. إن لم تجده، تحقق من مجلد الرسائل غير المرغوب فيها (Spam)."
-                  : "أرسلنا رابط إعادة تعيين كلمة المرور إلى بريدك."}
+                أرسلنا رمزاً إلى <span dir="ltr" className="font-medium text-foreground">{email}</span>. إن لم تجده، تحقق من مجلد الرسائل غير المرغوب فيها (Spam).
               </p>
-              <Button variant="outline" className="mt-6" onClick={() => { setSent(null); setMode("signin"); }}>
-                العودة لتسجيل الدخول
-              </Button>
+
+              <form onSubmit={verify} className="mt-8 space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="code">رمز التحقق</Label>
+                  <Input
+                    id="code"
+                    dir="ltr"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    autoFocus
+                    maxLength={8}
+                    placeholder="••••••"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                    className="h-14 text-center text-2xl tracking-[0.5em]"
+                  />
+                </div>
+                {step === "reset" && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-password">كلمة المرور الجديدة</Label>
+                    <Input id="new-password" type="password" dir="ltr" required minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="h-11" />
+                  </div>
+                )}
+                <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
+                  {busy && <Loader2 className="animate-spin" />}
+                  {step === "confirm" ? "تأكيد الحساب" : "حفظ كلمة المرور"}
+                </Button>
+              </form>
+
+              <div className="mt-6 flex items-center justify-between text-sm">
+                <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => { setStep(null); setMode("signin"); }}>
+                  العودة لتسجيل الدخول
+                </button>
+                <button
+                  type="button"
+                  className="font-medium text-brand hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground disabled:no-underline"
+                  disabled={cooldown > 0 || busy}
+                  onClick={resend}
+                >
+                  {cooldown > 0 ? `إعادة الإرسال بعد ${cooldown} ث` : "إعادة إرسال الرمز"}
+                </button>
+              </div>
             </div>
           ) : (
             <>
@@ -144,7 +259,7 @@ function AuthPage() {
                   ? "7 أيام تجربة مجانية بكل الميزات، بدون بطاقة دفع."
                   : mode === "signin"
                     ? "ادخل إلى لوحة تحكم متجرك."
-                    : "اكتب بريدك وسنرسل لك رابطاً لإعادة تعيينها."}
+                    : "اكتب بريدك وسنرسل لك رمزاً لإعادة تعيينها."}
               </p>
 
               {mode !== "forgot" && googleEnabled && (
@@ -184,7 +299,7 @@ function AuthPage() {
                 )}
                 <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
                   {busy && <Loader2 className="animate-spin" />}
-                  {mode === "signin" ? "تسجيل الدخول" : mode === "signup" ? "إنشاء الحساب" : "إرسال الرابط"}
+                  {mode === "signin" ? "تسجيل الدخول" : mode === "signup" ? "إنشاء الحساب" : "إرسال الرمز"}
                 </Button>
               </form>
 
