@@ -127,7 +127,7 @@ function AuthPage() {
               <h1 className="mt-5 text-2xl font-medium">تحقق من بريدك</h1>
               <p className="mt-2 text-muted-foreground">
                 {sent === "confirm"
-                  ? "أرسلنا رابط تأكيد إلى بريدك. افتحه لتفعيل حسابك وبدء تجربتك المجانية."
+                  ? "أرسلنا رابط تأكيد إلى بريدك. افتحه لتفعيل حسابك والدخول مباشرة إلى لوحة التحكم. إن لم تجده، تحقق من مجلد الرسائل غير المرغوب فيها (Spam)."
                   : "أرسلنا رابط إعادة تعيين كلمة المرور إلى بريدك."}
               </p>
               <Button variant="outline" className="mt-6" onClick={() => { setSent(null); setMode("signin"); }}>
