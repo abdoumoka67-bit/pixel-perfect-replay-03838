@@ -42,11 +42,29 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<null | "confirm" | "reset">(null);
 
+  const [googleEnabled, setGoogleEnabled] = useState(false);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: safePath(redirect), replace: true });
     });
+    // Arriving from the confirmation email or Google: the session lands after mount.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) navigate({ to: safePath(redirect), replace: true });
+    });
+    return () => sub.subscription.unsubscribe();
   }, [navigate, redirect]);
+
+  useEffect(() => {
+    // Only offer Google when it is switched on for this project.
+    const url = import.meta.env["VITE_SUPABASE_URL"];
+    const key = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+    if (!url || !key) return;
+    fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { external?: { google?: boolean } } | null) => setGoogleEnabled(Boolean(d?.external?.google)))
+      .catch(() => setGoogleEnabled(false));
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,7 +79,7 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+          options: { emailRedirectTo: `${window.location.origin}/auth?redirect=/dashboard` },
         });
         if (error) throw error;
         if (data.session) navigate({ to: "/dashboard", replace: true });
@@ -129,7 +147,7 @@ function AuthPage() {
                     : "اكتب بريدك وسنرسل لك رابطاً لإعادة تعيينها."}
               </p>
 
-              {mode !== "forgot" && (
+              {mode !== "forgot" && googleEnabled && (
                 <>
                   <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
                     <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
@@ -146,7 +164,7 @@ function AuthPage() {
                 </>
               )}
 
-              <form onSubmit={submit} className={mode === "forgot" ? "mt-8 space-y-4" : "space-y-4"}>
+              <form onSubmit={submit} className={mode === "forgot" || !googleEnabled ? "mt-8 space-y-4" : "space-y-4"}>
                 <div className="space-y-1.5">
                   <Label htmlFor="email">البريد الإلكتروني</Label>
                   <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
