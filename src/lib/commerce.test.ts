@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { isValidDzPhone, orderTotal, shippingPrice, subscriptionState } from "./commerce";
+import {
+  MAX_TEAM_MEMBERS,
+  MAX_TEAM_USERS,
+  canOpen,
+  effectiveTier,
+  isValidDzPhone,
+  orderLimitState,
+  orderTotal,
+  shippingPrice,
+  subscriptionState,
+} from "./commerce";
 
 describe("Algerian phone validation", () => {
   it("accepts 10-digit numbers starting with 05, 06 or 07", () => {
@@ -54,5 +64,44 @@ describe("7-day trial and read-only mode", () => {
     );
     expect(s.isActive).toBe(true);
     expect(s.isTrial).toBe(false);
+  });
+});
+
+describe("Start and Pro plans", () => {
+  it("Start accepts up to 300 orders a month", () => {
+    expect(orderLimitState("start", 299).reached).toBe(false);
+    expect(orderLimitState("start", 300).reached).toBe(true);
+    expect(orderLimitState("start", 120).remaining).toBe(180);
+  });
+  it("Start warns the merchant from 250 orders", () => {
+    expect(orderLimitState("start", 249).nearLimit).toBe(false);
+    expect(orderLimitState("start", 250).nearLimit).toBe(true);
+  });
+  it("Pro has unlimited orders", () => {
+    const s = orderLimitState("pro", 5000);
+    expect(s.reached).toBe(false);
+    expect(s.limit).toBeNull();
+  });
+  it("Pro allows 5 users: the owner plus 4 members", () => {
+    expect(MAX_TEAM_USERS).toBe(5);
+    expect(MAX_TEAM_MEMBERS).toBe(4);
+  });
+  it("the free trial gets Pro features", () => {
+    const store = { trial_ends_at: "2026-01-08T00:00:00Z", paid_until: null, plan_tier: "start" };
+    expect(effectiveTier(store, new Date("2026-01-03T00:00:00Z"))).toBe("pro");
+  });
+  it("after paying for Start, the store is on Start", () => {
+    const store = { trial_ends_at: "2026-01-08T00:00:00Z", paid_until: "2026-02-08T00:00:00Z", plan_tier: "start" };
+    expect(effectiveTier(store, new Date("2026-01-20T00:00:00Z"))).toBe("start");
+  });
+  it("analytics are for the owner and managers, not confirmation agents", () => {
+    expect(canOpen("owner", "analytics")).toBe(true);
+    expect(canOpen("manager", "analytics")).toBe(true);
+    expect(canOpen("agent", "analytics")).toBe(false);
+  });
+  it("only the owner manages the team and billing", () => {
+    expect(canOpen("manager", "team")).toBe(false);
+    expect(canOpen("manager", "billing")).toBe(false);
+    expect(canOpen("owner", "team")).toBe(true);
   });
 });
