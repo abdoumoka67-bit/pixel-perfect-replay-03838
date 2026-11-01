@@ -31,6 +31,8 @@ export type PublicStore = {
   default_home_price: number;
   default_desk_price: number;
   accepting_orders: boolean;
+  meta_pixel_id: string | null;
+  tiktok_pixel_id: string | null;
 };
 
 export type PublicProduct = {
@@ -77,6 +79,8 @@ export const getStorefront = createServerFn({ method: "GET" })
       default_home_price: s.default_home_price,
       default_desk_price: s.default_desk_price,
       accepting_orders: s.accepting_orders,
+      meta_pixel_id: s.meta_pixel_id ?? null,
+      tiktok_pixel_id: s.tiktok_pixel_id ?? null,
     };
     return {
       store,
@@ -117,13 +121,19 @@ export const getProductPage = createServerFn({ method: "GET" })
       default_home_price: s.default_home_price,
       default_desk_price: s.default_desk_price,
       accepting_orders: s.accepting_orders,
+      meta_pixel_id: s.meta_pixel_id ?? null,
+      tiktok_pixel_id: s.tiktok_pixel_id ?? null,
     };
     const product: PublicProduct = { ...p, images: p.images.map((i) => urls[i]).filter((x): x is string => !!x) };
     return { store, product, rates: rates ?? [] };
   });
 
 export const getPublicPlans = createServerFn({ method: "GET" }).handler(async () => {
-  const { data, error } = await publicClient().from("plans").select("id,name,months,price").order("sort");
+  const { data, error } = await publicClient()
+    .from("plans")
+    .select("id,name,months,price,tier")
+    .eq("is_active", true)
+    .order("sort");
   if (error) {
     console.error("plans load failed", error);
     return [];

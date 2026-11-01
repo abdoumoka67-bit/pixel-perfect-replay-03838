@@ -1,14 +1,18 @@
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Menu, MessageCircle, X, Home } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { whatsappLink } from "@/lib/commerce";
 import type { PublicStore } from "@/lib/storefront.functions";
+import { initPixels } from "@/lib/pixels";
 
 export function StoreChrome({ store, children }: { store: PublicStore; children: ReactNode }) {
   const [bar, setBar] = useState(true);
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    initPixels(store);
+  }, [store]);
   return (
     <div className="min-h-screen bg-card">
       {bar && (
