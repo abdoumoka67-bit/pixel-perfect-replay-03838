@@ -103,10 +103,12 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
         <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>لوحة التحكم</p>
         <div className="space-y-1">{visible(MAIN_NAV).map(renderItem)}</div>
       </div>
-      <div className={t.divider}>
-        <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>الإعدادات والاشتراك</p>
-        <div className="space-y-1">{visible(SETTINGS_NAV).map(renderItem)}</div>
-      </div>
+      {visible(SETTINGS_NAV).length > 0 && (
+        <div className={t.divider}>
+          <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>الإعدادات والاشتراك</p>
+          <div className="space-y-1">{visible(SETTINGS_NAV).map(renderItem)}</div>
+        </div>
+      )}
       {isAdmin && (
         <div className={t.divider}>
           <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>المنصة</p>

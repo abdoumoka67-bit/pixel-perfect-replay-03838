@@ -213,7 +213,7 @@ function ProductLanding() {
               <p className="mt-1 text-sm">يرجى المحاولة لاحقاً.</p>
             </div>
           ) : (
-            <form id="order" onSubmit={submit} className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6">
+            <form id="order" onSubmit={submit} onFocusCapture={onFormFocus} className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6">
               <div className="text-center">
                 <h2 className="text-xl font-medium">اطلب الآن — الدفع عند الاستلام</h2>
                 <p className="text-sm text-muted-foreground">املأ معلوماتك وسنتصل بك لتأكيد الطلب</p>
