@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { StoreChrome, StoreFaq } from "@/components/store/StoreChrome";
 import { formatDZD, friendlyError, isValidDzPhone, orderTotal, shippingPrice, type DeliveryType } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
+import { trackPixel } from "@/lib/pixels";
 
 export const Route = createFileRoute("/m/$store/p/$product")({
   loader: async ({ params }) => {
@@ -67,6 +68,18 @@ function ProductLanding() {
   const [busy, setBusy] = useState(false);
   const [touched, setTouched] = useState(false);
 
+  const [checkoutTracked, setCheckoutTracked] = useState(false);
+  useEffect(() => {
+    // after StoreChrome has loaded the pixels
+    const t = setTimeout(() => trackPixel("ViewContent", { id: product.id, name: product.name, value: product.price }), 0);
+    return () => clearTimeout(t);
+  }, [product.id, product.name, product.price]);
+  const onFormFocus = () => {
+    if (checkoutTracked) return;
+    setCheckoutTracked(true);
+    trackPixel("InitiateCheckout", { id: product.id, name: product.name, value: product.price, quantity: qty });
+  };
+
   useEffect(() => {
     import("@/data/communes.json").then((m) => setCommunes(m.default as unknown as Communes));
   }, []);
@@ -115,6 +128,7 @@ function ProductLanding() {
     setBusy(false);
     if (error) { toast.error(friendlyError(error.message)); return; }
     const row = data?.[0];
+    trackPixel("Purchase", { id: product.id, name: product.name, value: Number(row?.total ?? total), quantity: qty });
     navigate({
       to: "/m/$store/thank-you",
       params: { store: store.slug },
@@ -199,7 +213,7 @@ function ProductLanding() {
               <p className="mt-1 text-sm">يرجى المحاولة لاحقاً.</p>
             </div>
           ) : (
-            <form id="order" onSubmit={submit} className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6">
+            <form id="order" onSubmit={submit} onFocusCapture={onFormFocus} className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6">
               <div className="text-center">
                 <h2 className="text-xl font-medium">اطلب الآن — الدفع عند الاستلام</h2>
                 <p className="text-sm text-muted-foreground">املأ معلوماتك وسنتصل بك لتأكيد الطلب</p>
