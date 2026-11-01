@@ -249,3 +249,55 @@ export const MEMBER_ROLE_LABELS: Record<"manager" | "agent", string> = {
   manager: "مدير",
   agent: "عون تأكيد",
 };
+
+/** Dashboard page a URL belongs to (used to block pages a team member cannot open). */
+export function areaForPath(path: string): DashboardArea {
+  const seg = path.replace(/\/+$/, "").split("/")[2] ?? "";
+  const map: Record<string, DashboardArea> = {
+    orders: "orders",
+    products: "products",
+    analytics: "analytics",
+    activity: "activity",
+    team: "team",
+    billing: "billing",
+    delivery: "delivery",
+    yalidine: "yalidine",
+    settings: "settings",
+  };
+  return map[seg] ?? "overview";
+}
+
+// ---------- Ad pixels (Pro). Mirrors SQL `set_store_pixels`. ----------
+
+export function cleanMetaPixelId(input: string): string {
+  return input.replace(/\s/g, "");
+}
+export function cleanTiktokPixelId(input: string): string {
+  return input.replace(/\s/g, "").toUpperCase();
+}
+/** Meta Pixel ID: 10 to 20 digits. Empty means "no pixel". */
+export function isValidMetaPixelId(input: string): boolean {
+  const v = cleanMetaPixelId(input);
+  return v === "" || /^[0-9]{10,20}$/.test(v);
+}
+/** TikTok Pixel ID: 10 to 30 Latin letters/digits. Empty means "no pixel". */
+export function isValidTiktokPixelId(input: string): boolean {
+  const v = cleanTiktokPixelId(input);
+  return v === "" || /^[A-Z0-9]{10,30}$/.test(v);
+}
+
+export const ACTIVITY_LABELS: Record<string, string> = {
+  "order.status": "غيّر حالة طلب",
+  "order.assigned": "أسند طلباً",
+  "order.shipped": "أرسل طلباً للتوصيل",
+  "order.notes": "عدّل ملاحظات طلب",
+  "order.deleted": "حذف طلباً",
+  "call.logged": "سجّل محاولة اتصال",
+  "product.created": "أضاف منتجاً",
+  "product.updated": "عدّل منتجاً",
+  "product.deleted": "حذف منتجاً",
+  "member.added": "أضاف عضواً للفريق",
+  "member.role": "غيّر دور عضو",
+  "member.removed": "أزال عضواً من الفريق",
+  "store.pixels": "حدّث إعدادات البيكسل",
+};
