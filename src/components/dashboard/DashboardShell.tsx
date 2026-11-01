@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MAIN_NAV, SETTINGS_NAV, type NavItem } from "./nav";
 import { isAdminQuery, useMyStore } from "@/hooks/use-my-store";
+import { MEMBER_ROLE_LABELS, PRO_AREAS, canOpen } from "@/lib/commerce";
+import { ProPill } from "./ProLock";
 
 function useSignOut() {
   const queryClient = useQueryClient();
@@ -56,7 +58,8 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
   const t = TONES[tone];
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { data: isAdmin } = useQuery(isAdminQuery);
-  const { store } = useMyStore();
+  const { store, access, isPro } = useMyStore();
+  const visible = (items: NavItem[]) => items.filter((i) => canOpen(access, i.area));
   const stats = useQuery({
     queryKey: ["order-stats", store?.id],
     enabled: !!store,
@@ -84,6 +87,7 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
       >
         <item.icon className="size-[19px]" strokeWidth={1.6} />
         <span>{item.label}</span>
+        {!isPro && PRO_AREAS.includes(item.area) && <ProPill className="ms-auto" />}
         {item.to === "/dashboard/orders" && newOrders > 0 && (
           <span className="ms-auto flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-medium text-primary-foreground num">
             {newOrders}
@@ -97,11 +101,11 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
     <nav className={t.group}>
       <div>
         <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>لوحة التحكم</p>
-        <div className="space-y-1">{MAIN_NAV.map(renderItem)}</div>
+        <div className="space-y-1">{visible(MAIN_NAV).map(renderItem)}</div>
       </div>
       <div className={t.divider}>
         <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>الإعدادات والاشتراك</p>
-        <div className="space-y-1">{SETTINGS_NAV.map(renderItem)}</div>
+        <div className="space-y-1">{visible(SETTINGS_NAV).map(renderItem)}</div>
       </div>
       {isAdmin && (
         <div className={t.divider}>
@@ -121,7 +125,7 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
 
 function MerchantCard({ tone = "dark" }: { tone?: Tone }) {
   const t = TONES[tone];
-  const { store } = useMyStore();
+  const { store, access } = useMyStore();
   const signOut = useSignOut();
   const initials = (store?.name ?? "؟").trim().slice(0, 1);
   return (
@@ -132,7 +136,11 @@ function MerchantCard({ tone = "dark" }: { tone?: Tone }) {
         </div>
         <div className="min-w-0 flex-1">
           <p className={cn("truncate text-sm font-medium", t.name)}>{store?.name}</p>
-          <p className={cn("truncate text-xs", t.sub)} dir="ltr">{store?.owner_email}</p>
+          {access === "owner" ? (
+            <p className={cn("truncate text-xs", t.sub)} dir="ltr">{store?.owner_email}</p>
+          ) : (
+            <p className={cn("truncate text-xs", t.sub)}>{MEMBER_ROLE_LABELS[access]}</p>
+          )}
         </div>
         <button
           onClick={signOut}
@@ -174,13 +182,13 @@ function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) 
   );
 }
 
-const BOTTOM_NAV = MAIN_NAV.slice(0, 4);
-
 function BottomNav() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { access } = useMyStore();
+  const BOTTOM_NAV = MAIN_NAV.filter((i) => canOpen(access, i.area)).slice(0, 4);
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 pb-safe backdrop-blur md:hidden">
-      <div className="grid grid-cols-4">
+      <div className="grid" style={{ gridTemplateColumns: `repeat(${BOTTOM_NAV.length}, minmax(0, 1fr))` }}>
         {BOTTOM_NAV.map((item) => {
           const active = item.to === "/dashboard" ? path === "/dashboard" || path === "/dashboard/" : path.startsWith(item.to);
           return (
