@@ -41,22 +41,31 @@ describe("delivery price", () => {
   });
 });
 
-describe("7-day trial and read-only mode", () => {
+describe("10-day trial, grace period and read-only mode", () => {
   const created = new Date("2026-01-01T00:00:00Z");
-  const trialEnd = new Date(created.getTime() + 7 * 864e5).toISOString();
-  it("is active during the trial without a warning on day 3", () => {
+  const trialEnd = new Date(created.getTime() + 10 * 864e5).toISOString();
+
+  it("keeps full Pro access during the 10-day free trial", () => {
     const s = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-03T00:00:00Z"));
     expect(s.isActive).toBe(true);
+    expect(s.isTrial).toBe(true);
     expect(s.showWarning).toBe(false);
+    expect(effectiveTier({ trial_ends_at: trialEnd, paid_until: null, plan_tier: "start" }, new Date("2026-01-03T00:00:00Z"))).toBe("pro");
   });
-  it("warns two days before the trial ends", () => {
-    const s = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-06T00:00:00Z"));
+
+  it("warns on the last two days of the trial", () => {
+    const s = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-09T00:00:00Z"));
     expect(s.showWarning).toBe(true);
+    expect(s.daysLeft).toBe(1);
   });
-  it("becomes read-only after 7 days without payment", () => {
-    const s = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-08T00:00:01Z"));
+
+  it("enters a 7-day grace period after the trial expires without payment", () => {
+    const s = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-15T00:00:00Z"));
+    expect(s.isGracePeriod).toBe(true);
     expect(s.isActive).toBe(false);
+    expect(s.daysLeft).toBeGreaterThan(0);
   });
+
   it("stays active when a paid period extends past the trial", () => {
     const s = subscriptionState(
       { trial_ends_at: trialEnd, paid_until: "2026-03-01T00:00:00Z" },
@@ -87,11 +96,11 @@ describe("Start and Pro plans", () => {
     expect(MAX_TEAM_MEMBERS).toBe(4);
   });
   it("the free trial gets Pro features", () => {
-    const store = { trial_ends_at: "2026-01-08T00:00:00Z", paid_until: null, plan_tier: "start" };
+    const store = { trial_ends_at: "2026-01-12T00:00:00Z", paid_until: null, plan_tier: "start" };
     expect(effectiveTier(store, new Date("2026-01-03T00:00:00Z"))).toBe("pro");
   });
   it("after paying for Start, the store is on Start", () => {
-    const store = { trial_ends_at: "2026-01-08T00:00:00Z", paid_until: "2026-02-08T00:00:00Z", plan_tier: "start" };
+    const store = { trial_ends_at: "2026-01-12T00:00:00Z", paid_until: "2026-02-12T00:00:00Z", plan_tier: "start" };
     expect(effectiveTier(store, new Date("2026-01-20T00:00:00Z"))).toBe("start");
   });
   it("analytics are for the owner and managers, not confirmation agents", () => {
@@ -137,3 +146,4 @@ describe("Team page access by address", () => {
     expect(canOpen("manager", areaForPath("/dashboard/billing"))).toBe(false);
   });
 });
+

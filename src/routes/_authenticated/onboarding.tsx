@@ -1,14 +1,14 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
-import { friendlyError, isValidStoreSlug, slugify } from "@/lib/commerce";
+import { friendlyError, isValidStoreSlug, slugify, DEFAULT_ONBOARDING_INDUSTRIES, DEFAULT_PRODUCT_TYPES } from "@/lib/commerce";
 import { myStoreQuery } from "@/hooks/use-my-store";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
     meta: [
       { title: "أنشئ متجرك — oranix" },
-      { name: "description", content: "اختر اسم ورابط متجرك وابدأ تجربتك المجانية لمدة 7 أيام." },
+      { name: "description", content: "اختر اسم ورابط متجرك وابدأ تجربتك المجانية لمدة 10 أيام." },
       { property: "og:title", content: "أنشئ متجرك — oranix" },
       { property: "og:description", content: "اختر اسم ورابط متجرك وابدأ تجربتك المجانية." },
       { property: "og:type", content: "website" },
@@ -29,78 +29,303 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   component: Onboarding,
 });
 
+const stepCount = 4;
+
 function Onboarding() {
   const { user } = Route.useRouteContext();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [step, setStep] = useState(0);
+  const [language, setLanguage] = useState<"ar" | "fr" | "en">("ar");
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
+  const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpConfirmed, setOtpConfirmed] = useState(false);
+  const [productType, setProductType] = useState<(typeof DEFAULT_PRODUCT_TYPES)[number]["value"]>("physical");
+  const [industry, setIndustry] = useState(DEFAULT_ONBOARDING_INDUSTRIES[0]);
   const [busy, setBusy] = useState(false);
+  const [resendSeconds, setResendSeconds] = useState(30);
+
+  useEffect(() => {
+    if (resendSeconds <= 0) return;
+    const id = window.setInterval(() => setResendSeconds((v) => v - 1), 1000);
+    return () => window.clearInterval(id);
+  }, [resendSeconds]);
 
   const effectiveSlug = slugTouched ? slug : slugify(name) || slug;
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isValidStoreSlug(effectiveSlug)) {
-      { toast.error("الرابط يجب أن يكون 3 أحرف على الأقل: حروف لاتينية صغيرة وأرقام وشرطات."); return; }
+  const canContinueFromStep = () => {
+    if (step === 0) return Boolean(user?.email && password.trim().length >= 6);
+    if (step === 1) return Boolean(fullName.trim() && name.trim() && effectiveSlug && phone.trim());
+    if (step === 2) return otp.trim().length === 6;
+    return Boolean(productType && industry);
+  };
+
+  const nextStep = () => {
+    if (step === 2 && otp.trim().length !== 6) {
+      toast.error("يرجى إدخال رمز التحقق المكون من 6 أرقام.");
+      return;
+    }
+    if (step < stepCount - 1) setStep((s) => s + 1);
+  };
+
+  const prevStep = () => setStep((s) => Math.max(0, s - 1));
+
+  async function submit() {
+    const safeSlug = effectiveSlug || slugify(name) || "oranix-store";
+    if (!isValidStoreSlug(safeSlug)) {
+      toast.error("الرابط يجب أن يكون 3 أحرف على الأقل: حروف لاتينية صغيرة وأرقام وشرطات.");
+      return;
     }
     setBusy(true);
-    const { error } = await supabase.from("stores").insert({
+    const payload = {
       owner_id: user.id,
       name: name.trim(),
-      slug: effectiveSlug,
+      slug: safeSlug,
       phone: phone || null,
       whatsapp: phone || null,
-    });
+      storefront_config: {
+        product_type: productType,
+        industry,
+      },
+    };
+
+    const { error } = await supabase.from("stores").insert(payload);
     setBusy(false);
-    if (error) { toast.error(friendlyError(error.message, "تعذر إنشاء المتجر.")); return; }
+    if (error) {
+      toast.error(friendlyError(error.message, "تعذر إنشاء المتجر."));
+      return;
+    }
     await qc.invalidateQueries({ queryKey: ["my-store"] });
-    toast.success("تم إنشاء متجرك! بدأت تجربتك المجانية لمدة 7 أيام.");
+    toast.success("تم إنشاء متجرك! بدأت تجربتك المجانية لمدة 10 أيام.");
     navigate({ to: "/dashboard", replace: true });
   }
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-hero px-5 py-10">
-      <form onSubmit={submit} className="w-full max-w-lg space-y-6 rounded-3xl bg-card p-7 shadow-float sm:p-10">
-        <Logo />
-        <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">
-            <Sparkles className="size-3.5" /> 7 أيام مجاناً بكل الميزات
-          </span>
-          <h1 className="mt-3 text-3xl font-medium">لنُنشئ متجرك</h1>
-          <p className="mt-1 text-muted-foreground">يمكنك تعديل هذه المعلومات لاحقاً من الإعدادات.</p>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="name">اسم المتجر</Label>
-          <Input id="name" required minLength={2} value={name} onChange={(e) => setName(e.target.value)} placeholder="مثال: Lina Shop" className="h-11" />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="slug">رابط المتجر</Label>
-          <div className="flex h-11 items-center overflow-hidden rounded-md border border-input bg-card focus-within:ring-2 focus-within:ring-ring/50" dir="ltr">
-            <span className="border-e bg-muted px-3 py-2.5 text-sm text-muted-foreground">oranix/m/</span>
-            <input
-              id="slug"
-              className="h-full flex-1 bg-transparent px-3 text-sm outline-none"
-              value={effectiveSlug}
-              onChange={(e) => {
-                setSlugTouched(true);
-                setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
-              }}
-              placeholder="lina-shop"
-            />
+  const renderStep = () => {
+    if (step === 0) {
+      return (
+        <div className="space-y-6">
+          <div className="space-y-1.5">
+            <Label htmlFor="email">البريد الإلكتروني</Label>
+            <Input id="email" value={user.email ?? ""} readOnly className="h-11 bg-muted" />
           </div>
-          <p className="text-xs text-muted-foreground">حروف لاتينية صغيرة وأرقام وشرطات فقط.</p>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">تأكيد كلمة المرور / رمز الحماية</Label>
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-11" />
+          </div>
+          <div className="rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/10 p-4 text-sm text-[#8A5E00]">
+            <div className="mb-2 flex items-center gap-2 font-medium">🔒 تحذير أمني</div>
+            <p>لا تشارك كلمة السر أو رمز حسابك مع أي شخص. فريق oranix لن يطلب منك كلمة السر أبداً.</p>
+          </div>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="phone">رقم الهاتف / واتساب (اختياري)</Label>
-          <Input id="phone" dir="ltr" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" />
+      );
+    }
+
+    if (step === 1) {
+      return (
+        <div className="space-y-6">
+          <div className="space-y-1.5">
+            <Label htmlFor="full-name">الاسم الكامل</Label>
+            <Input id="full-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="مثال: أحمد بن علي" className="h-11" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="phone">رقم الهاتف الجزائري</Label>
+            <Input id="phone" dir="ltr" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="store-name">اسم المتجر</Label>
+            <Input id="store-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="مثال: Lina Store" className="h-11" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="slug">اسم المتجر الفرعي</Label>
+            <div className="flex h-11 items-center overflow-hidden rounded-xl border border-input bg-card focus-within:ring-2 focus-within:ring-ring/50" dir="ltr">
+              <span className="border-e bg-muted px-3 py-2.5 text-sm text-muted-foreground">oranix.app/m/</span>
+              <input
+                id="slug"
+                className="h-full flex-1 bg-transparent px-3 text-sm outline-none"
+                value={effectiveSlug}
+                onChange={(e) => {
+                  setSlugTouched(true);
+                  setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+                }}
+                placeholder="lina-store"
+              />
+            </div>
+            <div className="rounded-2xl border border-dashed border-[#EEEEEE] bg-white p-4 text-sm text-muted-foreground">
+              🌐 يمكنك شراء وربط دومين خاص بمتجرك لاحقاً من الإعدادات (خاص بمشتركي باقة Pro) مثل: storename.com مباشرة بدون الرابط الفرعي.
+            </div>
+          </div>
         </div>
-        <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
-          {busy && <Loader2 className="animate-spin" />} إنشاء المتجر
-        </Button>
-      </form>
+      );
+    }
+
+    if (step === 2) {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-center gap-2">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <input
+                key={index}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={otp[index] ?? ""}
+                onChange={(e) => {
+                  const next = otp.split("");
+                  next[index] = e.target.value.replace(/\D/g, "").slice(-1);
+                  setOtp(next.join(""));
+                }}
+                className="h-12 w-10 rounded-xl border border-input bg-card text-center text-lg font-medium outline-none focus:border-foreground"
+              />
+            ))}
+          </div>
+          <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
+            <button type="button" className="text-[#111111] disabled:text-muted-foreground" disabled={resendSeconds > 0} onClick={() => setResendSeconds(30)}>
+              {resendSeconds > 0 ? `إعادة الإرسال (${resendSeconds}s)` : "إرسال الرمز مرة أخرى"}
+            </button>
+            {otpConfirmed && (
+              <span className="inline-flex items-center gap-2 rounded-full bg-[#22C55E]/10 px-2.5 py-1 text-[#22C55E]">
+                <Check className="size-4" /> تم تأكيد رقم الهاتف بنجاح
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <Label className="text-base">نوع المنتج</Label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {DEFAULT_PRODUCT_TYPES.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setProductType(option.value)}
+                className={[
+                  "rounded-2xl border p-4 text-right transition-all",
+                  productType === option.value ? "border-[#111111] bg-[#111111] text-white" : "border-[#EEEEEE] bg-white text-foreground",
+                ].join(" ")}
+              >
+                <div className="font-medium">{option.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>مجال النشاط</Label>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {DEFAULT_ONBOARDING_INDUSTRIES.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setIndustry(item)}
+                className={[
+                  "rounded-2xl border px-3 py-2.5 text-right transition-all",
+                  industry === item ? "border-[#111111] bg-[#111111] text-white" : "border-[#EEEEEE] bg-white text-foreground",
+                ].join(" ")}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const currentTitle = [
+    "حسابك وآمنته",
+    "هوية المتجر",
+    "التحقق",
+    "ملف المتجر والإنطلاق",
+  ][step];
+
+  const currentSubtitle = [
+    "أدخل بياناتك الأساسية واطمئن على أمان حسابك.",
+    "حدد اسمك وتفاصيل متجرك الأولية.",
+    "أكد رقم هاتفك بسرعة عبر رمز التحقق.",
+    "اختر مجال نشاطك وافتح لوحة التحكم الآن.",
+  ][step];
+
+  const isLast = step === stepCount - 1;
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#F5F5F5] px-5 py-8">
+      <div className="w-full max-w-2xl rounded-[32px] border border-[#EEEEEE] bg-white p-6 shadow-[0_0_0_1px_rgba(17,17,17,0.02),0_18px_50px_-20px_rgba(0,0,0,0.25)] sm:p-9">
+        <div className="flex justify-center">
+          <Logo />
+        </div>
+
+        <div className="mt-6 flex items-center justify-center gap-2">
+          {Array.from({ length: stepCount }).map((_, idx) => (
+            <span
+              key={idx}
+              className={[
+                "h-1.5 w-10 rounded-full",
+                idx < step ? "bg-[#111111]" : idx === step ? "bg-[#111111]" : "bg-[#EEEEEE]",
+              ].join(" ")}
+            />
+          ))}
+        </div>
+
+        <div className="mt-6 flex justify-end">
+          <div className="flex rounded-full border border-[#EEEEEE] bg-[#F5F5F5] p-1">
+            {(["ar", "fr", "en"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setLanguage(option)}
+                className={[
+                  "rounded-full px-3 py-1.5 text-sm",
+                  language === option ? "bg-white text-[#111111] shadow-sm" : "text-muted-foreground",
+                ].join(" ")}
+              >
+                {option === "ar" ? "العربية" : option === "fr" ? "Français" : "English"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#EA580C]/10 px-3 py-1.5 text-xs text-[#EA580C]">
+            <Sparkles className="size-3.5" /> تجربة Pro مجانية · 10 أيام
+          </span>
+          <h1 className="mt-4 text-3xl font-medium text-[#111111]">{currentTitle}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{currentSubtitle}</p>
+        </div>
+
+        <div className="mt-8">{renderStep()}</div>
+
+        <div className="mt-8 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={prevStep}
+            disabled={step === 0}
+            className="inline-flex items-center gap-2 rounded-full border border-[#EEEEEE] px-4 py-2 text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ArrowLeft className="size-4" /> السابق
+          </button>
+
+          {isLast ? (
+            <Button onClick={submit} disabled={busy || !canContinueFromStep()} variant="brand" size="lg" className="rounded-full">
+              {busy ? <Loader2 className="animate-spin" /> : <ShieldCheck className="size-4" />} فتح لوحة التحكم وبدء التجربة المجانية 🚀
+            </Button>
+          ) : (
+            <Button onClick={nextStep} disabled={!canContinueFromStep()} variant="brand" size="lg" className="rounded-full">
+              {step === 0 ? "المتابعة إلى معلومات المتجر" : step === 1 ? "تأكيد والانتقال للتحقق" : "المتابعة إلى نوع النشاط"}
+              <ArrowRight className="size-4" />
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
+

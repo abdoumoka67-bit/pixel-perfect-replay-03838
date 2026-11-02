@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { AlertTriangle, LogOut, Menu, ShieldCheck, ExternalLink, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/Logo";
@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MAIN_NAV, SETTINGS_NAV, type NavItem } from "./nav";
 import { isAdminQuery, useMyStore } from "@/hooks/use-my-store";
-import { MEMBER_ROLE_LABELS, PRO_AREAS, canOpen } from "@/lib/commerce";
+import { getFeaturePlanBadge, MEMBER_ROLE_LABELS, PRO_AREAS, canOpen } from "@/lib/commerce";
 import { ProPill } from "./ProLock";
+import { GuidedTour } from "./GuidedTour";
 
 function useSignOut() {
   const queryClient = useQueryClient();
@@ -54,6 +55,20 @@ const TONES = {
   },
 } as const;
 
+function PlanBadge({ plan }: { plan: "Start" | "Pro" }) {
+  const isPro = plan === "Pro";
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
+        isPro ? "bg-[#EA580C]/10 text-[#EA580C]" : "bg-[#111111]/5 text-[#111111]",
+      )}
+    >
+      {plan}
+    </span>
+  );
+}
+
 function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | undefined; tone?: Tone }) {
   const t = TONES[tone];
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -74,9 +89,20 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
 
   const renderItem = (item: NavItem) => {
     const active = isActive(item.to);
+    const plan = getFeaturePlanBadge(item.area);
+    const customId = {
+      "/dashboard": "tour-overview",
+      "/dashboard/orders": "tour-orders",
+      "/dashboard/products": "tour-products",
+      "/dashboard/analytics": "tour-analytics",
+      "/dashboard/delivery": "tour-delivery",
+      "/dashboard/settings": "tour-preview",
+    }[item.to] ?? undefined;
+
     return (
       <Link
         key={item.to}
+        id={customId}
         to={item.to}
         onClick={onNavigate}
         className={cn(
@@ -87,12 +113,15 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
       >
         <item.icon className="size-[19px]" strokeWidth={1.6} />
         <span>{item.label}</span>
-        {!isPro && PRO_AREAS.includes(item.area) && <ProPill className="ms-auto" />}
-        {item.to === "/dashboard/orders" && newOrders > 0 && (
-          <span className="ms-auto flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-medium text-primary-foreground num">
-            {newOrders}
-          </span>
-        )}
+        <span className="ms-auto flex items-center gap-2">
+          {item.to === "/dashboard/orders" && newOrders > 0 && (
+            <span className="flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-medium text-primary-foreground num">
+              {newOrders}
+            </span>
+          )}
+          {!isPro && PRO_AREAS.includes(item.area) && <ProPill className="hidden sm:inline-flex" />}
+          {plan && <PlanBadge plan={plan} />}
+        </span>
       </Link>
     );
   };
@@ -167,6 +196,7 @@ function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) 
       </div>
       {store && (
         <a
+          id="tour-preview"
           href={`/m/${store.slug}`}
           target="_blank"
           rel="noreferrer"
@@ -215,6 +245,17 @@ function BottomNav() {
 function SubscriptionBanner() {
   const { sub } = useMyStore();
   if (!sub) return null;
+  if (sub.isGracePeriod) {
+    return (
+      <div className="flex flex-wrap items-center gap-3 border-b border-destructive/20 bg-danger-soft px-4 py-3 text-sm text-danger md:px-8">
+        <Lock className="size-4 shrink-0" />
+        <span className="flex-1">متجرك مقفل مؤقتاً. اختر باقة لتفعيله وحماية بياناتك قبل الحذف النهائي.</span>
+        <Button asChild size="sm" variant="destructive">
+          <Link to="/dashboard/billing">تفعيل الاشتراك</Link>
+        </Button>
+      </div>
+    );
+  }
   if (!sub.isActive) {
     return (
       <div className="flex flex-wrap items-center gap-3 border-b border-destructive/20 bg-danger-soft px-4 py-3 text-sm text-danger md:px-8">
@@ -233,7 +274,8 @@ function SubscriptionBanner() {
       <div className="flex flex-wrap items-center gap-3 border-b border-warning/20 bg-warning-soft px-4 py-3 text-sm text-warning md:px-8">
         <AlertTriangle className="size-4 shrink-0" />
         <span className="flex-1">
-          {sub.isTrial ? "تنتهي تجربتك المجانية" : "ينتهي اشتراكك"} خلال {sub.daysLeft === 1 ? "يوم واحد" : `${sub.daysLeft} أيام`}.
+          {sub.isTrial ? "تنبيه: تنتهي تجربتك المجانية بعد " : "تنبيه: ينتهي اشتراكك بعد "}
+          {sub.daysLeft === 1 ? "يوم واحد" : `${sub.daysLeft} أيام`}. اختر باقتك الآن للاستمرار.
         </span>
         <Button asChild size="sm" variant="brand">
           <Link to="/dashboard/billing">تجديد الاشتراك</Link>
@@ -246,8 +288,14 @@ function SubscriptionBanner() {
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const { store, sub } = useMyStore();
+  const trialLink = useMemo(() =>
+    sub && sub.isTrial && sub.daysLeft > 0 ? `تجربة Pro مجانية · بقي ${sub.daysLeft} أيام` : "تجربة Pro مجانية",
+  [sub]);
+
   return (
     <div className="min-h-screen bg-background">
+      <GuidedTour />
       <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 md:block">
         <SidebarBody />
       </aside>
@@ -267,6 +315,32 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           <Logo />
           <span className="w-9" />
         </header>
+
+        {store && sub && sub.isTrial && sub.daysLeft <= 2 && (
+          <div className="border-b border-[#EA580C]/20 bg-[#EA580C]/10 px-4 py-3 text-sm text-[#EA580C] md:px-8">
+            <div className="mx-auto flex max-w-[1400px] items-center gap-2">
+              <span className="inline-flex size-2 rounded-full bg-[#EA580C]" />
+              <span>تنبيه: تنتهي تجربتك المجانية بعد {sub.daysLeft === 1 ? "يوم واحد" : `${sub.daysLeft} أيام`}. اختر باقتك الآن للاستمرار.</span>
+            </div>
+          </div>
+        )}
+
+        <div className="border-b bg-card/95 px-4 py-2 md:px-8">
+          <div className="mx-auto flex max-w-[1400px] items-center justify-end">
+            {sub?.isTrial && (
+              <Link
+                to="/dashboard/billing"
+                className="inline-flex items-center rounded-full border border-[#EEEEEE] bg-white px-3 py-1.5 text-sm text-foreground shadow-sm"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <span className="inline-flex size-2 rounded-full bg-[#EA580C]" />
+                  <span>تجربة Pro مجانية · بقي {sub.daysLeft} أيام</span>
+                </span>
+              </Link>
+            )}
+          </div>
+        </div>
+
         <SubscriptionBanner />
         <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pb-12 md:pt-8">{children}</main>
       </div>
@@ -294,3 +368,4 @@ export function PageHeader({
     </div>
   );
 }
+

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Copy, ImagePlus, Loader2, Save, Target } from "lucide-react";
@@ -24,6 +24,7 @@ import {
   isValidStoreSlug,
   isValidTiktokPixelId,
 } from "@/lib/commerce";
+import { RestartTourButton } from "@/components/dashboard/GuidedTour";
 
 export const Route = createFileRoute("/_authenticated/dashboard/settings")({
   component: SettingsPage,
@@ -109,7 +110,7 @@ function SettingsPage() {
 
   return (
     <div className="space-y-10">
-      <PageHeader title="إعدادات المتجر" description="هوية متجرك، معلومات التواصل، ومظهر صفحة الهبوط." />
+      <PageHeader title="إعدادات المتجر" description="هوية متجرك، معلومات التواصل، ومظهر صفحة الهبوط." actions={<RestartTourButton />} />
       <form
         className="grid gap-6 lg:grid-cols-[1.4fr_1fr]"
         onSubmit={(e) => {
@@ -172,38 +173,37 @@ function SettingsPage() {
           </Button>
         </div>
         <div className="space-y-6">
-        <div className="h-fit rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
-          <h2 className="font-medium">رابط متجرك</h2>
-          <p className="mt-1 text-sm text-sidebar-muted">شاركه في البايو على إنستغرام وتيك توك.</p>
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-sidebar-accent px-4 py-3">
-            <span className="flex-1 truncate text-sm" dir="ltr">{storeUrl}</span>
-            <button
-              type="button"
-              className="rounded-lg p-1.5 text-sidebar-muted hover:text-sidebar-foreground"
-              onClick={() => {
-                navigator.clipboard.writeText(storeUrl);
-                toast.success("تم نسخ الرابط");
-              }}
-              aria-label="نسخ"
-            >
-              <Copy className="size-4" />
-            </button>
+          <div className="h-fit rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
+            <h2 className="font-medium">رابط متجرك</h2>
+            <p className="mt-1 text-sm text-sidebar-muted">شاركه في البايو على إنستغرام وتيك توك.</p>
+            <div className="mt-4 flex items-center gap-2 rounded-xl bg-sidebar-accent px-4 py-3">
+              <span className="flex-1 truncate text-sm" dir="ltr">{storeUrl}</span>
+              <button
+                type="button"
+                className="rounded-lg p-1.5 text-sidebar-muted hover:text-sidebar-foreground"
+                onClick={() => {
+                  navigator.clipboard.writeText(storeUrl);
+                  toast.success("تم نسخ الرابط");
+                }}
+                aria-label="نسخ"
+              >
+                <Copy className="size-4" />
+              </button>
+            </div>
           </div>
-        </div>
-        <PixelCard
-          isPro={isPro}
-          disabled={readOnly}
-          meta={metaPixel}
-          tiktok={tiktokPixel}
-          onMeta={setMetaPixel}
-          onTiktok={setTiktokPixel}
-          saving={savePixels.isPending}
-          onSave={() => savePixels.mutate()}
-        />
+          <PixelCard
+            isPro={isPro}
+            disabled={readOnly}
+            meta={metaPixel}
+            tiktok={tiktokPixel}
+            onMeta={setMetaPixel}
+            onTiktok={setTiktokPixel}
+            saving={savePixels.isPending}
+            onSave={() => savePixels.mutate()}
+          />
         </div>
       </form>
 
-      {/* New card: مظهر المتجر */}
       <div className="border-t border-[#EEEEEE] pt-8">
         <StorefrontThemeSettings store={store} readOnly={readOnly} />
       </div>
@@ -273,3 +273,4 @@ function PixelCard(props: {
     </div>
   );
 }
+

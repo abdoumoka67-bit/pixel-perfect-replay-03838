@@ -38,7 +38,8 @@ export function orderTotal(unitPrice: number, quantity: number, shipping: number
   return unitPrice * quantity + shipping;
 }
 
-export const TRIAL_DAYS = 7;
+export const TRIAL_DAYS = 10;
+export const GRACE_PERIOD_DAYS = 7;
 export const EXPIRY_WARNING_DAYS = 2;
 
 export type SubscriptionState = {
@@ -47,6 +48,8 @@ export type SubscriptionState = {
   isTrial: boolean;
   daysLeft: number;
   showWarning: boolean;
+  isGracePeriod: boolean;
+  graceEndsAt: Date | null;
 };
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -58,15 +61,33 @@ export function subscriptionState(
 ): SubscriptionState {
   const trial = new Date(store.trial_ends_at);
   const paid = store.paid_until ? new Date(store.paid_until) : null;
+  const graceEndsAt = new Date(trial.getTime() + GRACE_PERIOD_DAYS * DAY);
+  const isTrialActive = now.getTime() < trial.getTime();
+  const isPaidActive = Boolean(paid && paid.getTime() > now.getTime());
+  const isGracePeriod = now.getTime() > trial.getTime() && now.getTime() <= graceEndsAt.getTime() && (!paid || paid.getTime() <= now.getTime());
+
+  const isActive = isTrialActive || isPaidActive;
   const endsAt = paid && paid > trial ? paid : trial;
-  const msLeft = endsAt.getTime() - now.getTime();
-  const isActive = msLeft > 0;
+
+  let daysLeft = 0;
+  if (isTrialActive) {
+    daysLeft = Math.max(0, Math.ceil((trial.getTime() - now.getTime()) / DAY));
+  } else if (isPaidActive && paid) {
+    daysLeft = Math.max(0, Math.ceil((paid.getTime() - now.getTime()) / DAY));
+  } else if (isGracePeriod) {
+    daysLeft = Math.max(0, Math.ceil((graceEndsAt.getTime() - now.getTime()) / DAY));
+  }
+
+  const showWarning = (isTrialActive && daysLeft <= EXPIRY_WARNING_DAYS) || (isGracePeriod && daysLeft <= EXPIRY_WARNING_DAYS);
+
   return {
-    endsAt,
+    endsAt: isGracePeriod ? graceEndsAt : endsAt,
     isActive,
-    isTrial: !paid || paid <= trial,
-    daysLeft: isActive ? Math.ceil(msLeft / DAY) : 0,
-    showWarning: isActive && msLeft <= EXPIRY_WARNING_DAYS * DAY,
+    isTrial: isTrialActive || (!paid || paid <= trial),
+    daysLeft,
+    showWarning,
+    isGracePeriod,
+    graceEndsAt: isGracePeriod ? graceEndsAt : null,
   };
 }
 
@@ -267,6 +288,10 @@ export function areaForPath(path: string): DashboardArea {
   return map[seg] ?? "overview";
 }
 
+export function getFeaturePlanBadge(area: string): "Start" | "Pro" {
+  return PRO_AREAS.includes(area as DashboardArea) ? "Pro" : "Start";
+}
+
 // ---------- Ad pixels (Pro). Mirrors SQL `set_store_pixels`. ----------
 
 export function cleanMetaPixelId(input: string): string {
@@ -301,3 +326,33 @@ export const ACTIVITY_LABELS: Record<string, string> = {
   "member.removed": "أزال عضواً من الفريق",
   "store.pixels": "حدّث إعدادات البيكسل",
 };
+
+export const DEFAULT_ONBOARDING_INDUSTRIES = [
+  "أزياء وملابس",
+  "إلكترونيات وهواتف",
+  "مستحضرات تجميل وعطور",
+  "أثاث وديكور منزلي",
+  "منتجات عامة / أخرى",
+];
+
+export const DEFAULT_PRODUCT_TYPES = [
+  { value: "physical", label: "منتجات مادية (Tangible / COD)" },
+  { value: "digital", label: "منتجات رقمية (Digital)" },
+] as const;
+
+export type ProductTypeValue = (typeof DEFAULT_PRODUCT_TYPES)[number]["value"];
+
+export function isProductInGracePeriod(store: { trial_ends_at: string; paid_until: string | null }, now: Date = new Date()): boolean {
+  const trial = new Date(store.trial_ends_at);
+  const paid = store.paid_until ? new Date(store.paid_until) : null;
+  const graceEndsAt = new Date(trial.getTime() + GRACE_PERIOD_DAYS * DAY);
+  return now.getTime() > trial.getTime() && now.getTime() <= graceEndsAt.getTime() && (!paid || paid.getTime() <= now.getTime());
+}
+
+export function effectivePlanTier(
+  store: { trial_ends_at: string; paid_until: string | null; plan_tier: string },
+  now: Date = new Date(),
+): PlanTier {
+  return effectiveTier(store, now);
+}
+
