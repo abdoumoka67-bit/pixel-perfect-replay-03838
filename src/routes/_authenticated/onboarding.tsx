@@ -35,13 +35,14 @@ function Onboarding() {
   const { user } = Route.useRouteContext();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const phoneVerified = Boolean(user.phone && user.phone_confirmed_at);
   const [step, setStep] = useState(0);
   const [language, setLanguage] = useState<"ar" | "fr" | "en">("ar");
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(user.phone ?? "");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [otpConfirmed, setOtpConfirmed] = useState(false);
@@ -59,21 +60,25 @@ function Onboarding() {
   const effectiveSlug = slugTouched ? slug : slugify(name) || slug;
 
   const canContinueFromStep = () => {
-    if (step === 0) return Boolean(user?.email && password.trim().length >= 6);
+    if (step === 0) return Boolean((user?.email || user?.phone) && (phoneVerified || password.trim().length >= 6));
     if (step === 1) return Boolean(fullName.trim() && name.trim() && effectiveSlug && phone.trim());
-    if (step === 2) return otp.trim().length === 6;
+    if (step === 2) return phoneVerified || otp.trim().length === 6;
     return Boolean(productType && industry);
   };
 
   const nextStep = () => {
-    if (step === 2 && otp.trim().length !== 6) {
+    if (step === 2 && !phoneVerified && otp.trim().length !== 6) {
       toast.error("يرجى إدخال رمز التحقق المكون من 6 أرقام.");
+      return;
+    }
+    if (step === 1 && phoneVerified) {
+      setStep(3);
       return;
     }
     if (step < stepCount - 1) setStep((s) => s + 1);
   };
 
-  const prevStep = () => setStep((s) => Math.max(0, s - 1));
+  const prevStep = () => setStep((s) => (s === 3 && phoneVerified ? 1 : Math.max(0, s - 1)));
 
   async function submit() {
     const safeSlug = effectiveSlug || slugify(name) || "oranix-store";
@@ -110,13 +115,15 @@ function Onboarding() {
       return (
         <div className="space-y-6">
           <div className="space-y-1.5">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
-            <Input id="email" value={user.email ?? ""} readOnly className="h-11 bg-muted" />
+            <Label htmlFor="account-contact">{user.email ? "البريد الإلكتروني" : "رقم الهاتف"}</Label>
+            <Input id="account-contact" value={user.email ?? user.phone ?? ""} readOnly className="h-11 bg-muted" />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="password">تأكيد كلمة المرور / رمز الحماية</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-11" />
-          </div>
+          {!phoneVerified && (
+            <div className="space-y-1.5">
+              <Label htmlFor="password">تأكيد كلمة المرور / رمز الحماية</Label>
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-11" />
+            </div>
+          )}
           <div className="rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/10 p-4 text-sm text-[#8A5E00]">
             <div className="mb-2 flex items-center gap-2 font-medium">🔒 تحذير أمني</div>
             <p>لا تشارك كلمة السر أو رمز حسابك مع أي شخص. فريق oranix لن يطلب منك كلمة السر أبداً.</p>
@@ -134,7 +141,8 @@ function Onboarding() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="phone">رقم الهاتف الجزائري</Label>
-            <Input id="phone" dir="ltr" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" />
+            <Input id="phone" dir="ltr" inputMode="tel" value={phone} readOnly={phoneVerified} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" />
+            {phoneVerified && <p className="text-xs text-muted-foreground">تم تأكيد هذا الرقم عبر SMS عند تسجيل الدخول.</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="store-name">اسم المتجر</Label>
@@ -328,4 +336,3 @@ function Onboarding() {
     </div>
   );
 }
-

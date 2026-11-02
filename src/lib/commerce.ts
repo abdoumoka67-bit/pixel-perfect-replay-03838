@@ -2,23 +2,31 @@
 
 /** Algerian mobile number: starts with 05, 06 or 07 and has exactly 10 digits. */
 export function normalizeDzPhone(input: string): string {
-  const digits = input.replace(/[^0-9]/g, "");
+  const asciiInput = input.replace(/[٠-٩۰-۹]/g, (digit) => {
+    const code = digit.charCodeAt(0);
+    return String(code >= 0x06f0 ? code - 0x06f0 : code - 0x0660);
+  });
+  const digits = asciiInput.replace(/\D/g, "");
   if (!digits) return "";
 
   let normalized = digits;
-  if (normalized.startsWith("003213")) normalized = normalized.slice(5);
-  else if (normalized.startsWith("00213")) normalized = normalized.slice(4);
-  else if (normalized.startsWith("213")) normalized = normalized.slice(3);
+  if (normalized.startsWith("00213")) normalized = `0${normalized.slice(5)}`;
+  else if (normalized.startsWith("213")) normalized = `0${normalized.slice(3)}`;
 
   if (normalized.length === 9 && /^[567]/.test(normalized)) {
     return `0${normalized}`;
   }
 
-  return normalized.startsWith("0") ? normalized : normalized;
+  return normalized;
 }
 
 export function isValidDzPhone(input: string): boolean {
   return /^0[567]\d{8}$/.test(normalizeDzPhone(input));
+}
+
+export function toInternationalDzPhone(input: string): string | null {
+  const normalized = normalizeDzPhone(input);
+  return isValidDzPhone(normalized) ? `+213${normalized.slice(1)}` : null;
 }
 
 export type DeliveryType = "home" | "desk";
@@ -367,4 +375,3 @@ export function effectivePlanTier(
 ): PlanTier {
   return effectiveTier(store, now);
 }
-
