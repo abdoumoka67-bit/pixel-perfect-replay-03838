@@ -76,6 +76,15 @@ export function GuidedTour() {
   }, [open, stepIndex]);
 
   const step = steps[stepIndex];
+  const tooltipStyle = useMemo(() => {
+    if (!highlight) {
+      return { left: "50%", top: "50%", transform: "translate(-50%, -50%)" };
+    }
+    const x = Math.max(24, Math.min(window.innerWidth - 340, highlight.left + highlight.width / 2 - 170));
+    const y = Math.max(32, highlight.top - 180);
+    return { left: `${x}px`, top: `${y}px` };
+  }, [highlight]);
+
   if (!open || !step) return null;
 
   const isLast = stepIndex === steps.length - 1;
@@ -95,15 +104,6 @@ export function GuidedTour() {
   };
 
   const goPrev = () => setStepIndex((s) => Math.max(0, s - 1));
-
-  const tooltipStyle = useMemo(() => {
-    if (!highlight) {
-      return { left: "50%", top: "50%", transform: "translate(-50%, -50%)" };
-    }
-    const x = Math.max(24, Math.min(window.innerWidth - 340, highlight.left + highlight.width / 2 - 170));
-    const y = Math.max(32, highlight.top - 180);
-    return { left: `${x}px`, top: `${y}px` };
-  }, [highlight]);
 
   return (
     <div className="fixed inset-0 z-[100]">

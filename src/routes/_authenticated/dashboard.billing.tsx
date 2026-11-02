@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Check, Copy, FileImage, Loader2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,7 +59,8 @@ function Billing() {
   const settings = useQuery({
     queryKey: ["platform-settings"],
     queryFn: async () => {
-      const { data } = await supabase.from("platform_settings").select("*").eq("id", 1).maybeSingle();
+      const { data, error } = await supabase.from("platform_settings").select("*").eq("id", 1).maybeSingle();
+      if (error) throw error;
       return data;
     },
   });
@@ -76,6 +77,12 @@ function Billing() {
       return data;
     },
   });
+
+  useEffect(() => {
+    if (plans.error) toast.error("تعذر تحميل الخطط والأسعار.");
+    if (settings.error) toast.error("تعذر تحميل معلومات الدفع.");
+    if (receipts.error) toast.error("تعذر تحميل إيصالات الدفع.");
+  }, [plans.error, settings.error, receipts.error]);
 
   const submit = useMutation({
     mutationFn: async () => {

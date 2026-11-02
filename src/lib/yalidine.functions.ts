@@ -49,20 +49,43 @@ export const sendOrderToYalidine = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
     const { data: order, error } = await sb.from("orders").select("*").eq("id", data.orderId).maybeSingle();
-    if (error || !order) return { ok: false as const, message: "الطلب غير موجود." };
+    if (error) {
+      console.error("Could not load order for Yalidine", error);
+      throw error;
+    }
+    if (!order) return { ok: false as const, message: "الطلب غير موجود." };
     if (order.tracking_number) return { ok: true as const, tracking: order.tracking_number, message: "الطلب مرسل مسبقاً." };
 
-    const { data: store } = await sb
+    const { data: store, error: storeError } = await sb
       .from("stores")
       .select("id,origin_wilaya_code,name")
       .eq("id", order.store_id)
       .maybeSingle();
-    const { data: creds } = await sb
+    if (storeError) {
+      console.error("Could not load store for Yalidine", storeError);
+      throw storeError;
+    }
+    const { data: creds, error: credsError } = await sb
       .from("yalidine_credentials")
       .select("api_id,api_token")
       .eq("store_id", order.store_id)
       .maybeSingle();
+    if (credsError) {
+      console.error("Could not load Yalidine credentials", credsError);
+      throw credsError;
+    }
     if (!store || !creds) return { ok: false as const, message: "اربط حساب Yalidine أولاً من صفحة الربط." };
+
+    const { data: storeIsActive, error: activeError } = await sb.rpc("store_is_active", {
+      _store_id: order.store_id,
+    });
+    if (activeError) {
+      console.error("Could not check store status before Yalidine dispatch", activeError);
+      throw activeError;
+    }
+    if (!storeIsActive) {
+      return { ok: false as const, message: "المتجر في وضع القراءة فقط. جدّد الاشتراك قبل إرسال الطلب." };
+    }
 
     const toWilaya = wilayaByCode(order.wilaya_code);
     const fromWilaya = wilayaByCode(store.origin_wilaya_code);
@@ -115,7 +138,14 @@ export const sendOrderToYalidine = createServerFn({ method: "POST" })
         .from("orders")
         .update({ tracking_number: result.tracking, status: "shipping" })
         .eq("id", order.id);
-      if (upErr) console.error("tracking update failed", upErr);
+      if (upErr) {
+        console.error("tracking update failed after Yalidine accepted parcel", upErr);
+        return {
+          ok: false as const,
+          tracking: result.tracking,
+          message: `أنشأت Yalidine الطرد برقم التتبع ${result.tracking}، لكن تعذر حفظه في الطلب. لا تعِد الإرسال.`,
+        };
+      }
       return { ok: true as const, tracking: result.tracking, message: "تم إنشاء الطرد بنجاح." };
     } catch (e) {
       console.error("yalidine send failed", e);

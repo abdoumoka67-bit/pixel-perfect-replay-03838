@@ -8,7 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
-import { friendlyError, isValidStoreSlug, slugify, DEFAULT_ONBOARDING_INDUSTRIES, DEFAULT_PRODUCT_TYPES } from "@/lib/commerce";
+import {
+  DEFAULT_ONBOARDING_INDUSTRIES,
+  DEFAULT_PRODUCT_TYPES,
+  friendlyError,
+  isValidStoreSlug,
+  suggestedStoreSlug,
+} from "@/lib/commerce";
 import { myStoreQuery } from "@/hooks/use-my-store";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
@@ -43,12 +49,10 @@ function Onboarding() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [productType, setProductType] = useState<(typeof DEFAULT_PRODUCT_TYPES)[number]["value"]>("physical");
-  const [industry, setIndustry] = useState(DEFAULT_ONBOARDING_INDUSTRIES[0]);
+  const [industry, setIndustry] = useState<string>(DEFAULT_ONBOARDING_INDUSTRIES[0] ?? "");
   const [busy, setBusy] = useState(false);
 
-  const generatedSlug =
-    [slugify(name), slugify(user.email?.split("@")[0] ?? "")].find(isValidStoreSlug) ??
-    `store-${user.id.replace(/-/g, "").slice(0, 8)}`;
+  const generatedSlug = suggestedStoreSlug(name, user.email ?? null, user.id);
   const effectiveSlug = slugTouched ? slug : generatedSlug;
 
   const canContinueFromStep = () => {
@@ -92,6 +96,14 @@ function Onboarding() {
       }
 
       storeCreated = true;
+      const { error: profileError } = await supabase.auth.updateUser({
+        data: { full_name: fullName.trim() },
+      });
+      if (profileError) {
+        console.error("Saving onboarding profile failed", profileError);
+        toast.error("تم إنشاء المتجر، لكن تعذر حفظ الاسم الكامل في الملف الشخصي.");
+      }
+
       await qc.invalidateQueries({ queryKey: ["my-store"] });
       toast.success("تم إنشاء متجرك! بدأت تجربتك المجانية لمدة 10 أيام.");
       await navigate({ to: "/dashboard", replace: true });

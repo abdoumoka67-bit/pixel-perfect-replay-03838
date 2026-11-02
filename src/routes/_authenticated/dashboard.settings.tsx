@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Copy, ImagePlus, Loader2, Save, Target } from "lucide-react";
@@ -273,4 +273,3 @@ function PixelCard(props: {
     </div>
   );
 }
-

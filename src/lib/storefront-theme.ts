@@ -153,10 +153,44 @@ export type StorefrontConfig = z.infer<typeof storefrontConfigSchema>;
 export type FaqItem = z.infer<typeof faqItemSchema>;
 export type ReviewItem = z.infer<typeof reviewItemSchema>;
 
+type RawFaqItem = { q: string; a: string };
+type RawReviewItem = { name: string; text: string; rating: number };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isRawFaqItem(value: unknown): value is RawFaqItem {
+  return isRecord(value) &&
+    typeof value["q"] === "string" &&
+    Boolean(value["q"].trim()) &&
+    typeof value["a"] === "string";
+}
+
+function isRawReviewItem(value: unknown): value is RawReviewItem {
+  return isRecord(value) &&
+    typeof value["name"] === "string" &&
+    Boolean(value["name"].trim()) &&
+    typeof value["text"] === "string" &&
+    Boolean(value["text"].trim()) &&
+    typeof value["rating"] === "number" &&
+    Number.isInteger(value["rating"]) &&
+    value["rating"] >= 1 &&
+    value["rating"] <= 5;
+}
+
+function isPresetKey(value: unknown): value is PresetKey {
+  return typeof value === "string" && PRESET_KEYS.some((key) => key === value);
+}
+
+function isTrustBadgeKey(value: unknown): value is TrustBadgeKey {
+  return typeof value === "string" && TRUST_BADGE_KEYS.some((key) => key === value);
+}
+
 export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontConfig {
   const fallbackTitle = storeName.trim() || "مرحباً بك في متجرنا";
 
-  if (!raw || typeof raw !== "object") {
+  if (!isRecord(raw)) {
     return {
       preset: "noir",
       hero_title: fallbackTitle,
@@ -173,9 +207,9 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
     };
   }
 
-  const obj: any = raw;
+  const obj = raw;
   const rawPreset = obj["preset"];
-  const preset: PresetKey = PRESET_KEYS.includes(rawPreset) ? rawPreset : "noir";
+  const preset: PresetKey = isPresetKey(rawPreset) ? rawPreset : "noir";
 
   const rawTitle = obj["hero_title"];
   const hero_title =
@@ -204,51 +238,45 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
       ? rawBarText.trim().slice(0, 80)
       : "مرحبا بك في متجرنا";
 
-  const sec = obj["sections"] && typeof obj["sections"] === "object" ? obj["sections"] : {};
+  const sec = isRecord(obj["sections"]) ? obj["sections"] : {};
+  const rawFaq = isRecord(sec["faq"]) ? sec["faq"] : {};
 
   // FAQ: capped at 8 items
-  const rawFaqItems = Array.isArray(sec["faq"]?.["items"]) ? sec["faq"]["items"] : DEFAULT_FAQ;
+  const rawFaqItems: unknown[] = Array.isArray(rawFaq["items"]) ? rawFaq["items"] : DEFAULT_FAQ;
   const faqItems: FaqItem[] = rawFaqItems
-    .filter((item: any) => item && typeof item["q"] === "string" && typeof item["a"] === "string" && item["q"].trim())
+    .filter(isRawFaqItem)
     .slice(0, 8)
-    .map((item: any) => ({
-      q: String(item["q"]).trim().slice(0, 80),
-      a: String(item["a"]).trim().slice(0, 300),
+    .map((item) => ({
+      q: item.q.trim().slice(0, 80),
+      a: item.a.trim().slice(0, 300),
     }));
 
+  const rawFaqEnabled = rawFaq["enabled"];
   const faq = {
-    enabled: typeof sec["faq"]?.["enabled"] === "boolean" ? sec["faq"]["enabled"] : true,
+    enabled: typeof rawFaqEnabled === "boolean" ? rawFaqEnabled : true,
     items: faqItems.length > 0 ? faqItems : DEFAULT_FAQ,
   };
 
   // Reviews: max 10, ratings 1-5 only, outside 1-5 rejected
-  const rawReviews = Array.isArray(sec["reviews"]?.["items"]) ? sec["reviews"]["items"] : [];
+  const rawReviewsConfig = isRecord(sec["reviews"]) ? sec["reviews"] : {};
+  const rawReviews: unknown[] = Array.isArray(rawReviewsConfig["items"]) ? rawReviewsConfig["items"] : [];
   const reviewItems: ReviewItem[] = rawReviews
-    .filter(
-      (r: any) =>
-        r &&
-        typeof r["name"] === "string" &&
-        typeof r["text"] === "string" &&
-        r["name"].trim() &&
-        r["text"].trim() &&
-        Number.isInteger(r["rating"]) &&
-        r["rating"] >= 1 &&
-        r["rating"] <= 5,
-    )
+    .filter(isRawReviewItem)
     .slice(0, 10)
-    .map((r: any) => ({
-      name: String(r["name"]).trim().slice(0, 60),
-      text: String(r["text"]).trim().slice(0, 300),
-      rating: Number(r["rating"]),
+    .map((review) => ({
+      name: review.name.trim().slice(0, 60),
+      text: review.text.trim().slice(0, 300),
+      rating: review.rating,
     }));
 
+  const rawReviewsEnabled = rawReviewsConfig["enabled"];
   const reviews = {
-    enabled: typeof sec["reviews"]?.["enabled"] === "boolean" ? sec["reviews"]["enabled"] : false,
+    enabled: typeof rawReviewsEnabled === "boolean" ? rawReviewsEnabled : false,
     items: reviewItems,
   };
 
   // Social
-  const rawSocial = sec["social"] && typeof sec["social"] === "object" ? sec["social"] : {};
+  const rawSocial = isRecord(sec["social"]) ? sec["social"] : {};
   const social = {
     enabled: typeof rawSocial["enabled"] === "boolean" ? rawSocial["enabled"] : true,
     whatsapp: typeof rawSocial["whatsapp"] === "string" ? rawSocial["whatsapp"].trim() : undefined,
@@ -258,9 +286,11 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
   };
 
   // Trust badges
-  const rawTrust = sec["trust"] && typeof sec["trust"] === "object" ? sec["trust"] : {};
-  const rawBadges = Array.isArray(rawTrust["badges"]) ? rawTrust["badges"] : TRUST_BADGE_KEYS;
-  const validBadges = rawBadges.filter((b: any): b is TrustBadgeKey => TRUST_BADGE_KEYS.includes(b));
+  const rawTrust = isRecord(sec["trust"]) ? sec["trust"] : {};
+  const rawBadges: readonly unknown[] = Array.isArray(rawTrust["badges"])
+    ? rawTrust["badges"]
+    : TRUST_BADGE_KEYS;
+  const validBadges = rawBadges.filter(isTrustBadgeKey);
   const trust = {
     enabled: typeof rawTrust["enabled"] === "boolean" ? rawTrust["enabled"] : true,
     badges: validBadges.length > 0 ? validBadges : [...TRUST_BADGE_KEYS],

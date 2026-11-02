@@ -28,17 +28,22 @@ function YalidinePage() {
     queryKey: ["yalidine", store?.id],
     enabled: !!store,
     queryFn: async () => {
-      const { data } = await supabase.from("yalidine_credentials").select("*").eq("store_id", store!.id).maybeSingle();
+      const { data, error } = await supabase.from("yalidine_credentials").select("*").eq("store_id", store!.id).maybeSingle();
+      if (error) throw error;
       return data;
     },
   });
 
   useEffect(() => {
+    if (creds.error) {
+      toast.error("تعذر تحميل بيانات ربط Yalidine.");
+      return;
+    }
     if (creds.data) {
       setApiId(creds.data.api_id);
       setApiToken(creds.data.api_token);
     }
-  }, [creds.data]);
+  }, [creds.data, creds.error]);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -57,7 +62,8 @@ function YalidinePage() {
 
   const remove = useMutation({
     mutationFn: async () => {
-      await supabase.from("yalidine_credentials").delete().eq("store_id", store!.id);
+      const { error } = await supabase.from("yalidine_credentials").delete().eq("store_id", store!.id);
+      if (error) throw error;
     },
     onSuccess: () => {
       setApiId("");
@@ -65,6 +71,7 @@ function YalidinePage() {
       toast.success("تم فصل حساب Yalidine");
       qc.invalidateQueries({ queryKey: ["yalidine"] });
     },
+    onError: () => toast.error("تعذر فصل حساب Yalidine."),
   });
 
   const test = useMutation({
@@ -110,7 +117,7 @@ function YalidinePage() {
               {test.isPending ? <Loader2 className="animate-spin" /> : <PlugZap />} اختبار الاتصال
             </Button>
             {creds.data && (
-              <Button type="button" variant="ghost" className="text-danger" onClick={() => remove.mutate()}>
+              <Button type="button" variant="ghost" className="text-danger" disabled={remove.isPending} onClick={() => remove.mutate()}>
                 <Trash2 /> فصل الحساب
               </Button>
             )}

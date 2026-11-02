@@ -124,6 +124,15 @@ export function isValidStoreSlug(slug: string): boolean {
   return /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(slug);
 }
 
+export function suggestedStoreSlug(storeName: string, email: string | null, userId: string): string {
+  const candidates = [slugify(storeName), slugify(email?.split("@")[0] ?? "")];
+  const existingCandidate = candidates.find((candidate) => isValidStoreSlug(candidate));
+  if (existingCandidate) return existingCandidate;
+
+  const userSuffix = userId.replace(/[^a-z0-9]/gi, "").slice(0, 8).toLowerCase() || "account";
+  return `store-${userSuffix}`;
+}
+
 export function whatsappLink(phone: string, message: string): string {
   const digits = normalizeDzPhone(phone);
   const intl = digits.startsWith("0") ? `213${digits.slice(1)}` : digits;

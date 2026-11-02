@@ -9,6 +9,7 @@ import {
   orderTotal,
   shippingPrice,
   subscriptionState,
+  suggestedStoreSlug,
 } from "./commerce";
 
 describe("Algerian phone validation", () => {
@@ -45,6 +46,18 @@ describe("delivery price", () => {
   });
 });
 
+describe("suggested store slug", () => {
+  it("uses a valid latin slug from the store name or email", () => {
+    expect(suggestedStoreSlug("Lina Store", "seller@example.com", "12345678")).toBe("lina-store");
+    expect(suggestedStoreSlug("متجر", "seller@example.com", "12345678")).toBe("seller");
+  });
+
+  it("falls back to a stable unique slug when the name and email are not usable", () => {
+    expect(suggestedStoreSlug("متجر", null, "1234-5678-90")).toBe("store-12345678");
+    expect(suggestedStoreSlug("متجر", "x@example.com", "abcdef12")).toBe("store-abcdef12");
+  });
+});
+
 describe("10-day trial, grace period and read-only mode", () => {
   const created = new Date("2026-01-01T00:00:00Z");
   const trialEnd = new Date(created.getTime() + 10 * 864e5).toISOString();
@@ -60,7 +73,11 @@ describe("10-day trial, grace period and read-only mode", () => {
   it("warns on the last two days of the trial", () => {
     const s = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-09T00:00:00Z"));
     expect(s.showWarning).toBe(true);
-    expect(s.daysLeft).toBe(1);
+    expect(s.daysLeft).toBe(2);
+
+    const lastDay = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-10T00:00:00Z"));
+    expect(lastDay.showWarning).toBe(true);
+    expect(lastDay.daysLeft).toBe(1);
   });
 
   it("enters a 7-day grace period after the trial expires without payment", () => {

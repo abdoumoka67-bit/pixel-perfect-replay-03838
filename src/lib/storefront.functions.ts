@@ -6,8 +6,12 @@ import { resolveImageUrls } from "./images";
 import { parseStorefrontConfig, type StorefrontConfig } from "./storefront-theme";
 
 function publicClient() {
-  const url = process.env["SUPABASE_URL"]!;
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  const url = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  if (!url || !key) {
+    throw new Error("SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY must be configured on the server.");
+  }
+
   return createClient<Database>(url, key, {
     auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
     global: {
@@ -54,7 +58,7 @@ async function loadStore(client: ReturnType<typeof publicClient>, slug: string) 
   const { data, error } = await client.rpc("get_public_store", { _slug: slug });
   if (error) {
     console.error("get_public_store failed", error);
-    return null;
+    throw error;
   }
   return data?.[0] ?? null;
 }
@@ -65,12 +69,17 @@ export const getStorefront = createServerFn({ method: "GET" })
     const client = publicClient();
     const s = await loadStore(client, data.slug);
     if (!s) return { store: null, products: [] as PublicProduct[] };
-    const { data: products } = await client
+    const { data: products, error } = await client
       .from("products")
       .select("id,name,slug,description,price,compare_at_price,images,features,sizes,colors")
       .eq("store_id", s.id)
       .eq("is_active", true)
       .order("created_at", { ascending: false });
+    if (error) {
+      console.error("Storefront products load failed", error);
+      throw error;
+    }
+
     const urls = await resolveImageUrls(client, [s.logo_url, ...(products ?? []).map((p) => p.images[0])]);
     const store: PublicStore = {
       id: s.id,
@@ -102,18 +111,26 @@ export const getProductPage = createServerFn({ method: "GET" })
     const client = publicClient();
     const s = await loadStore(client, data.slug);
     if (!s) return null;
-    const { data: p } = await client
+    const { data: p, error: productError } = await client
       .from("products")
       .select("id,name,slug,description,price,compare_at_price,images,features,sizes,colors")
       .eq("store_id", s.id)
       .eq("slug", data.product.toLowerCase())
       .eq("is_active", true)
       .maybeSingle();
+    if (productError) {
+      console.error("Storefront product load failed", productError);
+      throw productError;
+    }
     if (!p) return null;
-    const { data: rates } = await client
+    const { data: rates, error: ratesError } = await client
       .from("delivery_rates")
       .select("wilaya_code,home_price,desk_price")
       .eq("store_id", s.id);
+    if (ratesError) {
+      console.error("Storefront delivery rates load failed", ratesError);
+      throw ratesError;
+    }
     const urls = await resolveImageUrls(client, [s.logo_url, ...p.images]);
     const store: PublicStore = {
       id: s.id,
@@ -140,7 +157,7 @@ export const getPublicPlans = createServerFn({ method: "GET" }).handler(async ()
     .order("sort");
   if (error) {
     console.error("plans load failed", error);
-    return [];
+    throw error;
   }
   return data ?? [];
 });

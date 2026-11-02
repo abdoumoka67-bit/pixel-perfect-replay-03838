@@ -90,14 +90,15 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
   const renderItem = (item: NavItem) => {
     const active = isActive(item.to);
     const plan = getFeaturePlanBadge(item.area);
-    const customId = {
+    const customIds: Partial<Record<NavItem["to"], string>> = {
       "/dashboard": "tour-overview",
       "/dashboard/orders": "tour-orders",
       "/dashboard/products": "tour-products",
       "/dashboard/analytics": "tour-analytics",
       "/dashboard/delivery": "tour-delivery",
       "/dashboard/settings": "tour-preview",
-    }[item.to] ?? undefined;
+    };
+    const customId = customIds[item.to];
 
     return (
       <Link
@@ -368,4 +369,3 @@ export function PageHeader({
     </div>
   );
 }
-
