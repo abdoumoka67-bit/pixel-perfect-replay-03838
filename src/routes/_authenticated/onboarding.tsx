@@ -11,7 +11,6 @@ import { Logo } from "@/components/brand/Logo";
 import {
   DEFAULT_ONBOARDING_INDUSTRIES,
   DEFAULT_PRODUCT_TYPES,
-  friendlyError,
   isValidStoreSlug,
   suggestedStoreSlug,
 } from "@/lib/commerce";
@@ -36,6 +35,29 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
 });
 
 const stepCount = 3;
+
+function storeCreationErrorMessage(error: { code?: string; message: string; details?: string | null }) {
+  const diagnostic = `${error.message} ${error.details ?? ""}`.toLowerCase();
+
+  if (diagnostic.includes("invalid_name")) return "اسم المتجر يجب أن يتكون من حرفين على الأقل.";
+  if (diagnostic.includes("invalid_slug")) {
+    return "الرابط يجب أن يحتوي على حروف لاتينية صغيرة وأرقام وشرطات فقط.";
+  }
+  if (error.code === "23505" && diagnostic.includes("slug")) {
+    return "رابط المتجر مستخدم بالفعل. اختر رابطاً آخر.";
+  }
+  if (error.code === "23505" && diagnostic.includes("owner_id")) {
+    return "يوجد متجر مرتبط بهذا الحساب بالفعل. حدّث الصفحة لفتحه.";
+  }
+  if (diagnostic.includes("storefront_config") && diagnostic.includes("column")) {
+    return "قاعدة البيانات تحتاج إلى تحديث إعدادات المتجر. على مسؤول المشروع تطبيق migration storefront_config.";
+  }
+  if (error.code === "42501" || diagnostic.includes("row-level security")) {
+    return "رفضت قاعدة البيانات إنشاء المتجر لهذا الحساب. حدّث الصفحة وسجّل الدخول مجدداً؛ وإذا استمرت المشكلة فتحقق من سياسة RLS في Supabase.";
+  }
+
+  return `تعذر إنشاء المتجر. سبب الخطأ: ${error.message}`;
+}
 
 function Onboarding() {
   const { user } = Route.useRouteContext();
@@ -68,6 +90,10 @@ function Onboarding() {
   const prevStep = () => setStep((s) => Math.max(0, s - 1));
 
   async function submit() {
+    if (name.trim().length < 2) {
+      toast.error("اسم المتجر يجب أن يتكون من حرفين على الأقل.");
+      return;
+    }
     const safeSlug = effectiveSlug.trim().toLowerCase();
     if (!isValidStoreSlug(safeSlug)) {
       toast.error("الرابط يجب أن يكون 3 أحرف على الأقل: حروف لاتينية صغيرة وأرقام وشرطات.");
@@ -91,7 +117,7 @@ function Onboarding() {
       const { error } = await supabase.from("stores").insert(payload);
       if (error) {
         console.error("Store creation failed", error);
-        toast.error(friendlyError(error.message, "تعذر إنشاء المتجر. تحقق من معلومات المتجر وحاول مرة أخرى."));
+        toast.error(storeCreationErrorMessage(error));
         return;
       }
 
