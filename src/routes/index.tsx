@@ -3,7 +3,7 @@ import { Banknote, Box, FileSpreadsheet, MapPin, Phone, Truck } from "lucide-rea
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { getPublicPlans } from "@/lib/storefront.functions";
-import { formatDZD } from "@/lib/commerce";
+import { PlanCards } from "@/components/PlanCards";
 
 export const Route = createFileRoute("/")({
   loader: () => getPublicPlans(),
@@ -86,18 +86,16 @@ function Home() {
           <div className="mx-auto max-w-3xl px-5 py-16">
             <h2 className="text-center text-3xl font-medium">الأسعار</h2>
             <p className="mt-2 text-center text-muted-foreground">ابدأ بـ 7 أيام مجاناً، ثم اختر المدة المناسبة لك.</p>
-            <div className="mt-8 grid grid-cols-2 gap-3">
-              {plans.map((p) => (
-                <div key={p.id} className="rounded-3xl bg-card p-5 shadow-card">
-                  <p className="text-sm text-muted-foreground">{p.name}</p>
-                  <p className="mt-2 text-2xl font-medium num">{formatDZD(p.price)}</p>
-                  <p className="text-xs text-muted-foreground num">{formatDZD(Math.round(p.price / p.months))} / شهر</p>
-                </div>
-              ))}
+            <div className="mt-8">
+              <PlanCards
+                plans={plans}
+                action={(p) => (
+                  <Button asChild size="xl" variant={p.tier === "pro" ? "outline" : "default"} className="w-full">
+                    <Link to="/auth" search={{ mode: "signup" }}>ابدأ التجربة المجانية</Link>
+                  </Button>
+                )}
+              />
             </div>
-            <Button asChild size="xl" className="mt-8 w-full">
-              <Link to="/auth" search={{ mode: "signup" }}>ابدأ التجربة المجانية</Link>
-            </Button>
           </div>
         </section>
       )}

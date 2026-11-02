@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/team")({
 
 type Role = "manager" | "agent";
 
-export const teamQueryKey = (storeId: string | undefined) => ["team", storeId] as const;
+const teamQueryKey = (storeId: string | undefined) => ["team", storeId] as const;
 
 function TeamPage() {
   const { isPro } = useMyStore();
