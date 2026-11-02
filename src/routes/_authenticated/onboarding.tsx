@@ -1,8 +1,8 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Check, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,56 +29,37 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   component: Onboarding,
 });
 
-const stepCount = 4;
+const stepCount = 3;
 
 function Onboarding() {
   const { user } = Route.useRouteContext();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const phoneVerified = Boolean(user.phone && user.phone_confirmed_at);
   const [step, setStep] = useState(0);
   const [language, setLanguage] = useState<"ar" | "fr" | "en">("ar");
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState(user.phone ?? "");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpConfirmed, setOtpConfirmed] = useState(false);
   const [productType, setProductType] = useState<(typeof DEFAULT_PRODUCT_TYPES)[number]["value"]>("physical");
   const [industry, setIndustry] = useState(DEFAULT_ONBOARDING_INDUSTRIES[0]);
   const [busy, setBusy] = useState(false);
-  const [resendSeconds, setResendSeconds] = useState(30);
-
-  useEffect(() => {
-    if (resendSeconds <= 0) return;
-    const id = window.setInterval(() => setResendSeconds((v) => v - 1), 1000);
-    return () => window.clearInterval(id);
-  }, [resendSeconds]);
 
   const effectiveSlug = slugTouched ? slug : slugify(name) || slug;
 
   const canContinueFromStep = () => {
-    if (step === 0) return Boolean((user?.email || user?.phone) && (phoneVerified || password.trim().length >= 6));
+    if (step === 0) return Boolean(user?.email && password.trim().length >= 6);
     if (step === 1) return Boolean(fullName.trim() && name.trim() && effectiveSlug && phone.trim());
-    if (step === 2) return phoneVerified || otp.trim().length === 6;
     return Boolean(productType && industry);
   };
 
   const nextStep = () => {
-    if (step === 2 && !phoneVerified && otp.trim().length !== 6) {
-      toast.error("يرجى إدخال رمز التحقق المكون من 6 أرقام.");
-      return;
-    }
-    if (step === 1 && phoneVerified) {
-      setStep(3);
-      return;
-    }
     if (step < stepCount - 1) setStep((s) => s + 1);
   };
 
-  const prevStep = () => setStep((s) => (s === 3 && phoneVerified ? 1 : Math.max(0, s - 1)));
+  const prevStep = () => setStep((s) => Math.max(0, s - 1));
 
   async function submit() {
     const safeSlug = effectiveSlug || slugify(name) || "oranix-store";
@@ -115,15 +96,13 @@ function Onboarding() {
       return (
         <div className="space-y-6">
           <div className="space-y-1.5">
-            <Label htmlFor="account-contact">{user.email ? "البريد الإلكتروني" : "رقم الهاتف"}</Label>
-            <Input id="account-contact" value={user.email ?? user.phone ?? ""} readOnly className="h-11 bg-muted" />
+            <Label htmlFor="email">البريد الإلكتروني</Label>
+            <Input id="email" value={user.email ?? ""} readOnly className="h-11 bg-muted" />
           </div>
-          {!phoneVerified && (
-            <div className="space-y-1.5">
-              <Label htmlFor="password">تأكيد كلمة المرور / رمز الحماية</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-11" />
-            </div>
-          )}
+          <div className="space-y-1.5">
+            <Label htmlFor="password">تأكيد كلمة المرور / رمز الحماية</Label>
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-11" />
+          </div>
           <div className="rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/10 p-4 text-sm text-[#8A5E00]">
             <div className="mb-2 flex items-center gap-2 font-medium">🔒 تحذير أمني</div>
             <p>لا تشارك كلمة السر أو رمز حسابك مع أي شخص. فريق oranix لن يطلب منك كلمة السر أبداً.</p>
@@ -141,8 +120,7 @@ function Onboarding() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="phone">رقم الهاتف الجزائري</Label>
-            <Input id="phone" dir="ltr" inputMode="tel" value={phone} readOnly={phoneVerified} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" />
-            {phoneVerified && <p className="text-xs text-muted-foreground">تم تأكيد هذا الرقم عبر SMS عند تسجيل الدخول.</p>}
+            <Input id="phone" type="tel" dir="ltr" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="store-name">اسم المتجر</Label>
@@ -166,40 +144,6 @@ function Onboarding() {
             <div className="rounded-2xl border border-dashed border-[#EEEEEE] bg-white p-4 text-sm text-muted-foreground">
               🌐 يمكنك شراء وربط دومين خاص بمتجرك لاحقاً من الإعدادات (خاص بمشتركي باقة Pro) مثل: storename.com مباشرة بدون الرابط الفرعي.
             </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (step === 2) {
-      return (
-        <div className="space-y-6">
-          <div className="flex items-center justify-center gap-2">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <input
-                key={index}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={otp[index] ?? ""}
-                onChange={(e) => {
-                  const next = otp.split("");
-                  next[index] = e.target.value.replace(/\D/g, "").slice(-1);
-                  setOtp(next.join(""));
-                }}
-                className="h-12 w-10 rounded-xl border border-input bg-card text-center text-lg font-medium outline-none focus:border-foreground"
-              />
-            ))}
-          </div>
-          <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-            <button type="button" className="text-[#111111] disabled:text-muted-foreground" disabled={resendSeconds > 0} onClick={() => setResendSeconds(30)}>
-              {resendSeconds > 0 ? `إعادة الإرسال (${resendSeconds}s)` : "إرسال الرمز مرة أخرى"}
-            </button>
-            {otpConfirmed && (
-              <span className="inline-flex items-center gap-2 rounded-full bg-[#22C55E]/10 px-2.5 py-1 text-[#22C55E]">
-                <Check className="size-4" /> تم تأكيد رقم الهاتف بنجاح
-              </span>
-            )}
           </div>
         </div>
       );
@@ -251,14 +195,12 @@ function Onboarding() {
   const currentTitle = [
     "حسابك وآمنته",
     "هوية المتجر",
-    "التحقق",
     "ملف المتجر والإنطلاق",
   ][step];
 
   const currentSubtitle = [
-    "أدخل بياناتك الأساسية واطمئن على أمان حسابك.",
-    "حدد اسمك وتفاصيل متجرك الأولية.",
-    "أكد رقم هاتفك بسرعة عبر رمز التحقق.",
+    "تأكيد الحساب يتم عبر البريد الإلكتروني.",
+    "أدخل رقم هاتفك وبيانات متجرك.",
     "اختر مجال نشاطك وافتح لوحة التحكم الآن.",
   ][step];
 
@@ -327,7 +269,7 @@ function Onboarding() {
             </Button>
           ) : (
             <Button onClick={nextStep} disabled={!canContinueFromStep()} variant="brand" size="lg" className="rounded-full">
-              {step === 0 ? "المتابعة إلى معلومات المتجر" : step === 1 ? "تأكيد والانتقال للتحقق" : "المتابعة إلى نوع النشاط"}
+              {step === 0 ? "المتابعة إلى معلومات المتجر" : "المتابعة إلى نوع النشاط"}
               <ArrowRight className="size-4" />
             </Button>
           )}

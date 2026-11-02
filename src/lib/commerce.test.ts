@@ -9,7 +9,6 @@ import {
   orderTotal,
   shippingPrice,
   subscriptionState,
-  toInternationalDzPhone,
 } from "./commerce";
 
 describe("Algerian phone validation", () => {
@@ -21,13 +20,6 @@ describe("Algerian phone validation", () => {
   it("accepts international Algerian numbers with the +213 prefix", () => {
     expect(isValidDzPhone("+213 550 12 34 56")).toBe(true);
     expect(isValidDzPhone("213550123456")).toBe(true);
-  });
-  it("normalizes valid Algerian numbers to E.164 for SMS delivery", () => {
-    expect(toInternationalDzPhone("0550 12 34 56")).toBe("+213550123456");
-    expect(toInternationalDzPhone("+213 550 12 34 56")).toBe("+213550123456");
-    expect(toInternationalDzPhone("00213 550 12 34 56")).toBe("+213550123456");
-    expect(toInternationalDzPhone("0450123456")).toBeNull();
-    expect(toInternationalDzPhone("٠٥٥٠١٢٣٤٥٦")).toBe("+213550123456");
   });
   it("rejects other prefixes and lengths", () => {
     expect(isValidDzPhone("0450123456")).toBe(false);
