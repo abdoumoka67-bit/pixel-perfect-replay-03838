@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StoreChrome, StoreFaq } from "@/components/store/StoreChrome";
-import { formatDZD, friendlyError, isValidDzPhone, orderTotal, shippingPrice, type DeliveryType } from "@/lib/commerce";
+import { formatDZD, friendlyError, isValidDzPhone, normalizeDzPhone, orderTotal, shippingPrice, type DeliveryType } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
 import { trackPixel } from "@/lib/pixels";
 
@@ -116,7 +116,7 @@ function ProductLanding() {
       _product_id: product.id,
       _quantity: qty,
       _customer_name: name.trim(),
-      _phone: phone,
+      _phone: normalizeDzPhone(phone),
       _wilaya_code: wCode,
       _wilaya_name: wilayaByCode(wCode)?.ar ?? "",
       _commune: commune,
