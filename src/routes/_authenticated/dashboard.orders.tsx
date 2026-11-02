@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -16,6 +16,7 @@ import {
   Send,
   Trash2,
   PhoneCall,
+  UserCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
@@ -48,7 +49,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useMyStore } from "@/hooks/use-my-store";
-import { ORDER_STATUSES, STATUS_LABELS, formatDZD, whatsappLink, type OrderStatus } from "@/lib/commerce";
+import { ORDER_STATUSES, STATUS_LABELS, formatDZD, friendlyError, whatsappLink, type OrderStatus } from "@/lib/commerce";
 import { downloadText, ordersToCsv } from "@/lib/csv";
 import { cn } from "@/lib/utils";
 
@@ -59,7 +60,8 @@ export const Route = createFileRoute("/_authenticated/dashboard/orders")({
 const PAGE_SIZE = 10;
 
 function OrdersPage() {
-  const { store, readOnly } = useMyStore();
+  const { store, readOnly, canManage, isPro } = useMyStore();
+  const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [qInput, setQInput] = useState("");
   const [q, setQ] = useState("");
@@ -68,6 +70,34 @@ function OrdersPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Order | null>(null);
   const { updateStatus, remove, sendYalidine } = useOrderActions();
+
+  const canAssign = canManage && isPro;
+  const members = useQuery({
+    queryKey: ["team", store?.id],
+    enabled: !!store && canAssign,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("store_members")
+        .select("id,email,role,created_at")
+        .eq("store_id", store!.id)
+        .order("created_at");
+      if (error) throw error;
+      return data;
+    },
+  });
+  const memberEmail = (id: string | null) => (id ? members.data?.find((m) => m.id === id)?.email ?? null : null);
+  const assign = useMutation({
+    mutationFn: async ({ orderId, memberId }: { orderId: string; memberId: string | null }) => {
+      // the SQL function accepts null to clear the assignment
+      const { error } = await supabase.rpc("assign_order", { _order_id: orderId, _member_id: memberId as string });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("تم إسناد الطلب");
+      qc.invalidateQueries({ queryKey: ["orders"] });
+    },
+    onError: (e: Error) => toast.error(friendlyError(e.message)),
+  });
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -160,6 +190,26 @@ function OrdersPage() {
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
+        {canAssign && (members.data?.length ?? 0) > 0 && (
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger disabled={readOnly}>
+              <UserCheck className="size-4" /> إسناد إلى
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuRadioGroup
+                value={o.assigned_member_id ?? "none"}
+                onValueChange={(v) => assign.mutate({ orderId: o.id, memberId: v === "none" ? null : v })}
+              >
+                <DropdownMenuRadioItem value="none">بدون إسناد</DropdownMenuRadioItem>
+                {members.data?.map((m) => (
+                  <DropdownMenuRadioItem key={m.id} value={m.id}>
+                    <span dir="ltr" className="truncate">{m.email}</span>
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        )}
         <DropdownMenuItem asChild>
           <a href={`tel:${o.phone}`}>
             <Phone /> اتصال بالزبون
@@ -173,10 +223,14 @@ function OrdersPage() {
         <DropdownMenuItem disabled={readOnly || !!o.tracking_number} onClick={() => sendYalidine.mutate(o.id)}>
           <Send /> إرسال إلى Yalidine
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem disabled={readOnly} className="text-danger focus:text-danger" onClick={() => setToDelete(o)}>
-          <Trash2 /> حذف الطلب
-        </DropdownMenuItem>
+        {canManage && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem disabled={readOnly} className="text-danger focus:text-danger" onClick={() => setToDelete(o)}>
+              <Trash2 /> حذف الطلب
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -271,6 +325,11 @@ function OrdersPage() {
                       ORX-{o.order_number}
                     </button>
                     <p className="text-xs text-muted-foreground">{o.customer_name}</p>
+                    {memberEmail(o.assigned_member_id) && (
+                      <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground" dir="ltr">
+                        <UserCheck className="size-3" /> {memberEmail(o.assigned_member_id)}
+                      </p>
+                    )}
                   </td>
                   <td className="whitespace-nowrap p-4 text-muted-foreground">
                     {new Date(o.created_at).toLocaleDateString("ar-DZ", { day: "numeric", month: "short" })}
@@ -339,6 +398,11 @@ function OrdersPage() {
                 <span className="font-medium num">{formatDZD(o.total)}</span>
               </div>
             </button>
+            {memberEmail(o.assigned_member_id) && (
+              <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <UserCheck className="size-3" /> <span dir="ltr">{memberEmail(o.assigned_member_id)}</span>
+              </p>
+            )}
             {o.call_attempts > 0 && (
               <p className="mt-2 text-xs text-brand">
                 <span className="num">{o.call_attempts}</span> محاولات اتصال

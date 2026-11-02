@@ -46,6 +46,8 @@ export function ProductFormDialog({
   const [sizes, setSizes] = useState("");
   const [colors, setColors] = useState("");
   const [active, setActive] = useState(true);
+  const [stock, setStock] = useState("");
+  const [category, setCategory] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const urls = useSignedUrls(images);
@@ -61,6 +63,8 @@ export function ProductFormDialog({
     setSizes(product?.sizes.join("، ") ?? "");
     setColors(product?.colors.join("، ") ?? "");
     setActive(product?.is_active ?? true);
+    setStock(product?.stock != null ? String(product.stock) : "");
+    setCategory(product?.category ?? "");
     setImages(product?.images ?? []);
   }, [open, product]);
 
@@ -97,7 +101,10 @@ export function ProductFormDialog({
         colors: splitList(colors),
         is_active: active,
         images,
+        stock: stock.trim() === "" ? null : Number(stock),
+        category: category.trim() || null,
       };
+      if (payload.stock !== null && (!Number.isInteger(payload.stock) || payload.stock < 0)) throw new Error("الكمية غير صحيحة");
       if (!payload.name) throw new Error("اسم المنتج مطلوب");
       if (!Number.isFinite(payload.price) || payload.price <= 0) throw new Error("السعر غير صحيح");
       const { error } = product
@@ -170,6 +177,15 @@ export function ProductFormDialog({
             <div className="space-y-1.5">
               <Label htmlFor="compare">السعر قبل التخفيض (اختياري)</Label>
               <Input id="compare" type="number" min={0} dir="ltr" value={compare} onChange={(e) => setCompare(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="stock">الكمية المتوفرة (اختياري)</Label>
+              <Input id="stock" type="number" min={0} step={1} dir="ltr" value={stock} onChange={(e) => setStock(e.target.value)} placeholder="بدون حد" />
+              <p className="text-xs text-muted-foreground">تنقص تلقائياً مع كل طلب، وتعود عند الإلغاء.</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="category">التصنيف (اختياري)</Label>
+              <Input id="category" maxLength={40} value={category} onChange={(e) => setCategory(e.target.value)} placeholder="ملابس، إكسسوارات..." />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="pslug">رابط الصفحة</Label>

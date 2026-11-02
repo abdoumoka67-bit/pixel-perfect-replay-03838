@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useMyStore } from "@/hooks/use-my-store";
 import { RECEIPT_BUCKET, fileExt } from "@/lib/images";
 import { formatDZD } from "@/lib/commerce";
-import { cn } from "@/lib/utils";
+import { PlanCards } from "@/components/PlanCards";
 
 export const Route = createFileRoute("/_authenticated/dashboard/billing")({
   component: Billing,
@@ -40,18 +40,18 @@ function CopyRow({ label, value }: { label: string; value: string }) {
 }
 
 function Billing() {
-  const { store, sub } = useMyStore();
+  const { store, sub, tier } = useMyStore();
   const { user } = Route.useRouteContext();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [planId, setPlanId] = useState("m3");
+  const [picked, setPicked] = useState<string | null>(null);
   const [ref, setRef] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
   const plans = useQuery({
     queryKey: ["plans"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("plans").select("*").order("sort");
+      const { data, error } = await supabase.from("plans").select("*").eq("is_active", true).order("sort");
       if (error) throw error;
       return data;
     },
@@ -79,6 +79,7 @@ function Billing() {
 
   const submit = useMutation({
     mutationFn: async () => {
+      if (!planId) throw new Error("اختر الخطة");
       if (!file) throw new Error("ارفع صورة الوصل");
       if (ref.trim().length < 3) throw new Error("اكتب رقم المعاملة");
       if (file.size > 5 * 1024 * 1024) throw new Error("الحجم الأقصى 5MB");
@@ -100,6 +101,9 @@ function Billing() {
   });
 
   const pending = receipts.data?.some((r) => r.status === "pending");
+  const defaultPlan = plans.data?.find((p) => p.tier === (store?.paid_until && !sub?.isTrial ? store.plan_tier : "pro"))?.id ?? null;
+  const planId = picked ?? defaultPlan ?? "";
+  const setPlanId = setPicked;
 
   return (
     <>
@@ -109,7 +113,7 @@ function Billing() {
         <div>
           <p className="text-sm text-muted-foreground">حالة الحساب</p>
           <p className="mt-1 text-lg font-medium">
-            {sub?.isActive ? (sub.isTrial ? "تجربة مجانية" : "اشتراك فعّال") : "وضع القراءة فقط"}
+            {sub?.isActive ? (sub.isTrial ? "تجربة مجانية (كل ميزات Pro)" : `اشتراك ${tier === "pro" ? "Pro" : "Start"} فعّال`) : "وضع القراءة فقط"}
           </p>
           {sub && (
             <p className="text-sm text-muted-foreground">
@@ -121,36 +125,7 @@ function Billing() {
       </div>
 
       <h2 className="mb-3 font-medium">اختر الخطة</h2>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {plans.data?.map((p) => {
-          const active = p.id === planId;
-          const perMonth = Math.round(p.price / p.months);
-          return (
-            <button
-              key={p.id}
-              onClick={() => setPlanId(p.id)}
-              className={cn(
-                "relative rounded-2xl border-2 bg-card p-5 text-start shadow-card transition-all",
-                active ? "border-brand" : "border-transparent hover:border-border",
-              )}
-            >
-              {p.id === "m12" && (
-                <span className="absolute -top-2.5 start-4 rounded-full bg-gradient-brand px-2.5 py-0.5 text-[11px] font-medium text-brand-foreground">
-                  الأوفر
-                </span>
-              )}
-              <p className="font-medium">{p.name}</p>
-              <p className="mt-2 font-display text-2xl font-medium num">{formatDZD(p.price)}</p>
-              <p className="text-xs text-muted-foreground num">{formatDZD(perMonth)} / شهر</p>
-              {active && (
-                <span className="absolute end-4 top-4 flex size-6 items-center justify-center rounded-full bg-brand text-brand-foreground">
-                  <Check className="size-3.5" />
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      <PlanCards plans={plans.data ?? []} selectedId={planId} onSelect={setPlanId} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">

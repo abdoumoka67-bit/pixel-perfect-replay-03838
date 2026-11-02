@@ -121,12 +121,24 @@ function ProductsPage() {
                   <Package className="size-10" />
                 </div>
               )}
-              <div className="absolute start-3 top-3">
+              <div className="absolute start-3 top-3 flex gap-1.5">
                 {p.is_active ? <Badge variant="success">معروض</Badge> : <Badge variant="neutral">مخفي</Badge>}
+                {p.stock === 0 && <Badge variant="danger">نفدت الكمية</Badge>}
               </div>
             </div>
             <div className="p-4">
               <p className="truncate font-medium">{p.name}</p>
+              {(p.category || p.stock != null) && (
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                  {p.category}
+                  {p.category && p.stock != null && " · "}
+                  {p.stock != null && (
+                    <>
+                      المتوفر: <span className="num">{p.stock}</span>
+                    </>
+                  )}
+                </p>
+              )}
               <div className="mt-1 flex items-baseline gap-2">
                 <span className="font-display text-lg font-medium text-brand num">{formatDZD(p.price)}</span>
                 {p.compare_at_price ? (
