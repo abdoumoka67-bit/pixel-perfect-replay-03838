@@ -2,7 +2,19 @@
 
 /** Algerian mobile number: starts with 05, 06 or 07 and has exactly 10 digits. */
 export function normalizeDzPhone(input: string): string {
-  return input.replace(/[^0-9]/g, "");
+  const digits = input.replace(/[^0-9]/g, "");
+  if (!digits) return "";
+
+  let normalized = digits;
+  if (normalized.startsWith("003213")) normalized = normalized.slice(5);
+  else if (normalized.startsWith("00213")) normalized = normalized.slice(4);
+  else if (normalized.startsWith("213")) normalized = normalized.slice(3);
+
+  if (normalized.length === 9 && /^[567]/.test(normalized)) {
+    return `0${normalized}`;
+  }
+
+  return normalized.startsWith("0") ? normalized : normalized;
 }
 
 export function isValidDzPhone(input: string): boolean {

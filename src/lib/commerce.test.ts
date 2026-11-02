@@ -17,6 +17,10 @@ describe("Algerian phone validation", () => {
     expect(isValidDzPhone("0661234567")).toBe(true);
     expect(isValidDzPhone("0770 12 34 56")).toBe(true);
   });
+  it("accepts international Algerian numbers with the +213 prefix", () => {
+    expect(isValidDzPhone("+213 550 12 34 56")).toBe(true);
+    expect(isValidDzPhone("213550123456")).toBe(true);
+  });
   it("rejects other prefixes and lengths", () => {
     expect(isValidDzPhone("0450123456")).toBe(false);
     expect(isValidDzPhone("055012345")).toBe(false);
