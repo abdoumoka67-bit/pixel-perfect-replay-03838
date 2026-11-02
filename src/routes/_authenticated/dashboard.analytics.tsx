@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { ProLock } from "@/components/dashboard/ProLock";
 import { useMyStore } from "@/hooks/use-my-store";
-import { ORDER_STATUSES, STATUS_LABELS, formatDZD } from "@/lib/commerce";
+import { ORDER_STATUSES, STATUS_LABELS, formatDZD, type OrderStatus } from "@/lib/commerce";
 
 export const Route = createFileRoute("/_authenticated/dashboard/analytics")({
   component: Analytics,
@@ -18,7 +18,7 @@ type AnalyticsData = {
   days: number;
   total: number;
   delivered_revenue: number;
-  statuses: Record<string, number>;
+  statuses: Partial<Record<OrderStatus, number>>;
   daily: { day: string; orders: number; revenue: number }[] | null;
   wilayas: { name: string; count: number }[];
   products: { name: string; orders: number; qty: number; delivered: number; revenue: number }[];
@@ -60,7 +60,7 @@ function AnalyticsPro() {
 
   const m = useMemo(() => {
     const d = q.data;
-    const st: any = d?.statuses ?? {};
+    const st: Partial<Record<OrderStatus, number>> = d?.statuses ?? {};
     const total = d?.total ?? 0;
     const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
     const confirmed = total - (st.new ?? 0) - (st.cancelled ?? 0);

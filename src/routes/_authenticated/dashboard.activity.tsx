@@ -28,7 +28,17 @@ function ActivityPage() {
   return <ActivityPro />;
 }
 
-type Details = any;
+type Details = {
+  order_number?: number;
+  from?: string;
+  to?: string;
+  outcome?: string;
+  email?: string | null;
+  tracking?: string;
+  customer?: string;
+  name?: string;
+  role?: string;
+};
 
 function describe(action: string, d: Details): string {
   const order = d.order_number ? `ORX-${d.order_number}` : "";
@@ -83,7 +93,7 @@ function ActivityPro() {
         {logs.data?.length ? (
           <ul className="divide-y">
             {logs.data.map((l) => {
-              const d = (l.details ?? {}) as Details;
+              const d = (l.details ?? {}) as unknown as Details;
               const who = l.actor_email ?? "النظام";
               return (
                 <li key={l.id} className="flex items-start gap-3 p-4">

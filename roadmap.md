@@ -11,15 +11,15 @@
 - [x] Marketing home page
 
 ## Phase 1 — finish Start / Pro screens
-- [ ] Start (white) / Pro (charcoal, "الأفضل للفرق") pricing cards on home + billing
-- [ ] Meta & TikTok Pixel fields in settings (Pro) + storefront events (PageView, ViewContent, InitiateCheckout, Purchase)
-- [ ] Analytics locked for Start with upgrade card
-- [ ] Team page (up to 5 users, manager / agent) + Activity Log page
-- [ ] Product stock + category fields; order assignment to team members
+- [x] Start (white) / Pro (charcoal, "الأفضل للفرق") pricing cards on home + billing
+- [x] Meta & TikTok Pixel fields in settings (Pro) + storefront events (PageView, ViewContent, InitiateCheckout, Purchase)
+- [x] Analytics locked for Start with upgrade card
+- [x] Team page (up to 5 users, manager / agent) + Activity Log page
+- [x] Product stock + category fields; order assignment to team members
 
 ## Phase 2 — home page & typography
-- [ ] Numbered features accordion (gray closed cards, white open card, black round arrow), Tajawal
-- [ ] Hero headline: first phrase gray, rest black; balanced line breaks (anti visual distortion)
+- [x] Numbered features accordion (gray closed cards, white open card, black round arrow), Tajawal
+- [x] Hero headline: first phrase gray, rest black; balanced line breaks (anti visual distortion)
 
 ## Phase 3 — store look & landing sections
 - [x] 6 hero colour pairs as circles (both plans) + editable hero title/subtitle/button + top bar text

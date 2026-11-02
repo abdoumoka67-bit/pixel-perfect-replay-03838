@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Copy, ImagePlus, Loader2, Save } from "lucide-react";
+import { Copy, ImagePlus, Loader2, Save, Target } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ProPill } from "@/components/dashboard/ProLock";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -14,14 +16,21 @@ import { WILAYAS } from "@/data/wilayas";
 import { useMyStore } from "@/hooks/use-my-store";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
 import { PRODUCT_BUCKET, fileExt } from "@/lib/images";
-import { friendlyError, isValidStoreSlug } from "@/lib/commerce";
+import {
+  cleanMetaPixelId,
+  cleanTiktokPixelId,
+  friendlyError,
+  isValidMetaPixelId,
+  isValidStoreSlug,
+  isValidTiktokPixelId,
+} from "@/lib/commerce";
 
 export const Route = createFileRoute("/_authenticated/dashboard/settings")({
   component: SettingsPage,
 });
 
 function SettingsPage() {
-  const { store, readOnly } = useMyStore();
+  const { store, readOnly, isPro } = useMyStore();
   const { user } = Route.useRouteContext();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -31,6 +40,8 @@ function SettingsPage() {
   const [whatsapp, setWhatsapp] = useState("");
   const [origin, setOrigin] = useState("16");
   const [logo, setLogo] = useState<string | null>(null);
+  const [metaPixel, setMetaPixel] = useState("");
+  const [tiktokPixel, setTiktokPixel] = useState("");
   const urls = useSignedUrls([logo]);
 
   useEffect(() => {
@@ -41,7 +52,27 @@ function SettingsPage() {
     setWhatsapp(store.whatsapp ?? "");
     setOrigin(String(store.origin_wilaya_code));
     setLogo(store.logo_url);
+    setMetaPixel(store.meta_pixel_id ?? "");
+    setTiktokPixel(store.tiktok_pixel_id ?? "");
   }, [store]);
+
+  const savePixels = useMutation({
+    mutationFn: async () => {
+      if (!isValidMetaPixelId(metaPixel)) throw new Error("INVALID_META_PIXEL");
+      if (!isValidTiktokPixelId(tiktokPixel)) throw new Error("INVALID_TIKTOK_PIXEL");
+      const { error } = await supabase.rpc("set_store_pixels", {
+        _store_id: store!.id,
+        _meta: cleanMetaPixelId(metaPixel),
+        _tiktok: cleanTiktokPixelId(tiktokPixel),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("تم حفظ البيكسل");
+      qc.invalidateQueries({ queryKey: ["my-store"] });
+    },
+    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
+  });
 
   async function uploadLogo(f: File | undefined) {
     if (!f) return;
@@ -140,6 +171,7 @@ function SettingsPage() {
             {save.isPending ? <Loader2 className="animate-spin" /> : <Save />} حفظ الإعدادات
           </Button>
         </div>
+        <div className="space-y-6">
         <div className="h-fit rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
           <h2 className="font-medium">رابط متجرك</h2>
           <p className="mt-1 text-sm text-sidebar-muted">شاركه في البايو على إنستغرام وتيك توك.</p>
@@ -158,12 +190,86 @@ function SettingsPage() {
             </button>
           </div>
         </div>
+        <PixelCard
+          isPro={isPro}
+          disabled={readOnly}
+          meta={metaPixel}
+          tiktok={tiktokPixel}
+          onMeta={setMetaPixel}
+          onTiktok={setTiktokPixel}
+          saving={savePixels.isPending}
+          onSave={() => savePixels.mutate()}
+        />
+        </div>
       </form>
 
       {/* New card: مظهر المتجر */}
       <div className="border-t border-[#EEEEEE] pt-8">
         <StorefrontThemeSettings store={store} readOnly={readOnly} />
       </div>
+    </div>
+  );
+}
+
+function PixelCard(props: {
+  isPro: boolean;
+  disabled: boolean;
+  meta: string;
+  tiktok: string;
+  onMeta: (v: string) => void;
+  onTiktok: (v: string) => void;
+  saving: boolean;
+  onSave: () => void;
+}) {
+  const locked = !props.isPro;
+  return (
+    <div className="space-y-4 rounded-2xl bg-card p-6 shadow-card">
+      <div className="flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+          <Target className="size-5" strokeWidth={1.6} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="font-medium">البيكسل (تتبع الإعلانات)</h2>
+            {locked && <ProPill />}
+          </div>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            نسجل تلقائياً: مشاهدة الصفحة، مشاهدة المنتج، بدء ملء الفورم، وإتمام الطلب.
+          </p>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="meta-pixel">Meta Pixel ID (فيسبوك وإنستغرام)</Label>
+        <Input
+          id="meta-pixel"
+          dir="ltr"
+          inputMode="numeric"
+          placeholder="123456789012345"
+          value={props.meta}
+          disabled={locked}
+          onChange={(e) => props.onMeta(e.target.value)}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="tt-pixel">TikTok Pixel ID</Label>
+        <Input
+          id="tt-pixel"
+          dir="ltr"
+          placeholder="C1A2B3C4D5E6F7G8H9"
+          value={props.tiktok}
+          disabled={locked}
+          onChange={(e) => props.onTiktok(e.target.value)}
+        />
+      </div>
+      {locked ? (
+        <Button asChild variant="outline" className="w-full">
+          <Link to="/dashboard/billing">الترقية إلى Pro لتفعيل البيكسل</Link>
+        </Button>
+      ) : (
+        <Button type="button" className="w-full" disabled={props.saving || props.disabled} onClick={props.onSave}>
+          {props.saving ? <Loader2 className="animate-spin" /> : <Save />} حفظ البيكسل
+        </Button>
+      )}
     </div>
   );
 }
