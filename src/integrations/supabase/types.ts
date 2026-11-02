@@ -468,7 +468,6 @@ export type Database = {
           phone: string | null
           plan_tier: string
           slug: string
-          storefront_config: Json
           tiktok_pixel_id: string | null
           trial_ends_at: string
           updated_at: string
@@ -489,7 +488,6 @@ export type Database = {
           phone?: string | null
           plan_tier?: string
           slug: string
-          storefront_config?: Json
           tiktok_pixel_id?: string | null
           trial_ends_at?: string
           updated_at?: string
@@ -510,7 +508,6 @@ export type Database = {
           phone?: string | null
           plan_tier?: string
           slug?: string
-          storefront_config?: Json
           tiktok_pixel_id?: string | null
           trial_ends_at?: string
           updated_at?: string
@@ -593,7 +590,6 @@ export type Database = {
           meta_pixel_id: string
           name: string
           slug: string
-          storefront_config: Json
           tiktok_pixel_id: string
           whatsapp: string
         }[]
