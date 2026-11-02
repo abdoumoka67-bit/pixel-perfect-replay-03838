@@ -28,7 +28,7 @@ function ActivityPage() {
   return <ActivityPro />;
 }
 
-type Details = Record<string, string | number | null | undefined>;
+type Details = any;
 
 function describe(action: string, d: Details): string {
   const order = d.order_number ? `ORX-${d.order_number}` : "";

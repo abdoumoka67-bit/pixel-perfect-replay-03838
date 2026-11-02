@@ -6,18 +6,24 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { whatsappLink } from "@/lib/commerce";
 import type { PublicStore } from "@/lib/storefront.functions";
 import { initPixels } from "@/lib/pixels";
+import { DEFAULT_FAQ, type FaqItem } from "@/lib/storefront-theme";
 
 export function StoreChrome({ store, children }: { store: PublicStore; children: ReactNode }) {
   const [bar, setBar] = useState(true);
   const [open, setOpen] = useState(false);
+
   useEffect(() => {
     initPixels(store);
   }, [store]);
+
+  const barEnabled = store.storefront_config?.bar_enabled ?? true;
+  const barText = store.storefront_config?.bar_text || "مرحبا بك في متجرنا";
+
   return (
     <div className="min-h-screen bg-card">
-      {bar && (
+      {bar && barEnabled && (
         <div className="relative bg-primary px-10 py-2.5 text-center text-sm text-primary-foreground">
-          مرحبا بك في متجرنا
+          {barText}
           <button onClick={() => setBar(false)} className="absolute end-3 top-1/2 -translate-y-1/2 p-1 opacity-80" aria-label="إغلاق">
             <X className="size-4" />
           </button>
@@ -85,32 +91,18 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
   );
 }
 
-const FAQ = [
-  {
-    q: "شحال ثمن التوصيل لولايتي؟",
-    a: "التوصيل يختلف حسب الولاية (للبيت أو للمكتب). سعر التوصيل يبان لك مباشرة كي تختار ولايتك في نموذج الطلب.",
-  },
-  {
-    q: "كيفاش نخلّص؟",
-    a: "الدفع عند الاستلام، تخلّص نقداً كي يوصلك الطرد.",
-  },
-  {
-    q: "وقتاش يوصلني الطلب؟",
-    a: "بعد ما نتصلو بيك ونأكدو الطلب، نبعثوه مع شركة التوصيل. المدة تختلف حسب الولاية.",
-  },
-  {
-    q: "كيفاش نتأكد بلي الطلب تسجل؟",
-    a: "تظهر لك صفحة تأكيد فيها رقم الطلب، ومن بعد نتصلو بيك في الهاتف باش نأكدو معاك.",
-  },
-];
+export function StoreFaq({ config }: { config?: { enabled: boolean; items: FaqItem[] } }) {
+  const faq = config ?? { enabled: true, items: DEFAULT_FAQ };
+  if (!faq.enabled || !faq.items || faq.items.length === 0) {
+    return null;
+  }
 
-export function StoreFaq() {
   return (
     <section className="mx-auto max-w-3xl px-5 py-12">
       <h2 className="mb-4 text-2xl font-bold sm:text-3xl">أسئلة شائعة</h2>
       <Accordion type="single" collapsible defaultValue="0">
-        {FAQ.map((f, i) => (
-          <AccordionItem key={f.q} value={String(i)}>
+        {faq.items.map((f, i) => (
+          <AccordionItem key={`${f.q}-${i}`} value={String(i)}>
             <AccordionTrigger className="py-5 text-start text-lg font-normal hover:no-underline">{f.q}</AccordionTrigger>
             <AccordionContent className="text-base leading-8 text-muted-foreground">{f.a}</AccordionContent>
           </AccordionItem>

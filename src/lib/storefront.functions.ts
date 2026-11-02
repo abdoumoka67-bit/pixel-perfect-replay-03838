@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { resolveImageUrls } from "./images";
+import { parseStorefrontConfig, type StorefrontConfig } from "./storefront-theme";
 
 function publicClient() {
   const url = process.env["SUPABASE_URL"]!;
@@ -33,6 +34,7 @@ export type PublicStore = {
   accepting_orders: boolean;
   meta_pixel_id: string | null;
   tiktok_pixel_id: string | null;
+  storefront_config: StorefrontConfig;
 };
 
 export type PublicProduct = {
@@ -81,6 +83,7 @@ export const getStorefront = createServerFn({ method: "GET" })
       accepting_orders: s.accepting_orders,
       meta_pixel_id: s.meta_pixel_id ?? null,
       tiktok_pixel_id: s.tiktok_pixel_id ?? null,
+      storefront_config: parseStorefrontConfig(s.storefront_config, s.name),
     };
     return {
       store,
@@ -123,6 +126,7 @@ export const getProductPage = createServerFn({ method: "GET" })
       accepting_orders: s.accepting_orders,
       meta_pixel_id: s.meta_pixel_id ?? null,
       tiktok_pixel_id: s.tiktok_pixel_id ?? null,
+      storefront_config: parseStorefrontConfig(s.storefront_config, s.name),
     };
     const product: PublicProduct = { ...p, images: p.images.map((i) => urls[i]).filter((x): x is string => !!x) };
     return { store, product, rates: rates ?? [] };

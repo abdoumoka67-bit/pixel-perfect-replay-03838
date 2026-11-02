@@ -22,8 +22,8 @@
 - [ ] Hero headline: first phrase gray, rest black; balanced line breaks (anti visual distortion)
 
 ## Phase 3 — store look & landing sections
-- [ ] 6 hero colour pairs as circles (both plans) + editable hero title/subtitle/button + top bar text
-- [ ] Landing sections manager: FAQ, reviews, WhatsApp/social links, trust badges
+- [x] 6 hero colour pairs as circles (both plans) + editable hero title/subtitle/button + top bar text
+- [x] Landing sections manager: FAQ, reviews, WhatsApp/social links, trust badges
 
 ## Phase 4 — trial, sign-up, tour
 - [ ] 10-day full Pro trial, warning days 8–9, 7-day read-only grace, then shutdown

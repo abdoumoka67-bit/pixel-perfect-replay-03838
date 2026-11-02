@@ -366,7 +366,7 @@ function ProductLanding() {
       )}
 
       <div className="border-t">
-        <StoreFaq />
+        <StoreFaq config={store.storefront_config?.sections?.faq} />
       </div>
     </div>
     </StoreChrome>

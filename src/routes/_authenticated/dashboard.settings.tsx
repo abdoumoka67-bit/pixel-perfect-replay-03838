@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StorefrontThemeSettings } from "@/components/dashboard/StorefrontThemeSettings";
 import { WILAYAS } from "@/data/wilayas";
 import { useMyStore } from "@/hooks/use-my-store";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
@@ -76,8 +77,8 @@ function SettingsPage() {
   const storeUrl = typeof window !== "undefined" && store ? `${window.location.origin}/m/${store.slug}` : "";
 
   return (
-    <>
-      <PageHeader title="إعدادات المتجر" description="هوية متجرك ومعلومات التواصل." />
+    <div className="space-y-10">
+      <PageHeader title="إعدادات المتجر" description="هوية متجرك، معلومات التواصل، ومظهر صفحة الهبوط." />
       <form
         className="grid gap-6 lg:grid-cols-[1.4fr_1fr]"
         onSubmit={(e) => {
@@ -158,6 +159,11 @@ function SettingsPage() {
           </div>
         </div>
       </form>
-    </>
+
+      {/* New card: مظهر المتجر */}
+      <div className="border-t border-[#EEEEEE] pt-8">
+        <StorefrontThemeSettings store={store} readOnly={readOnly} />
+      </div>
+    </div>
   );
 }

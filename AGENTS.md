@@ -18,3 +18,4 @@
 - Pure business rules (phone format, shipping price, trial/read-only state) live in `src/lib/commerce.ts` with tests; keep SQL and these helpers in sync.
 - Wilaya/commune reference data is static in `src/data/` (communes JSON is lazy-loaded on landing pages).
 - `vite.config.ts` pre-bundles deps from all route/component files (`optimizeDeps.entries`) so lazily loaded pages never trigger mid-session re-optimization, which breaks Safari with "Importing a module script failed".
+- Storefront look/sections live in stores.storefront_config (jsonb), parsed only through src/lib/storefront-theme.ts so old stores fall back to defaults.

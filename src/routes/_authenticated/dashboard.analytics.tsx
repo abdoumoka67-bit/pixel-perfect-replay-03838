@@ -60,7 +60,7 @@ function AnalyticsPro() {
 
   const m = useMemo(() => {
     const d = q.data;
-    const st = d?.statuses ?? {};
+    const st: any = d?.statuses ?? {};
     const total = d?.total ?? 0;
     const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
     const confirmed = total - (st.new ?? 0) - (st.cancelled ?? 0);
