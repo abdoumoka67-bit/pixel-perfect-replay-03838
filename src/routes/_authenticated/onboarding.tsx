@@ -42,16 +42,18 @@ function Onboarding() {
   const [slugTouched, setSlugTouched] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
   const [productType, setProductType] = useState<(typeof DEFAULT_PRODUCT_TYPES)[number]["value"]>("physical");
   const [industry, setIndustry] = useState(DEFAULT_ONBOARDING_INDUSTRIES[0]);
   const [busy, setBusy] = useState(false);
 
-  const effectiveSlug = slugTouched ? slug : slugify(name) || slug;
+  const generatedSlug =
+    [slugify(name), slugify(user.email?.split("@")[0] ?? "")].find(isValidStoreSlug) ??
+    `store-${user.id.replace(/-/g, "").slice(0, 8)}`;
+  const effectiveSlug = slugTouched ? slug : generatedSlug;
 
   const canContinueFromStep = () => {
-    if (step === 0) return Boolean(user?.email && password.trim().length >= 6);
-    if (step === 1) return Boolean(fullName.trim() && name.trim() && effectiveSlug && phone.trim());
+    if (step === 0) return Boolean(user?.email || user?.phone);
+    if (step === 1) return Boolean(fullName.trim() && name.trim() && isValidStoreSlug(effectiveSlug) && phone.trim());
     return Boolean(productType && industry);
   };
 
@@ -62,7 +64,7 @@ function Onboarding() {
   const prevStep = () => setStep((s) => Math.max(0, s - 1));
 
   async function submit() {
-    const safeSlug = effectiveSlug || slugify(name) || "oranix-store";
+    const safeSlug = effectiveSlug.trim().toLowerCase();
     if (!isValidStoreSlug(safeSlug)) {
       toast.error("الرابط يجب أن يكون 3 أحرف على الأقل: حروف لاتينية صغيرة وأرقام وشرطات.");
       return;
@@ -80,15 +82,29 @@ function Onboarding() {
       },
     };
 
-    const { error } = await supabase.from("stores").insert(payload);
-    setBusy(false);
-    if (error) {
-      toast.error(friendlyError(error.message, "تعذر إنشاء المتجر."));
-      return;
+    let storeCreated = false;
+    try {
+      const { error } = await supabase.from("stores").insert(payload);
+      if (error) {
+        console.error("Store creation failed", error);
+        toast.error(friendlyError(error.message, "تعذر إنشاء المتجر. تحقق من معلومات المتجر وحاول مرة أخرى."));
+        return;
+      }
+
+      storeCreated = true;
+      await qc.invalidateQueries({ queryKey: ["my-store"] });
+      toast.success("تم إنشاء متجرك! بدأت تجربتك المجانية لمدة 10 أيام.");
+      await navigate({ to: "/dashboard", replace: true });
+    } catch (error) {
+      console.error("Store creation flow failed", error);
+      toast.error(
+        storeCreated
+          ? "تم إنشاء المتجر، لكن تعذر فتح لوحة التحكم. أعد تحميل الصفحة للمتابعة."
+          : "تعذر الاتصال لإنشاء المتجر. تحقق من اتصالك وحاول مرة أخرى.",
+      );
+    } finally {
+      setBusy(false);
     }
-    await qc.invalidateQueries({ queryKey: ["my-store"] });
-    toast.success("تم إنشاء متجرك! بدأت تجربتك المجانية لمدة 10 أيام.");
-    navigate({ to: "/dashboard", replace: true });
   }
 
   const renderStep = () => {
@@ -96,16 +112,13 @@ function Onboarding() {
       return (
         <div className="space-y-6">
           <div className="space-y-1.5">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
-            <Input id="email" value={user.email ?? ""} readOnly className="h-11 bg-muted" />
+            <Label htmlFor="account-contact">{user.email ? "البريد الإلكتروني" : "رقم الهاتف"}</Label>
+            <Input id="account-contact" value={user.email ?? user.phone ?? ""} readOnly className="h-11 bg-muted" />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="password">تأكيد كلمة المرور / رمز الحماية</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-11" />
-          </div>
-          <div className="rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/10 p-4 text-sm text-[#8A5E00]">
-            <div className="mb-2 flex items-center gap-2 font-medium">🔒 تحذير أمني</div>
-            <p>لا تشارك كلمة السر أو رمز حسابك مع أي شخص. فريق oranix لن يطلب منك كلمة السر أبداً.</p>
+          <div className="rounded-2xl border border-[#22C55E]/20 bg-[#22C55E]/10 p-4 text-sm text-muted-foreground">
+            {user.email
+              ? "تم تأكيد حسابك عبر البريد الإلكتروني. لا حاجة لإدخال كلمة المرور مرة أخرى."
+              : "تم تسجيل الدخول إلى حسابك. لا حاجة لإدخال كلمة المرور مرة أخرى."}
           </div>
         </div>
       );
@@ -141,6 +154,9 @@ function Onboarding() {
                 placeholder="lina-store"
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              رابط المتجر يجب أن يكون بحروف إنجليزية وأرقام وشرطات. إذا كان اسم المتجر بالعربية، سنقترح الرابط من بريدك ويمكنك تغييره.
+            </p>
             <div className="rounded-2xl border border-dashed border-[#EEEEEE] bg-white p-4 text-sm text-muted-foreground">
               🌐 يمكنك شراء وربط دومين خاص بمتجرك لاحقاً من الإعدادات (خاص بمشتركي باقة Pro) مثل: storename.com مباشرة بدون الرابط الفرعي.
             </div>
