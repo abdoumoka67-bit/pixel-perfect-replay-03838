@@ -4,6 +4,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, MailCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toInternationalDzPhone } from "@/lib/commerce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,14 +43,18 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  // Which code the user is entering: account confirmation or password reset.
-  const [step, setStep] = useState<null | "confirm" | "reset">(null);
+  // Which code the user is entering: account confirmation, password reset or SMS login.
+  const [step, setStep] = useState<null | "confirm" | "reset" | "phone">(null);
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [cooldown, setCooldown] = useState(0);
   const resetting = useRef(false);
 
   const [googleEnabled, setGoogleEnabled] = useState(false);
+  // Phone (SMS) sign-in is offered only when the Supabase project has a phone provider configured.
+  const [phoneEnabled, setPhoneEnabled] = useState(false);
+  const [usePhone, setUsePhone] = useState(false);
+  const [phone, setPhone] = useState("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -69,8 +74,14 @@ function AuthPage() {
     if (!url || !key) return;
     fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d: { external?: { google?: boolean } } | null) => setGoogleEnabled(Boolean(d?.external?.google)))
-      .catch(() => setGoogleEnabled(false));
+      .then((d: { external?: { google?: boolean; phone?: boolean } } | null) => {
+        setGoogleEnabled(Boolean(d?.external?.google));
+        setPhoneEnabled(Boolean(d?.external?.phone));
+      })
+      .catch(() => {
+        setGoogleEnabled(false);
+        setPhoneEnabled(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -79,7 +90,7 @@ function AuthPage() {
     return () => clearTimeout(t);
   }, [cooldown]);
 
-  function openCodeStep(kind: "confirm" | "reset") {
+  function openCodeStep(kind: "confirm" | "reset" | "phone") {
     setCode("");
     setNewPassword("");
     setStep(kind);
@@ -90,6 +101,8 @@ function AuthPage() {
     const msg = err instanceof Error ? err.message : "";
     if (msg.includes("Invalid login")) toast.error("البريد أو كلمة المرور غير صحيحة.");
     else if (msg.includes("already registered")) toast.error("هذا البريد مسجل مسبقاً. سجّل الدخول.");
+    else if (/sms provider|phone.*not enabled|phone.*disabled|unsupported phone/i.test(msg))
+      toast.error("إرسال SMS غير مفعّل في Supabase. فعّل تسجيل الهاتف واربط مزود رسائل نصية.");
     else if (/expired|invalid/i.test(msg) && step) toast.error("الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزاً جديداً.");
     else if (/rate limit|security purposes/i.test(msg)) toast.error("طلبات كثيرة. انتظر قليلاً ثم حاول مرة أخرى.");
     else toast.error(msg || "حدث خطأ، حاول مرة أخرى.");
@@ -99,6 +112,22 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      if (usePhone) {
+        const internationalPhone = toInternationalDzPhone(phone);
+        if (!internationalPhone) {
+          toast.error("أدخل رقماً جزائرياً صحيحاً يبدأ بـ 05 أو 06 أو 07.");
+          return;
+        }
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: internationalPhone,
+          options: { shouldCreateUser: mode === "signup" },
+        });
+        if (error) throw error;
+        setPhone(internationalPhone);
+        openCodeStep("phone");
+        toast.success("أرسلنا رمز التحقق عبر SMS.");
+        return;
+      }
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
@@ -134,13 +163,18 @@ function AuthPage() {
     e.preventDefault();
     const token = code.replace(/\D/g, "");
     if (token.length < 6) {
-      toast.error("اكتب الرمز كاملاً كما وصلك في البريد.");
+      toast.error(step === "phone" ? "اكتب الرمز الذي وصلك في SMS." : "اكتب الرمز كاملاً كما وصلك في البريد.");
       return;
     }
     if (step === "reset" && newPassword.length < 8) { toast.error("كلمة المرور يجب أن تحتوي 8 أحرف على الأقل."); return; }
     setBusy(true);
     try {
-      if (step === "confirm") {
+      if (step === "phone") {
+        const { error } = await supabase.auth.verifyOtp({ phone, token, type: "sms" });
+        if (error) throw error;
+        toast.success("تم التحقق من رقم هاتفك.");
+        navigate({ to: safePath(redirect), replace: true });
+      } else if (step === "confirm") {
         const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
         if (error) throw error;
         toast.success("تم تأكيد حسابك.");
@@ -168,9 +202,11 @@ function AuthPage() {
     setBusy(true);
     try {
       const { error } =
-        step === "confirm"
-          ? await supabase.auth.resend({ type: "signup", email })
-          : await supabase.auth.resetPasswordForEmail(email);
+        step === "phone"
+          ? await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } })
+          : step === "confirm"
+            ? await supabase.auth.resend({ type: "signup", email })
+            : await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
       toast.success("أرسلنا رمزاً جديداً.");
       setCooldown(RESEND_SECONDS);
@@ -204,10 +240,14 @@ function AuthPage() {
                 <MailCheck className="size-7" />
               </div>
               <h1 className="mt-5 text-2xl font-medium">
-                {step === "confirm" ? "أدخل رمز التحقق" : "أدخل رمز إعادة التعيين"}
+                {step === "phone" ? "أدخل رمز SMS" : step === "confirm" ? "أدخل رمز التحقق" : "أدخل رمز إعادة التعيين"}
               </h1>
               <p className="mt-2 text-muted-foreground">
-                <>أرسلنا رمزاً إلى <span dir="ltr" className="font-medium text-foreground">{email}</span>. إن لم تجده، تحقق من مجلد الرسائل غير المرغوب فيها (Spam).</>
+                {step === "phone" ? (
+                  <>أرسلنا رمزاً في رسالة SMS إلى <span dir="ltr" className="font-medium text-foreground">{phone}</span>.</>
+                ) : (
+                  <>أرسلنا رمزاً إلى <span dir="ltr" className="font-medium text-foreground">{email}</span>. إن لم تجده، تحقق من مجلد الرسائل غير المرغوب فيها (Spam).</>
+                )}
               </p>
 
               <form onSubmit={verify} className="mt-8 space-y-4">
@@ -265,6 +305,25 @@ function AuthPage() {
                     : "اكتب بريدك وسنرسل لك رمزاً لإعادة تعيينها."}
               </p>
 
+              {mode !== "forgot" && phoneEnabled && (
+                <div className="mt-8 grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary p-1 text-sm">
+                  <button
+                    type="button"
+                    onClick={() => setUsePhone(false)}
+                    className={["rounded-full px-3 py-2", !usePhone ? "bg-card font-medium shadow-sm" : "text-muted-foreground"].join(" ")}
+                  >
+                    بالبريد الإلكتروني
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUsePhone(true)}
+                    className={["rounded-full px-3 py-2", usePhone ? "bg-card font-medium shadow-sm" : "text-muted-foreground"].join(" ")}
+                  >
+                    برقم الهاتف
+                  </button>
+                </div>
+              )}
+
               {mode !== "forgot" && googleEnabled && (
                 <>
                   <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
@@ -283,26 +342,42 @@ function AuthPage() {
               )}
 
               <form onSubmit={submit} className="mt-6 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">البريد الإلكتروني</Label>
-                  <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
-                </div>
-                {mode !== "forgot" && (
+                {usePhone ? (
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password">كلمة المرور</Label>
-                      {mode === "signin" && (
-                        <button type="button" className="text-xs text-brand hover:underline" onClick={() => setMode("forgot")}>
-                          نسيت كلمة المرور؟
-                        </button>
-                      )}
-                    </div>
-                    <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
+                    <Label htmlFor="phone">رقم الهاتف</Label>
+                    <Input id="phone" type="tel" dir="ltr" inputMode="tel" autoComplete="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 12 34 56" className="h-11" />
+                    <p className="text-xs text-muted-foreground">نقبل أرقام 05 و06 و07 فقط. سنرسل لك رمزاً في رسالة SMS.</p>
                   </div>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="email">البريد الإلكتروني</Label>
+                      <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
+                    </div>
+                    {mode !== "forgot" && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="password">كلمة المرور</Label>
+                          {mode === "signin" && (
+                            <button type="button" className="text-xs text-brand hover:underline" onClick={() => setMode("forgot")}>
+                              نسيت كلمة المرور؟
+                            </button>
+                          )}
+                        </div>
+                        <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
+                      </div>
+                    )}
+                  </>
                 )}
                 <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
                   {busy && <Loader2 className="animate-spin" />}
-                  {mode === "forgot" ? "إرسال الرمز" : mode === "signin" ? "تسجيل الدخول" : "إنشاء الحساب"}
+                  {usePhone
+                    ? "إرسال رمز التحقق"
+                    : mode === "forgot"
+                      ? "إرسال الرمز"
+                      : mode === "signin"
+                        ? "تسجيل الدخول"
+                        : "إنشاء الحساب"}
                 </Button>
               </form>
 

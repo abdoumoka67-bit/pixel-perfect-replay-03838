@@ -11,7 +11,9 @@ import { Logo } from "@/components/brand/Logo";
 import {
   DEFAULT_ONBOARDING_INDUSTRIES,
   DEFAULT_PRODUCT_TYPES,
+  isValidDzPhone,
   isValidStoreSlug,
+  normalizeDzPhone,
   suggestedStoreSlug,
 } from "@/lib/commerce";
 import { myStoreQuery } from "@/hooks/use-my-store";
@@ -49,14 +51,27 @@ function storeCreationErrorMessage(error: { code?: string; message: string; deta
   if (error.code === "23505" && diagnostic.includes("owner_id")) {
     return "يوجد متجر مرتبط بهذا الحساب بالفعل. حدّث الصفحة لفتحه.";
   }
-  if (diagnostic.includes("storefront_config") && diagnostic.includes("column")) {
-    return "قاعدة البيانات تحتاج إلى تحديث إعدادات المتجر. على مسؤول المشروع تطبيق migration storefront_config.";
+  if (
+    error.code === "42703" ||
+    error.code === "PGRST204" ||
+    (diagnostic.includes("column") && diagnostic.includes("does not exist"))
+  ) {
+    return "قاعدة البيانات تحتاج تحديثاً: العمود storefront_config غير موجود بعد. على مسؤول المشروع تنفيذ migration 20261102000000_storefront_config.sql من Supabase SQL Editor.";
   }
-  if (error.code === "42501" || diagnostic.includes("row-level security")) {
+  if (error.code === "42P01") {
+    return "جدول المتاجر غير موجود في قاعدة البيانات. تحقق من ربط مشروع Supabase الصحيح.";
+  }
+  if (error.code === "23502") {
+    return `حقل مطلوب في المتجر غير موجود. تفاصيل: ${error.message}`;
+  }
+  if (error.code === "23503") {
+    return "تعذر ربط المتجر بحسابك: الجلسة غير صالحة. سجّل الخروج ثم الدخول من جديد.";
+  }
+  if (error.code === "42501" || diagnostic.includes("row-level security") || diagnostic.includes("permission denied")) {
     return "رفضت قاعدة البيانات إنشاء المتجر لهذا الحساب. حدّث الصفحة وسجّل الدخول مجدداً؛ وإذا استمرت المشكلة فتحقق من سياسة RLS في Supabase.";
   }
 
-  return `تعذر إنشاء المتجر. سبب الخطأ: ${error.message}`;
+  return `تعذر إنشاء المتجر${error.code ? ` (${error.code})` : ""}. سبب الخطأ: ${error.message}`;
 }
 
 function Onboarding() {
@@ -76,10 +91,18 @@ function Onboarding() {
 
   const generatedSlug = suggestedStoreSlug(name, user.email ?? null, user.id);
   const effectiveSlug = slugTouched ? slug : generatedSlug;
+  const normalizedPhone = normalizeDzPhone(phone);
+  const phoneError =
+    phone.trim() && !isValidDzPhone(phone)
+      ? "رقم غير صحيح: يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام (مثال: 0550 12 34 56)."
+      : null;
 
   const canContinueFromStep = () => {
     if (step === 0) return Boolean(user?.email || user?.phone);
-    if (step === 1) return Boolean(fullName.trim() && name.trim() && isValidStoreSlug(effectiveSlug) && phone.trim());
+    if (step === 1)
+      return Boolean(
+        fullName.trim() && name.trim() && isValidStoreSlug(effectiveSlug) && isValidDzPhone(phone),
+      );
     return Boolean(productType && industry);
   };
 
@@ -99,13 +122,17 @@ function Onboarding() {
       toast.error("الرابط يجب أن يكون 3 أحرف على الأقل: حروف لاتينية صغيرة وأرقام وشرطات.");
       return;
     }
+    if (!isValidDzPhone(phone)) {
+      toast.error("رقم الهاتف غير صحيح: يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.");
+      return;
+    }
     setBusy(true);
     const payload = {
       owner_id: user.id,
       name: name.trim(),
       slug: safeSlug,
-      phone: phone || null,
-      whatsapp: phone || null,
+      phone: normalizedPhone || null,
+      whatsapp: normalizedPhone || null,
       storefront_config: {
         product_type: productType,
         industry,
@@ -171,7 +198,12 @@ function Onboarding() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="phone">رقم الهاتف الجزائري</Label>
-            <Input id="phone" type="tel" dir="ltr" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" />
+            <Input id="phone" type="tel" dir="ltr" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" aria-invalid={Boolean(phoneError)} />
+            {phoneError ? (
+              <p className="text-xs text-destructive">{phoneError}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">نقبل أرقام 05 و06 و07 فقط، ويمكنك الكتابة بمسافات: 0550 12 34 56.</p>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="store-name">اسم المتجر</Label>

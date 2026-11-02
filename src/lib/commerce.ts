@@ -24,6 +24,12 @@ export function isValidDzPhone(input: string): boolean {
   return /^0[567]\d{8}$/.test(normalizeDzPhone(input));
 }
 
+/** E.164 form used by Supabase phone auth, e.g. 0550123456 -> +213550123456. */
+export function toInternationalDzPhone(input: string): string | null {
+  const normalized = normalizeDzPhone(input);
+  return isValidDzPhone(normalized) ? `+213${normalized.slice(1)}` : null;
+}
+
 export type DeliveryType = "home" | "desk";
 
 export type DeliveryRate = {
