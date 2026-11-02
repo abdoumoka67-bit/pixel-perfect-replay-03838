@@ -1,147 +1,276 @@
-import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, ChevronLeft, Sparkles, X } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { Copy, ImagePlus, Loader2, Save, Target } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ProPill } from "@/components/dashboard/ProLock";
+import { supabase } from "@/integrations/supabase/client";
+import { PageHeader } from "@/components/dashboard/DashboardShell";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StorefrontThemeSettings } from "@/components/dashboard/StorefrontThemeSettings";
+import { WILAYAS } from "@/data/wilayas";
 import { useMyStore } from "@/hooks/use-my-store";
+import { useSignedUrls } from "@/hooks/use-signed-urls";
+import { PRODUCT_BUCKET, fileExt } from "@/lib/images";
+import {
+  cleanMetaPixelId,
+  cleanTiktokPixelId,
+  friendlyError,
+  isValidMetaPixelId,
+  isValidStoreSlug,
+  isValidTiktokPixelId,
+} from "@/lib/commerce";
+import { RestartTourButton } from "@/components/dashboard/GuidedTour";
 
-const steps = [
-  { id: "tour-products", title: "المنتجات", body: "من هنا تضيف منتجاتك، صورها، وأسعارها وتحصل على روابط مخصصة لنشرها في إعلاناتك." },
-  { id: "tour-orders", title: "الطلبات وسجل المكالمات", body: "كل زبون يطلب يظهر هنا فوراً. يمكنك الاتصال به بنقرة واحدة وتسجيل نتائج التأكيد." },
-  { id: "tour-delivery", title: "شركات التوصيل وYalidine", body: "اربط شركة التوصيل الخاصة بك لإرسال الطلبات المؤكدة والحصول على أرقام التتبع تلقائياً." },
-  { id: "tour-analytics", title: "الميزات المتقدمة", body: "مظهر متجرك المخصص، أكواد البيكسل (Meta & TikTok)، والإحصائيات المتقدمة كلها مفعلة مجاناً في تجربتك." },
-  { id: "tour-preview", title: "معاينة متجرك", body: "اضغط هنا في أي وقت لترى متجرك كما يراه زبائنك تماماً وتجربة الطلب بنفسك." },
-] as const;
+export const Route = createFileRoute("/_authenticated/dashboard/settings")({
+  component: SettingsPage,
+});
 
-export function RestartTourButton({ className }: { className?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("oranix-tour-restart"));
-        }
-      }}
-      className={
-        className ||
-        "inline-flex items-center gap-1.5 rounded-full border border-[#EEEEEE] bg-white px-3.5 py-1.5 text-xs font-medium text-[#111111] hover:bg-[#F5F5F5] transition-colors"
-      }
-    >
-      <Sparkles className="size-3.5 text-[#EA580C]" />
-      <span>بدء الجولة الإرشادية</span>
-    </button>
-  );
-}
-
-export function GuidedTour() {
-  const { store } = useMyStore();
-  const [stepIndex, setStepIndex] = useState(0);
-  const [open, setOpen] = useState(false);
-  const [highlight, setHighlight] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+function SettingsPage() {
+  const { store, readOnly, isPro } = useMyStore();
+  const { user } = Route.useRouteContext();
+  const qc = useQueryClient();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [phone, setPhone] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [origin, setOrigin] = useState("16");
+  const [logo, setLogo] = useState<string | null>(null);
+  const [metaPixel, setMetaPixel] = useState("");
+  const [tiktokPixel, setTiktokPixel] = useState("");
+  const urls = useSignedUrls([logo]);
 
   useEffect(() => {
     if (!store) return;
-    const key = `oranix_tour_completed_${store.id}`;
-    const shouldOpen = typeof window !== "undefined" && !window.localStorage.getItem(key);
-    setOpen(shouldOpen);
+    setName(store.name);
+    setSlug(store.slug);
+    setPhone(store.phone ?? "");
+    setWhatsapp(store.whatsapp ?? "");
+    setOrigin(String(store.origin_wilaya_code));
+    setLogo(store.logo_url);
+    setMetaPixel(store.meta_pixel_id ?? "");
+    setTiktokPixel(store.tiktok_pixel_id ?? "");
   }, [store]);
 
-  useEffect(() => {
-    const onRestart = () => {
-      if (!store) return;
-      const key = `oranix_tour_completed_${store.id}`;
-      window.localStorage.removeItem(key);
-      setStepIndex(0);
-      setOpen(true);
-    };
-    window.addEventListener("oranix-tour-restart", onRestart);
-    return () => window.removeEventListener("oranix-tour-restart", onRestart);
-  }, [store]);
+  const savePixels = useMutation({
+    mutationFn: async () => {
+      if (!isValidMetaPixelId(metaPixel)) throw new Error("INVALID_META_PIXEL");
+      if (!isValidTiktokPixelId(tiktokPixel)) throw new Error("INVALID_TIKTOK_PIXEL");
+      const { error } = await supabase.rpc("set_store_pixels", {
+        _store_id: store!.id,
+        _meta: cleanMetaPixelId(metaPixel),
+        _tiktok: cleanTiktokPixelId(tiktokPixel),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("تم حفظ البيكسل");
+      qc.invalidateQueries({ queryKey: ["my-store"] });
+    },
+    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
+  });
 
-  useEffect(() => {
-    if (!open) return;
-    const currentTarget = document.getElementById(steps[stepIndex]?.id ?? "");
-    const updateHighlight = () => {
-      if (!currentTarget) {
-        setHighlight(null);
-        return;
-      }
-      const rect = currentTarget.getBoundingClientRect();
-      setHighlight({ left: rect.left, top: rect.top, width: rect.width, height: rect.height });
-    };
-    updateHighlight();
-    window.addEventListener("resize", updateHighlight);
-    window.addEventListener("scroll", updateHighlight, { passive: true });
-    return () => {
-      window.removeEventListener("resize", updateHighlight);
-      window.removeEventListener("scroll", updateHighlight);
-    };
-  }, [open, stepIndex]);
+  async function uploadLogo(f: File | undefined) {
+    if (!f) return;
+    const path = `${user.id}/logo-${crypto.randomUUID()}.${fileExt(f)}`;
+    const { error } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, f, { contentType: f.type });
+    if (error) { toast.error("تعذر رفع الشعار"); return; }
+    setLogo(path);
+  }
 
-  const step = steps[stepIndex];
-  if (!open || !step) return null;
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!isValidStoreSlug(slug)) throw new Error("INVALID_SLUG");
+      const { error } = await supabase
+        .from("stores")
+        .update({
+          name: name.trim(),
+          slug,
+          phone: phone || null,
+          whatsapp: whatsapp || null,
+          origin_wilaya_code: Number(origin),
+          logo_url: logo,
+        })
+        .eq("id", store!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("تم حفظ الإعدادات");
+      qc.invalidateQueries({ queryKey: ["my-store"] });
+    },
+    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
+  });
 
-  const isLast = stepIndex === steps.length - 1;
-
-  const closeTour = () => {
-    if (!store) return;
-    window.localStorage.setItem(`oranix_tour_completed_${store.id}`, "1");
-    setOpen(false);
-  };
-
-  const goNext = () => {
-    if (isLast) {
-      closeTour();
-      return;
-    }
-    setStepIndex((s) => s + 1);
-  };
-
-  const goPrev = () => setStepIndex((s) => Math.max(0, s - 1));
-
-  const tooltipStyle = useMemo(() => {
-    if (!highlight) {
-      return { left: "50%", top: "50%", transform: "translate(-50%, -50%)" };
-    }
-    const x = Math.max(24, Math.min(window.innerWidth - 340, highlight.left + highlight.width / 2 - 170));
-    const y = Math.max(32, highlight.top - 180);
-    return { left: `${x}px`, top: `${y}px` };
-  }, [highlight]);
+  const storeUrl = typeof window !== "undefined" && store ? `${window.location.origin}/m/${store.slug}` : "";
 
   return (
-    <div className="fixed inset-0 z-[100]">
-      <div className="absolute inset-0 bg-black/60" />
-      {highlight && (
-        <div
-          className="absolute z-10 rounded-[26px] border-[3px] border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.6)]"
-          style={{
-            left: highlight.left - 8,
-            top: highlight.top - 8,
-            width: highlight.width + 16,
-            height: highlight.height + 16,
-          }}
-        />
-      )}
-      <div className="absolute z-20 w-[min(360px,calc(100vw-32px))] rounded-2xl border border-[#EEEEEE] bg-white p-4 shadow-float" style={tooltipStyle}>
-        <div className="mb-3 flex items-center justify-between">
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#EA580C]/10 px-2 py-1 text-[11px] font-medium text-[#EA580C]">
-            <Sparkles className="size-3.5" /> {stepIndex + 1} من 5
-          </span>
-          <button type="button" onClick={closeTour} className="rounded-full p-1.5 text-muted-foreground hover:bg-[#F5F5F5]" aria-label="إغلاق">
-            <X className="size-4" />
-          </button>
-        </div>
-        <h3 className="text-xl font-medium text-[#111111]">{step.title}</h3>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.body}</p>
-        <div className="mt-5 flex items-center justify-between gap-2">
-          <button type="button" onClick={goPrev} disabled={stepIndex === 0} className="inline-flex items-center gap-1 rounded-full border border-[#EEEEEE] px-3 py-2 text-sm text-muted-foreground disabled:opacity-40">
-            <ChevronLeft className="size-4" /> السابق
-          </button>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={closeTour} className="rounded-full px-3 py-2 text-sm text-muted-foreground">تخطي</button>
-            <button type="button" onClick={goNext} className="inline-flex items-center gap-1 rounded-full bg-[#111111] px-4 py-2 text-sm text-white">
-              {isLast ? "تم" : "التالي"} <ArrowRight className="size-4" />
+    <div className="space-y-10">
+      <PageHeader title="إعدادات المتجر" description="هوية متجرك، معلومات التواصل، ومظهر صفحة الهبوط." actions={<RestartTourButton />} />
+      <form
+        className="grid gap-6 lg:grid-cols-[1.4fr_1fr]"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save.mutate();
+        }}
+      >
+        <div className="space-y-5 rounded-2xl bg-card p-6 shadow-card">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex size-20 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed text-muted-foreground hover:border-brand hover:text-brand"
+              aria-label="رفع الشعار"
+            >
+              {logo && urls[logo] ? <img src={urls[logo]} alt="" className="size-full object-cover" /> : <ImagePlus className="size-6" />}
             </button>
+            <div>
+              <p className="font-medium">شعار المتجر</p>
+              <p className="text-xs text-muted-foreground">يظهر في صفحات الهبوط. مربع، حتى 5MB.</p>
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => uploadLogo(e.target.files?.[0])} />
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="sname">اسم المتجر</Label>
+            <Input id="sname" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="sslug">رابط المتجر</Label>
+            <Input id="sslug" dir="ltr" value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} />
+            <p className="text-xs text-muted-foreground">تغيير الرابط يوقف الروابط القديمة المنشورة في إعلاناتك.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="sphone">رقم الهاتف</Label>
+              <Input id="sphone" dir="ltr" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="swa">رقم واتساب</Label>
+              <Input id="swa" dir="ltr" inputMode="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>ولاية الإرسال (لـ Yalidine)</Label>
+            <Select value={origin} onValueChange={setOrigin} dir="rtl">
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {WILAYAS.map((w) => (
+                  <SelectItem key={w.code} value={String(w.code)}>
+                    {w.code} - {w.ar}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button type="submit" variant="brand" disabled={save.isPending || readOnly}>
+            {save.isPending ? <Loader2 className="animate-spin" /> : <Save />} حفظ الإعدادات
+          </Button>
         </div>
+        <div className="space-y-6">
+          <div className="h-fit rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
+            <h2 className="font-medium">رابط متجرك</h2>
+            <p className="mt-1 text-sm text-sidebar-muted">شاركه في البايو على إنستغرام وتيك توك.</p>
+            <div className="mt-4 flex items-center gap-2 rounded-xl bg-sidebar-accent px-4 py-3">
+              <span className="flex-1 truncate text-sm" dir="ltr">{storeUrl}</span>
+              <button
+                type="button"
+                className="rounded-lg p-1.5 text-sidebar-muted hover:text-sidebar-foreground"
+                onClick={() => {
+                  navigator.clipboard.writeText(storeUrl);
+                  toast.success("تم نسخ الرابط");
+                }}
+                aria-label="نسخ"
+              >
+                <Copy className="size-4" />
+              </button>
+            </div>
+          </div>
+          <PixelCard
+            isPro={isPro}
+            disabled={readOnly}
+            meta={metaPixel}
+            tiktok={tiktokPixel}
+            onMeta={setMetaPixel}
+            onTiktok={setTiktokPixel}
+            saving={savePixels.isPending}
+            onSave={() => savePixels.mutate()}
+          />
+        </div>
+      </form>
+
+      <div className="border-t border-[#EEEEEE] pt-8">
+        <StorefrontThemeSettings store={store} readOnly={readOnly} />
       </div>
     </div>
   );
 }
+
+function PixelCard(props: {
+  isPro: boolean;
+  disabled: boolean;
+  meta: string;
+  tiktok: string;
+  onMeta: (v: string) => void;
+  onTiktok: (v: string) => void;
+  saving: boolean;
+  onSave: () => void;
+}) {
+  const locked = !props.isPro;
+  return (
+    <div className="space-y-4 rounded-2xl bg-card p-6 shadow-card">
+      <div className="flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+          <Target className="size-5" strokeWidth={1.6} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="font-medium">البيكسل (تتبع الإعلانات)</h2>
+            {locked && <ProPill />}
+          </div>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            نسجل تلقائياً: مشاهدة الصفحة، مشاهدة المنتج، بدء ملء الفورم، وإتمام الطلب.
+          </p>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="meta-pixel">Meta Pixel ID (فيسبوك وإنستغرام)</Label>
+        <Input
+          id="meta-pixel"
+          dir="ltr"
+          inputMode="numeric"
+          placeholder="123456789012345"
+          value={props.meta}
+          disabled={locked}
+          onChange={(e) => props.onMeta(e.target.value)}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="tt-pixel">TikTok Pixel ID</Label>
+        <Input
+          id="tt-pixel"
+          dir="ltr"
+          placeholder="C1A2B3C4D5E6F7G8H9"
+          value={props.tiktok}
+          disabled={locked}
+          onChange={(e) => props.onTiktok(e.target.value)}
+        />
+      </div>
+      {locked ? (
+        <Button asChild variant="outline" className="w-full">
+          <Link to="/dashboard/billing">الترقية إلى Pro لتفعيل البيكسل</Link>
+        </Button>
+      ) : (
+        <Button type="button" className="w-full" disabled={props.saving || props.disabled} onClick={props.onSave}>
+          {props.saving ? <Loader2 className="animate-spin" /> : <Save />} حفظ البيكسل
+        </Button>
+      )}
+    </div>
+  );
+}
+

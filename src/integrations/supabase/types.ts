@@ -1,370 +1,833 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type ReactNode } from "react";
-import { AlertTriangle, LogOut, Menu, ShieldCheck, ExternalLink, Lock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { Logo } from "@/components/brand/Logo";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { MAIN_NAV, SETTINGS_NAV, type NavItem } from "./nav";
-import { isAdminQuery, useMyStore } from "@/hooks/use-my-store";
-import { getFeaturePlanBadge, MEMBER_ROLE_LABELS, PRO_AREAS, canOpen } from "@/lib/commerce";
-import { ProPill } from "./ProLock";
-import { GuidedTour } from "./GuidedTour";
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
-function useSignOut() {
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  return async () => {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  };
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.18"
+  }
+  public: {
+    Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          store_id: string
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          store_id: string
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      call_logs: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          order_id: string
+          outcome: Database["public"]["Enums"]["call_outcome"]
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          order_id: string
+          outcome: Database["public"]["Enums"]["call_outcome"]
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          order_id?: string
+          outcome?: Database["public"]["Enums"]["call_outcome"]
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_logs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_rates: {
+        Row: {
+          desk_price: number | null
+          home_price: number | null
+          store_id: string
+          wilaya_code: number
+        }
+        Insert: {
+          desk_price?: number | null
+          home_price?: number | null
+          store_id: string
+          wilaya_code: number
+        }
+        Update: {
+          desk_price?: number | null
+          home_price?: number | null
+          store_id?: string
+          wilaya_code?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_rates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string | null
+          assigned_member_id: string | null
+          call_attempts: number
+          commune: string
+          created_at: string
+          customer_name: string
+          delivery_type: Database["public"]["Enums"]["delivery_type"]
+          id: string
+          last_call_outcome: Database["public"]["Enums"]["call_outcome"] | null
+          notes: string | null
+          order_number: number
+          payment_status: string
+          phone: string
+          product_id: string | null
+          product_image: string | null
+          product_name: string
+          quantity: number
+          shipping_price: number
+          status: Database["public"]["Enums"]["order_status"]
+          store_id: string
+          subtotal: number
+          total: number
+          tracking_number: string | null
+          unit_price: number
+          updated_at: string
+          variant_color: string | null
+          variant_size: string | null
+          wilaya_code: number
+          wilaya_name: string
+        }
+        Insert: {
+          address?: string | null
+          assigned_member_id?: string | null
+          call_attempts?: number
+          commune: string
+          created_at?: string
+          customer_name: string
+          delivery_type: Database["public"]["Enums"]["delivery_type"]
+          id?: string
+          last_call_outcome?: Database["public"]["Enums"]["call_outcome"] | null
+          notes?: string | null
+          order_number?: never
+          payment_status?: string
+          phone: string
+          product_id?: string | null
+          product_image?: string | null
+          product_name: string
+          quantity: number
+          shipping_price: number
+          status?: Database["public"]["Enums"]["order_status"]
+          store_id: string
+          subtotal: number
+          total: number
+          tracking_number?: string | null
+          unit_price: number
+          updated_at?: string
+          variant_color?: string | null
+          variant_size?: string | null
+          wilaya_code: number
+          wilaya_name: string
+        }
+        Update: {
+          address?: string | null
+          assigned_member_id?: string | null
+          call_attempts?: number
+          commune?: string
+          created_at?: string
+          customer_name?: string
+          delivery_type?: Database["public"]["Enums"]["delivery_type"]
+          id?: string
+          last_call_outcome?: Database["public"]["Enums"]["call_outcome"] | null
+          notes?: string | null
+          order_number?: never
+          payment_status?: string
+          phone?: string
+          product_id?: string | null
+          product_image?: string | null
+          product_name?: string
+          quantity?: number
+          shipping_price?: number
+          status?: Database["public"]["Enums"]["order_status"]
+          store_id?: string
+          subtotal?: number
+          total?: number
+          tracking_number?: string | null
+          unit_price?: number
+          updated_at?: string
+          variant_color?: string | null
+          variant_size?: string | null
+          wilaya_code?: number
+          wilaya_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_assigned_member_id_fkey"
+            columns: ["assigned_member_id"]
+            isOneToOne: false
+            referencedRelation: "store_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_receipts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          months: number
+          plan_id: string
+          receipt_path: string
+          reject_reason: string | null
+          reviewed_at: string | null
+          status: string
+          store_id: string
+          transaction_ref: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          months?: number
+          plan_id: string
+          receipt_path: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          status?: string
+          store_id: string
+          transaction_ref: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          months?: number
+          plan_id?: string
+          receipt_path?: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          status?: string
+          store_id?: string
+          transaction_ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_receipts_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_receipts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          id: string
+          is_active: boolean
+          months: number
+          name: string
+          price: number
+          sort: number
+          tier: string
+        }
+        Insert: {
+          id: string
+          is_active?: boolean
+          months: number
+          name: string
+          price: number
+          sort?: number
+          tier?: string
+        }
+        Update: {
+          id?: string
+          is_active?: boolean
+          months?: number
+          name?: string
+          price?: number
+          sort?: number
+          tier?: string
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          ccp_holder: string
+          ccp_key: string
+          ccp_number: string
+          id: number
+          rip: string
+          support_phone: string
+        }
+        Insert: {
+          ccp_holder?: string
+          ccp_key?: string
+          ccp_number?: string
+          id?: number
+          rip?: string
+          support_phone?: string
+        }
+        Update: {
+          ccp_holder?: string
+          ccp_key?: string
+          ccp_number?: string
+          id?: number
+          rip?: string
+          support_phone?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string | null
+          colors: string[]
+          compare_at_price: number | null
+          created_at: string
+          description: string
+          features: string[]
+          id: string
+          images: string[]
+          is_active: boolean
+          name: string
+          price: number
+          sizes: string[]
+          slug: string
+          stock: number | null
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          colors?: string[]
+          compare_at_price?: number | null
+          created_at?: string
+          description?: string
+          features?: string[]
+          id?: string
+          images?: string[]
+          is_active?: boolean
+          name: string
+          price: number
+          sizes?: string[]
+          slug: string
+          stock?: number | null
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          colors?: string[]
+          compare_at_price?: number | null
+          created_at?: string
+          description?: string
+          features?: string[]
+          id?: string
+          images?: string[]
+          is_active?: boolean
+          name?: string
+          price?: number
+          sizes?: string[]
+          slug?: string
+          stock?: number | null
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_members: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          role: Database["public"]["Enums"]["member_role"]
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          role?: Database["public"]["Enums"]["member_role"]
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          role?: Database["public"]["Enums"]["member_role"]
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_members_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stores: {
+        Row: {
+          created_at: string
+          default_desk_price: number
+          default_home_price: number
+          id: string
+          logo_url: string | null
+          meta_pixel_id: string | null
+          name: string
+          origin_wilaya_code: number
+          owner_email: string | null
+          owner_id: string
+          paid_until: string | null
+          phone: string | null
+          plan_tier: string
+          slug: string
+          tiktok_pixel_id: string | null
+          trial_ends_at: string
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          default_desk_price?: number
+          default_home_price?: number
+          id?: string
+          logo_url?: string | null
+          meta_pixel_id?: string | null
+          name: string
+          origin_wilaya_code?: number
+          owner_email?: string | null
+          owner_id: string
+          paid_until?: string | null
+          phone?: string | null
+          plan_tier?: string
+          slug: string
+          tiktok_pixel_id?: string | null
+          trial_ends_at?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          default_desk_price?: number
+          default_home_price?: number
+          id?: string
+          logo_url?: string | null
+          meta_pixel_id?: string | null
+          name?: string
+          origin_wilaya_code?: number
+          owner_email?: string | null
+          owner_id?: string
+          paid_until?: string | null
+          phone?: string | null
+          plan_tier?: string
+          slug?: string
+          tiktok_pixel_id?: string | null
+          trial_ends_at?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      yalidine_credentials: {
+        Row: {
+          api_id: string
+          api_token: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          api_id: string
+          api_token: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          api_id?: string
+          api_token?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yalidine_credentials_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      algiers_month_start: { Args: never; Returns: string }
+      approve_receipt: { Args: { _receipt_id: string }; Returns: string }
+      assign_order: {
+        Args: { _member_id: string; _order_id: string }
+        Returns: undefined
+      }
+      can_access_order: {
+        Args: { _assigned: string; _store_id: string }
+        Returns: boolean
+      }
+      can_manage_store: { Args: { _store_id: string }; Returns: boolean }
+      current_verified_email: { Args: never; Returns: string }
+      get_public_store: {
+        Args: { _slug: string }
+        Returns: {
+          accepting_orders: boolean
+          default_desk_price: number
+          default_home_price: number
+          id: string
+          logo_url: string
+          meta_pixel_id: string
+          name: string
+          slug: string
+          tiktok_pixel_id: string
+          whatsapp: string
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      log_activity: {
+        Args: { _action: string; _details: Json; _store_id: string }
+        Returns: undefined
+      }
+      my_member_id: { Args: { _store_id: string }; Returns: string }
+      my_store_access: {
+        Args: never
+        Returns: {
+          access: string
+          member_id: string
+          store_id: string
+          tier: string
+        }[]
+      }
+      order_stats: {
+        Args: { _store_id: string }
+        Returns: {
+          orders_count: number
+          orders_total: number
+          status: Database["public"]["Enums"]["order_status"]
+        }[]
+      }
+      owns_store: { Args: { _store_id: string }; Returns: boolean }
+      place_order: {
+        Args: {
+          _address: string
+          _color?: string
+          _commune: string
+          _customer_name: string
+          _delivery_type: Database["public"]["Enums"]["delivery_type"]
+          _phone: string
+          _product_id: string
+          _quantity: number
+          _size?: string
+          _wilaya_code: number
+          _wilaya_name: string
+        }
+        Returns: {
+          order_number: number
+          total: number
+        }[]
+      }
+      reject_receipt: {
+        Args: { _reason: string; _receipt_id: string }
+        Returns: undefined
+      }
+      set_store_pixels: {
+        Args: { _meta: string; _store_id: string; _tiktok: string }
+        Returns: undefined
+      }
+      store_access: { Args: { _store_id: string }; Returns: string }
+      store_analytics: {
+        Args: { _days?: number; _store_id: string }
+        Returns: Json
+      }
+      store_is_active: { Args: { _store_id: string }; Returns: boolean }
+      store_month_orders: { Args: { _store_id: string }; Returns: number }
+      store_tier: { Args: { _store_id: string }; Returns: string }
+      store_usage: {
+        Args: { _store_id: string }
+        Returns: {
+          month_orders: number
+          order_limit: number
+          tier: string
+        }[]
+      }
+    }
+    Enums: {
+      app_role: "admin" | "merchant"
+      call_outcome:
+        | "no_answer_1"
+        | "no_answer_2"
+        | "busy_callback"
+        | "confirmed"
+      delivery_type: "home" | "desk"
+      member_role: "manager" | "agent"
+      order_status:
+        | "new"
+        | "confirmed"
+        | "shipping"
+        | "delivered"
+        | "cancelled"
+        | "returned"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
 
-type Tone = "dark" | "light";
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-const TONES = {
-  dark: {
-    body: "bg-sidebar text-sidebar-foreground",
-    item: "rounded-xl px-3 py-2.5 text-sm",
-    active: "bg-sidebar-accent text-sidebar-accent-foreground",
-    idle: "text-sidebar-muted hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
-    label: "text-sidebar-muted/80",
-    group: "space-y-7",
-    divider: "",
-    card: "bg-sidebar-accent/70",
-    name: "text-sidebar-foreground",
-    sub: "text-sidebar-muted",
-    link: "border-sidebar-border text-sidebar-muted hover:text-sidebar-foreground",
-  },
-  light: {
-    body: "bg-background text-foreground",
-    item: "rounded-2xl px-4 py-3.5 text-[15px]",
-    active: "bg-card text-foreground shadow-card font-medium",
-    idle: "text-foreground/80 hover:bg-card/70",
-    label: "text-muted-foreground",
-    group: "space-y-4",
-    divider: "border-t pt-4",
-    card: "bg-card shadow-card",
-    name: "text-foreground",
-    sub: "text-muted-foreground",
-    link: "border-border bg-card text-muted-foreground hover:text-foreground",
-  },
-} as const;
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
-function PlanBadge({ plan }: { plan: "Start" | "Pro" }) {
-  const isPro = plan === "Pro";
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
-        isPro ? "bg-[#EA580C]/10 text-[#EA580C]" : "bg-[#111111]/5 text-[#111111]",
-      )}
-    >
-      {plan}
-    </span>
-  );
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
 }
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
-function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | undefined; tone?: Tone }) {
-  const t = TONES[tone];
-  const path = useRouterState({ select: (s) => s.location.pathname });
-  const { data: isAdmin } = useQuery(isAdminQuery);
-  const { store, access, isPro } = useMyStore();
-  const visible = (items: NavItem[]) => items.filter((i) => canOpen(access, i.area));
-  const stats = useQuery({
-    queryKey: ["order-stats", store?.id],
-    enabled: !!store,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("order_stats", { _store_id: store!.id });
-      if (error) throw error;
-      return data;
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["admin", "merchant"],
+      call_outcome: [
+        "no_answer_1",
+        "no_answer_2",
+        "busy_callback",
+        "confirmed",
+      ],
+      delivery_type: ["home", "desk"],
+      member_role: ["manager", "agent"],
+      order_status: [
+        "new",
+        "confirmed",
+        "shipping",
+        "delivered",
+        "cancelled",
+        "returned",
+      ],
     },
-  });
-  const newOrders = Number(stats.data?.find((r) => r.status === "new")?.orders_count ?? 0);
-  const isActive = (to: string) => (to === "/dashboard" ? path === "/dashboard" || path === "/dashboard/" : path.startsWith(to));
-
-  const renderItem = (item: NavItem) => {
-    const active = isActive(item.to);
-    const plan = getFeaturePlanBadge(item.area);
-    const customId: Record<string, string> = {
-      "/dashboard/orders": "tour-orders",
-      "/dashboard/products": "tour-products",
-      "/dashboard/analytics": "tour-analytics",
-      "/dashboard/delivery": "tour-delivery",
-    };
-    const id = customId[item.to];
-
-    return (
-      <Link
-        key={item.to}
-        id={id}
-        to={item.to}
-        onClick={onNavigate}
-        className={cn(
-          "group flex items-center gap-3 transition-colors",
-          t.item,
-          active ? t.active : t.idle,
-        )}
-      >
-        <item.icon className="size-[19px]" strokeWidth={1.6} />
-        <span>{item.label}</span>
-        <span className="ms-auto flex items-center gap-2">
-          {item.to === "/dashboard/orders" && newOrders > 0 && (
-            <span className="flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-medium text-primary-foreground num">
-              {newOrders}
-            </span>
-          )}
-          {!isPro && PRO_AREAS.includes(item.area) && <ProPill className="hidden sm:inline-flex" />}
-          {plan && <PlanBadge plan={plan} />}
-        </span>
-      </Link>
-    );
-  };
-
-  return (
-    <nav className={t.group}>
-      <div>
-        <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>لوحة التحكم</p>
-        <div className="space-y-1">{visible(MAIN_NAV).map(renderItem)}</div>
-      </div>
-      {visible(SETTINGS_NAV).length > 0 && (
-        <div className={t.divider}>
-          <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>الإعدادات والاشتراك</p>
-          <div className="space-y-1">{visible(SETTINGS_NAV).map(renderItem)}</div>
-        </div>
-      )}
-      {isAdmin && (
-        <div className={t.divider}>
-          <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", t.label)}>المنصة</p>
-          <Link
-            to="/admin"
-            onClick={onNavigate}
-            className={cn("flex items-center gap-3", t.item, t.idle)}
-          >
-            <ShieldCheck className="size-[19px]" strokeWidth={1.6} /> لوحة الإدارة
-          </Link>
-        </div>
-      )}
-    </nav>
-  );
-}
-
-function MerchantCard({ tone = "dark" }: { tone?: Tone }) {
-  const t = TONES[tone];
-  const { store, access } = useMyStore();
-  const signOut = useSignOut();
-  const initials = (store?.name ?? "؟").trim().slice(0, 1);
-  return (
-    <div className={cn("rounded-2xl p-3", t.card)}>
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary font-display font-medium text-primary-foreground">
-          {initials}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className={cn("truncate text-sm font-medium", t.name)}>{store?.name}</p>
-          {access === "owner" ? (
-            <p className={cn("truncate text-xs", t.sub)} dir="ltr">{store?.owner_email}</p>
-          ) : (
-            <p className={cn("truncate text-xs", t.sub)}>{MEMBER_ROLE_LABELS[access]}</p>
-          )}
-        </div>
-        <button
-          onClick={signOut}
-          className={cn("rounded-lg p-2 transition-colors hover:bg-secondary/20", t.sub)}
-          aria-label="تسجيل الخروج"
-          title="تسجيل الخروج"
-        >
-          <LogOut className="size-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | undefined; tone?: Tone }) {
-  const { store } = useMyStore();
-  const t = TONES[tone];
-  return (
-    <div className={cn("flex h-full flex-col gap-6 p-4", t.body)}>
-      <div className="flex items-center justify-between px-2 pt-2">
-        <Logo tone={tone === "dark" ? "light" : "dark"} />
-      </div>
-      {store && (
-        <a
-          id="tour-preview"
-          href={`/m/${store.slug}`}
-          target="_blank"
-          rel="noreferrer"
-          className={cn("mx-1 flex items-center justify-between rounded-xl border px-3 py-2 text-xs", t.link)}
-        >
-          <span className="truncate" dir="ltr">/m/{store.slug}</span>
-          <ExternalLink className="size-3.5 shrink-0" />
-        </a>
-      )}
-      <div className="flex-1 overflow-y-auto">
-        <NavLinks onNavigate={onNavigate} tone={tone} />
-      </div>
-      <MerchantCard tone={tone} />
-    </div>
-  );
-}
-
-function BottomNav() {
-  const path = useRouterState({ select: (s) => s.location.pathname });
-  const { access } = useMyStore();
-  const BOTTOM_NAV = MAIN_NAV.filter((i) => canOpen(access, i.area)).slice(0, 4);
-  return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 pb-safe backdrop-blur md:hidden">
-      <div className="grid" style={{ gridTemplateColumns: `repeat(${BOTTOM_NAV.length}, minmax(0, 1fr))` }}>
-        {BOTTOM_NAV.map((item) => {
-          const active = item.to === "/dashboard" ? path === "/dashboard" || path === "/dashboard/" : path.startsWith(item.to);
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={cn(
-                "flex flex-col items-center gap-1 pt-2.5 text-[11px] font-medium",
-                active ? "text-brand" : "text-muted-foreground",
-              )}
-            >
-              <item.icon className="size-5" />
-              {item.label.replace("إدارة ", "")}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
-
-function SubscriptionBanner() {
-  const { sub } = useMyStore();
-  if (!sub) return null;
-  if (sub.isGracePeriod) {
-    return (
-      <div className="flex flex-wrap items-center gap-3 border-b border-destructive/20 bg-danger-soft px-4 py-3 text-sm text-danger md:px-8">
-        <Lock className="size-4 shrink-0" />
-        <span className="flex-1">متجرك مقفل مؤقتاً. اختر باقة لتفعيله وحماية بياناتك قبل الحذف النهائي.</span>
-        <Button asChild size="sm" variant="destructive">
-          <Link to="/dashboard/billing">تفعيل الاشتراك</Link>
-        </Button>
-      </div>
-    );
-  }
-  if (!sub.isActive) {
-    return (
-      <div className="flex flex-wrap items-center gap-3 border-b border-destructive/20 bg-danger-soft px-4 py-3 text-sm text-danger md:px-8">
-        <Lock className="size-4 shrink-0" />
-        <span className="flex-1">
-          انتهت فترة اشتراكك. حسابك الآن في <b>وضع القراءة فقط</b> وصفحاتك متوقفة عن استقبال الطلبات.
-        </span>
-        <Button asChild size="sm" variant="destructive">
-          <Link to="/dashboard/billing">جدّد الاشتراك</Link>
-        </Button>
-      </div>
-    );
-  }
-  if (sub.showWarning) {
-    return (
-      <div className="flex flex-wrap items-center gap-3 border-b border-warning/20 bg-warning-soft px-4 py-3 text-sm text-warning md:px-8">
-        <AlertTriangle className="size-4 shrink-0" />
-        <span className="flex-1">
-          {sub.isTrial ? "تنبيه: تنتهي تجربتك المجانية بعد " : "تنبيه: ينتهي اشتراكك بعد "}
-          {sub.daysLeft === 1 ? "يوم واحد" : `${sub.daysLeft} أيام`}. اختر باقتك الآن للاستمرار.
-        </span>
-        <Button asChild size="sm" variant="brand">
-          <Link to="/dashboard/billing">تجديد الاشتراك</Link>
-        </Button>
-      </div>
-    );
-  }
-  return null;
-}
-
-export function DashboardShell({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const { store, sub } = useMyStore();
-  const trialLink = useMemo(
-    () => (sub && sub.isTrial && sub.daysLeft > 0 ? `تجربة Pro مجانية · بقي ${sub.daysLeft} أيام` : "تجربة Pro مجانية"),
-    [sub],
-  );
-
-  return (
-    <div className="min-h-screen bg-background">
-      <GuidedTour />
-      <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 md:block">
-        <SidebarBody />
-      </aside>
-
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-[82vw] max-w-sm border-0 bg-background p-0">
-          <SheetTitle className="sr-only">القائمة</SheetTitle>
-          <SidebarBody tone="light" onNavigate={() => setOpen(false)} />
-        </SheetContent>
-      </Sheet>
-
-      <div className="md:ps-64">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card/90 px-4 backdrop-blur md:hidden">
-          <button onClick={() => setOpen(true)} className="rounded-lg p-2 hover:bg-secondary" aria-label="فتح القائمة">
-            <Menu className="size-5" />
-          </button>
-          <Logo />
-          <span className="w-9" />
-        </header>
-
-        {store && sub && sub.isTrial && sub.daysLeft <= 2 && (
-          <div className="border-b border-[#EA580C]/20 bg-[#EA580C]/10 px-4 py-3 text-sm text-[#EA580C] md:px-8">
-            <div className="mx-auto flex max-w-[1400px] items-center gap-2">
-              <span className="inline-flex size-2 rounded-full bg-[#EA580C]" />
-              <span>تنبيه: تنتهي تجربتك المجانية بعد {sub.daysLeft === 1 ? "يوم واحد" : `${sub.daysLeft} أيام`}. اختر باقتك الآن للاستمرار.</span>
-            </div>
-          </div>
-        )}
-
-        <div className="border-b bg-card/95 px-4 py-2 md:px-8">
-          <div className="mx-auto flex max-w-[1400px] items-center justify-end">
-            {sub?.isTrial && (
-              <Link
-                to="/dashboard/billing"
-                className="inline-flex items-center rounded-full border border-[#EEEEEE] bg-white px-3 py-1.5 text-sm text-foreground shadow-sm"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <span className="inline-flex size-2 rounded-full bg-[#EA580C]" />
-                  <span>{trialLink}</span>
-                </span>
-              </Link>
-            )}
-          </div>
-        </div>
-
-        <SubscriptionBanner />
-        <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pb-12 md:pt-8">{children}</main>
-      </div>
-      <BottomNav />
-    </div>
-  );
-}
-
-export function PageHeader({
-  title,
-  description,
-  actions,
-}: {
-  title: string;
-  description?: string;
-  actions?: ReactNode;
-}) {
-  return (
-    <div className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-end md:justify-between">
-      <div>
-        <h1 className="text-2xl font-medium md:text-3xl">{title}</h1>
-        {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
-      </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-    </div>
-  );
-}
+  },
+} as const
