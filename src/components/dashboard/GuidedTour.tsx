@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, ChevronLeft, ChevronRight, Sparkles, X } from "lucide-react";
+import { ArrowRight, ChevronLeft, Sparkles, X } from "lucide-react";
 import { useMyStore } from "@/hooks/use-my-store";
 
 const steps = [
@@ -9,6 +9,26 @@ const steps = [
   { id: "tour-analytics", title: "الميزات المتقدمة", body: "مظهر متجرك المخصص، أكواد البيكسل (Meta & TikTok)، والإحصائيات المتقدمة كلها مفعلة مجاناً في تجربتك." },
   { id: "tour-preview", title: "معاينة متجرك", body: "اضغط هنا في أي وقت لترى متجرك كما يراه زبائنك تماماً وتجربة الطلب بنفسك." },
 ] as const;
+
+export function RestartTourButton({ className }: { className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("oranix-tour-restart"));
+        }
+      }}
+      className={
+        className ||
+        "inline-flex items-center gap-1.5 rounded-full border border-[#EEEEEE] bg-white px-3.5 py-1.5 text-xs font-medium text-[#111111] hover:bg-[#F5F5F5] transition-colors"
+      }
+    >
+      <Sparkles className="size-3.5 text-[#EA580C]" />
+      <span>بدء الجولة الإرشادية</span>
+    </button>
+  );
+}
 
 export function GuidedTour() {
   const { store } = useMyStore();
@@ -55,9 +75,9 @@ export function GuidedTour() {
     };
   }, [open, stepIndex]);
 
-  if (!store || !open) return null;
-
   const step = steps[stepIndex];
+  if (!open || !step) return null;
+
   const isLast = stepIndex === steps.length - 1;
 
   const closeTour = () => {
@@ -80,7 +100,6 @@ export function GuidedTour() {
     if (!highlight) {
       return { left: "50%", top: "50%", transform: "translate(-50%, -50%)" };
     }
-    const padding = 18;
     const x = Math.max(24, Math.min(window.innerWidth - 340, highlight.left + highlight.width / 2 - 170));
     const y = Math.max(32, highlight.top - 180);
     return { left: `${x}px`, top: `${y}px` };
@@ -126,4 +145,3 @@ export function GuidedTour() {
     </div>
   );
 }
-
