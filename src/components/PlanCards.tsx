@@ -65,7 +65,7 @@ export function PlanCards({
                   <span
                     className={cn(
                       "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full",
-                      pro ? "bg-sidebar-accent text-sidebar-foreground" : "bg-brand-soft text-brand",
+                      pro ? "bg-card/15 text-sidebar-foreground" : "bg-brand-soft text-brand",
                     )}
                   >
                     <Check className="size-3" />

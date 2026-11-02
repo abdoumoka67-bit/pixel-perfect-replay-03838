@@ -90,7 +90,7 @@ function Home() {
               <PlanCards
                 plans={plans}
                 action={(p) => (
-                  <Button asChild size="xl" variant={p.tier === "pro" ? "outline" : "default"} className="w-full">
+                  <Button asChild size="xl" variant={p.tier === "pro" ? "outline" : "default"} className={p.tier === "pro" ? "w-full border-transparent text-foreground" : "w-full"}>
                     <Link to="/auth" search={{ mode: "signup" }}>ابدأ التجربة المجانية</Link>
                   </Button>
                 )}
