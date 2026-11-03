@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { verifyCustomDomain } from "@/lib/domain.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Copy, Globe, ImagePlus, Loader2, Save, Target } from "lucide-react";
@@ -326,6 +328,17 @@ function CustomDomainSection({
     onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
   });
 
+  const verifyFn = useServerFn(verifyCustomDomain);
+  const verify = useMutation({
+    mutationFn: () => verifyFn({ data: { storeId: store.id } }),
+    onSuccess: (r) => {
+      if (r.ok) toast.success(r.message);
+      else toast.error(r.message);
+      qc.invalidateQueries({ queryKey: ["my-store"] });
+    },
+    onError: () => toast.error("تعذر التحقق حالياً"),
+  });
+
   if (!isPro) {
     return (
       <div>
@@ -356,9 +369,16 @@ function CustomDomainSection({
           </p>
         </div>
         {saved.domain && (
-          <Badge variant={saved.status === "active" ? "success" : "warning"}>
-            {saved.status === "active" ? "نشط (Active)" : "قيد التحقق (Pending)"}
-          </Badge>
+          <div className="flex flex-col items-end gap-2">
+            <Badge variant={saved.status === "active" ? "success" : "warning"}>
+              {saved.status === "active" ? "نشط (Active)" : "قيد التحقق (Pending)"}
+            </Badge>
+            {saved.status !== "active" && (
+              <Button size="sm" variant="outline" disabled={verify.isPending} onClick={() => verify.mutate()}>
+                {verify.isPending ? <Loader2 className="animate-spin" /> : null} تحقق الآن
+              </Button>
+            )}
+          </div>
         )}
       </div>
 

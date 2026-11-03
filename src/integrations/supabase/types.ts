@@ -52,6 +52,38 @@ export type Database = {
           },
         ]
       }
+      block_phones: {
+        Row: {
+          created_at: string
+          id: string
+          phone: string
+          reason: string | null
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone: string
+          reason?: string | null
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone?: string
+          reason?: string | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "block_phones_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_logs: {
         Row: {
           created_at: string
@@ -87,6 +119,50 @@ export type Database = {
           },
           {
             foreignKeyName: "call_logs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carrier_integrations: {
+        Row: {
+          account_id: string | null
+          api_key: string | null
+          carrier_id: string
+          connected: boolean
+          created_at: string
+          id: string
+          store_id: string
+          token: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          api_key?: string | null
+          carrier_id: string
+          connected?: boolean
+          created_at?: string
+          id?: string
+          store_id: string
+          token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          api_key?: string | null
+          carrier_id?: string
+          connected?: boolean
+          created_at?: string
+          id?: string
+          store_id?: string
+          token?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carrier_integrations_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
