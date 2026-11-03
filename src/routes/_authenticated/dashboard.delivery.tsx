@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/delivery")({
 
 // ---------- Algerian carrier hub (19 companies) ----------
 
-type CarrierIntegration = { connected: boolean; api_key?: string; token?: string; account_id?: string };
+type CarrierIntegration = { connected: boolean; api_key?: string | undefined; token?: string | undefined; account_id?: string | undefined };
 type CarrierId = string;
 
 const CARRIER_LINK_INFO: Record<CarrierId, string> = {};
