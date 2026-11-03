@@ -573,7 +573,7 @@ export type Database = {
       algiers_month_start: { Args: never; Returns: string }
       approve_receipt: { Args: { _receipt_id: string }; Returns: string }
       assign_order: {
-        Args: { _member_id: string | null; _order_id: string }
+        Args: { _member_id: string; _order_id: string }
         Returns: undefined
       }
       can_access_order: {
@@ -589,13 +589,13 @@ export type Database = {
           default_desk_price: number
           default_home_price: number
           id: string
-          logo_url: string | null
-          meta_pixel_id: string | null
+          logo_url: string
+          meta_pixel_id: string
           name: string
           slug: string
-          tiktok_pixel_id: string | null
-          whatsapp: string | null
           storefront_config: Json
+          tiktok_pixel_id: string
+          whatsapp: string
         }[]
       }
       has_role: {
@@ -619,7 +619,6 @@ export type Database = {
           tier: string
         }[]
       }
-      normalize_dz_phone: { Args: { _phone: string }; Returns: string }
       order_stats: {
         Args: { _store_id: string }
         Returns: {
