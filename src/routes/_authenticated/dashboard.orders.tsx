@@ -103,7 +103,7 @@ function OrdersPage() {
   const assign = useMutation({
     mutationFn: async ({ orderId, memberId }: { orderId: string; memberId: string | null }) => {
       // the SQL function accepts null to clear the assignment
-      const { error } = await supabase.rpc("assign_order", { _order_id: orderId, _member_id: memberId as string });
+      const { error } = await supabase.rpc("assign_order", { _order_id: orderId, _member_id: (memberId as unknown as string) });
       if (error) throw error;
     },
     onSuccess: () => {
