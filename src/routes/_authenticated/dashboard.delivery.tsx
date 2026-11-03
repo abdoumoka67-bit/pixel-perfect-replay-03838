@@ -208,11 +208,6 @@ function DeliveryRates() {
   );
 }
 
-function readCarrierConfig(config: unknown): Partial<Record<CarrierId, CarrierIntegration>> {
-  if (!config || typeof config !== "object") return {};
-  const dc = (config as Record<string, unknown>)["delivery_integrations"];
-  return typeof dc === "object" && dc !== null ? (dc as Partial<Record<CarrierId, CarrierIntegration>>) : {};
-}
 
 function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof useMyStore>["store"]>; readOnly: boolean }) {
   const qc = useQueryClient();
@@ -228,7 +223,29 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
     },
   });
 
-  const integrations = useMemo(() => readCarrierConfig(store.storefront_config), [store.storefront_config]);
+  const carrierRows = useQuery({
+    queryKey: ["carrier-integrations", store.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("carrier_integrations")
+        .select("carrier_id, connected, api_key, token, account_id")
+        .eq("store_id", store.id);
+      if (error) throw error;
+      return data;
+    },
+  });
+  const integrations = useMemo(() => {
+    const map: Partial<Record<CarrierId, CarrierIntegration>> = {};
+    for (const r of carrierRows.data ?? []) {
+      map[r.carrier_id] = {
+        connected: r.connected,
+        api_key: r.api_key ?? undefined,
+        token: r.token ?? undefined,
+        account_id: r.account_id ?? undefined,
+      };
+    }
+    return map;
+  }, [carrierRows.data]);
   const editingCarrier = DELIVERY_CARRIERS.find((c) => c.id === editing) ?? null;
 
   const openLink = (carrier: (typeof DELIVERY_CARRIERS)[number]) => {
@@ -239,19 +256,22 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
   const saveCarrier = useMutation({
     mutationFn: async (): Promise<void> => {
       if (!editing) return;
-      const next = { ...readCarrierConfig(store.storefront_config), [editing]: form };
-      const base = (store.storefront_config && typeof store.storefront_config === "object"
-        ? (store.storefront_config as Record<string, unknown>)
-        : {}) as Record<string, unknown>;
-      const { error } = await supabase
-        .from("stores")
-        .update({ storefront_config: { ...base, delivery_integrations: next } })
-        .eq("id", store.id);
+      const { error } = await supabase.from("carrier_integrations").upsert(
+        {
+          store_id: store.id,
+          carrier_id: editing,
+          connected: form.connected,
+          api_key: form.api_key?.trim() || null,
+          token: form.token?.trim() || null,
+          account_id: form.account_id?.trim() || null,
+        },
+        { onConflict: "store_id,carrier_id" },
+      );
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("تم حفظ بيانات الربط");
-      qc.invalidateQueries({ queryKey: ["my-store"] });
+      qc.invalidateQueries({ queryKey: ["carrier-integrations", store.id] });
       setEditing(null);
     },
     onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
