@@ -139,19 +139,39 @@ export function OrderDetailsSheet({
     onError: (e: Error) => toast.error(friendlyError(e.message)),
   });
 
+  const blocked = useQuery({
+    queryKey: ["blocked-phone", order?.store_id, order?.phone],
+    enabled: !!order,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("block_phones")
+        .select("id")
+        .eq("store_id", order!.store_id)
+        .eq("phone", order!.phone)
+        .maybeSingle();
+      if (error) throw error;
+      return Boolean(data);
+    },
+  });
+
   const blockSpam = useMutation({
     mutationFn: async () => {
       if (!order) return;
-      // Client-side deterrent: the store phone blocklist table is a Lovable migration.
-      const stamp = `🚫 تم حظر الرقم ${order.phone} عبر رادار الثقة (${new Date().toLocaleDateString("ar-DZ")}). لا تقبلوا طلبات جديدة منه.`;
       const { error } = await supabase
-        .from("orders")
-        .update({ status: "cancelled" as OrderStatus, notes: order.notes ? `${order.notes}\n${stamp}` : stamp })
-        .eq("id", order.id);
+        .from("block_phones")
+        .upsert(
+          { store_id: order.store_id, phone: order.phone, reason: `رادار الثقة — طلب ORX-${order.order_number}` },
+          { onConflict: "store_id,phone", ignoreDuplicates: true },
+        );
       if (error) throw error;
+      if (order.status !== "cancelled") {
+        const { error: e2 } = await supabase.from("orders").update({ status: "cancelled" as OrderStatus }).eq("id", order.id);
+        if (e2) throw e2;
+      }
     },
     onSuccess: () => {
-      toast.success("تم رفض الطلب وسجل حظر الرقم في ملاحظاته");
+      toast.success("تم حظر الرقم ورفض الطلب");
+      qc.invalidateQueries({ queryKey: ["blocked-phone"] });
       invalidate();
     },
     onError: (e: Error) => toast.error(friendlyError(e.message)),
@@ -175,9 +195,22 @@ export function OrderDetailsSheet({
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-lg font-medium">{order.customer_name}</p>
                   <TrustRadarBadge trust={trust} />
+                  {blocked.data && (
+                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">محظور</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <p className="mt-0.5 text-sm text-muted-foreground num">{order.phone}</p>
+                  {!blocked.data && !readOnly && (
+                    <button
+                      type="button"
+                      className="mt-0.5 text-xs text-destructive underline-offset-2 hover:underline disabled:opacity-50"
+                      disabled={blockSpam.isPending}
+                      onClick={() => blockSpam.mutate()}
+                    >
+                      حظر الرقم
+                    </button>
+                  )}
                 </div>
                 <TrustStatsLine trust={trust} />
                 {trust?.tier === "spam" && (
