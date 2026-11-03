@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useMyStore } from "@/hooks/use-my-store";
 import { RECEIPT_BUCKET, fileExt } from "@/lib/images";
-import { formatDZD } from "@/lib/commerce";
+import { calculateSubscriptionPrice, formatDZD, SUBSCRIPTION_MAX_MONTHS } from "@/lib/commerce";
 import { PlanCards } from "@/components/PlanCards";
 
 export const Route = createFileRoute("/_authenticated/dashboard/billing")({
@@ -45,6 +45,7 @@ function Billing() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [picked, setPicked] = useState<string | null>(null);
+  const [months, setMonths] = useState(1);
   const [ref, setRef] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
@@ -88,14 +89,20 @@ function Billing() {
     mutationFn: async () => {
       if (!planId) throw new Error("اختر الخطة");
       if (!file) throw new Error("ارفع صورة الوصل");
-      if (ref.trim().length < 3) throw new Error("اكتب رقم المعاملة");
       if (file.size > 5 * 1024 * 1024) throw new Error("الحجم الأقصى 5MB");
       const path = `${user.id}/${crypto.randomUUID()}.${fileExt(file)}`;
       const up = await supabase.storage.from(RECEIPT_BUCKET).upload(path, file, { contentType: file.type });
       if (up.error) throw new Error("تعذر رفع الصورة");
       const { error } = await supabase
         .from("payment_receipts")
-        .insert({ store_id: store!.id, plan_id: planId, transaction_ref: ref.trim(), receipt_path: path });
+        .insert({
+          store_id: store!.id,
+          plan_id: planId,
+          amount: amountDue,
+          months,
+          transaction_ref: ref.trim() || "غير محدد",
+          receipt_path: path,
+        });
       if (error) throw new Error("تعذر إرسال الإيصال");
     },
     onSuccess: () => {
@@ -111,6 +118,9 @@ function Billing() {
   const defaultPlan = plans.data?.find((p) => p.tier === (store?.paid_until && !sub?.isTrial ? store.plan_tier : "pro"))?.id ?? null;
   const planId = picked ?? defaultPlan ?? "";
   const setPlanId = setPicked;
+  const selectedPlan = plans.data?.find((p) => p.id === planId) ?? null;
+  const selectedTier: "start" | "pro" = selectedPlan?.tier === "pro" ? "pro" : "start";
+  const amountDue = calculateSubscriptionPrice(selectedTier, months);
 
   return (
     <>
@@ -134,11 +144,48 @@ function Billing() {
       <h2 className="mb-3 font-medium">اختر الخطة</h2>
       <PlanCards plans={plans.data ?? []} selectedId={planId} onSelect={setPlanId} />
 
+      <div className="mt-4 rounded-2xl bg-card p-5 shadow-card">
+        <h2 className="font-medium">مدة الاشتراك</h2>
+        <p className="mt-1 text-xs text-muted-foreground">اختر عدد الأشهر التي تريد تفعيلها.</p>
+        <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {Array.from({ length: SUBSCRIPTION_MAX_MONTHS }, (_, i) => i + 1).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMonths(m)}
+              className={[
+                "relative flex flex-col items-center rounded-2xl border px-2 py-3 transition-all",
+                months === m
+                  ? "border-[#111111] bg-[#111111] text-white"
+                  : "border-[#EEEEEE] bg-white text-foreground hover:border-[#111111]/30",
+              ].join(" ")}
+            >
+              <span className="font-medium num">{m}</span>
+              <span className="text-[11px]">{m === 1 ? "شهر" : "أشهر"}</span>
+              {m === 6 && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#EA580C] px-2 py-0.5 text-[9px] text-white">
+                  شهر مجاني
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        {months === 6 && (
+          <p className="mt-3 rounded-xl bg-warning-soft px-3 py-2 text-sm leading-6 text-warning">
+            🎁 عرض خاص: ادفع 5 أشهر واحصل على شهر مجاناً — توفير {formatDZD(selectedTier === "pro" ? 3400 : 1700)}.
+          </p>
+        )}
+        <p className="mt-4 flex items-baseline gap-2">
+          <span className="text-sm text-muted-foreground">المبلغ المطلوب تحويله:</span>
+          <span className="text-xl font-medium num">{formatDZD(amountDue)}</span>
+        </p>
+      </div>
+
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
           <h2 className="font-medium">معلومات الدفع</h2>
           <p className="mt-1 text-sm text-sidebar-muted">
-            حوّل مبلغ الخطة المختارة ({formatDZD(plans.data?.find((p) => p.id === planId)?.price ?? 0)}) إلى أحد الحسابين:
+            حوّل مبلغ الخطة المختارة ({formatDZD(amountDue)}) إلى أحد الحسابين:
           </p>
           <div className="mt-5 space-y-3">
             <p className="text-xs font-medium text-sidebar-primary">بريد الجزائر — CCP</p>
@@ -164,8 +211,8 @@ function Billing() {
             <p className="rounded-xl bg-warning-soft px-3 py-2 text-sm text-warning">لديك إيصال قيد المراجعة. سنفعّل اشتراكك فور التحقق.</p>
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="ref">رقم المعاملة</Label>
-            <Input id="ref" dir="ltr" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="مثال: 123456789" />
+            <Label htmlFor="ref">رقم المعاملة أو الحوالة (اختياري)</Label>
+            <Input id="ref" dir="ltr" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="مثال: 123456789 — اتركه فارغاً إن لم يتوفر" />
           </div>
           <div className="space-y-1.5">
             <Label>صورة الوصل</Label>

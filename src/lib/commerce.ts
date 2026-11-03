@@ -176,6 +176,66 @@ export const STATUS_VARIANT: Record<
   returned: "neutral",
 };
 
+// ---------- Customer trust radar (Spam Link Shredder) ----------
+
+export type CustomerTrustTier = "high" | "neutral" | "risky" | "spam";
+
+export type CustomerTrustInput = { customer_phone: string; status: string; created_at: string };
+
+export type CustomerTrust = {
+  tier: CustomerTrustTier;
+  totalOrders: number;
+  delivered: number;
+  cancelled: number;
+  rapidDuplicates: boolean;
+};
+
+export const TRUST_TIER_LABELS: Record<CustomerTrustTier, string> = {
+  high: "موثوق",
+  neutral: "زبون جديد",
+  risky: "حذر",
+  spam: "احتيال محتمل",
+};
+
+/** Two orders from the same phone within this window count as rapid duplicates. */
+export const TRUST_RAPID_DUPLICATE_WINDOW_MS = 15 * 60 * 1000;
+
+/**
+ * Trust tier of a customer phone given the store order history.
+ * - high: at least one delivered order and no cancellations.
+ * - neutral: first-time buyer (no history, or cancellations<=delivered without an order).
+ * - risky: cancellations outweigh delivered orders.
+ * - spam: rapid duplicate orders (same phone within 15 minutes) or repeated cancellations.
+ */
+export function evaluateCustomerTrust(orders: CustomerTrustInput[], currentPhone: string): CustomerTrust {
+  const phone = normalizeDzPhone(currentPhone);
+  const history = phone
+    ? orders.filter((o) => Boolean(o.customer_phone) && normalizeDzPhone(o.customer_phone) === phone)
+    : [];
+  const delivered = history.filter((o) => o.status === "delivered").length;
+  const cancelled = history.filter((o) => o.status === "cancelled" || o.status === "returned").length;
+
+  const createdTimes = history
+    .map((o) => new Date(o.created_at).getTime())
+    .filter((t) => Number.isFinite(t))
+    .sort((a, b) => a - b);
+  let rapidDuplicates = false;
+  for (let i = 1; i < createdTimes.length; i++) {
+    if (createdTimes[i]! - createdTimes[i - 1]! < TRUST_RAPID_DUPLICATE_WINDOW_MS) {
+      rapidDuplicates = true;
+      break;
+    }
+  }
+
+  let tier: CustomerTrustTier;
+  if (rapidDuplicates || (cancelled >= 2 && cancelled > delivered)) tier = "spam";
+  else if (cancelled === 0 && delivered >= 1) tier = "high";
+  else if (cancelled > delivered) tier = "risky";
+  else tier = "neutral";
+
+  return { tier, totalOrders: history.length, delivered, cancelled, rapidDuplicates };
+}
+
 export const CALL_OUTCOMES = ["no_answer_1", "no_answer_2", "busy_callback", "confirmed"] as const;
 export type CallOutcome = (typeof CALL_OUTCOMES)[number];
 export const CALL_LABELS: Record<CallOutcome, string> = {
@@ -222,10 +282,98 @@ export function friendlyError(message: string | undefined | null, fallback = "ح
   return fallback;
 }
 
+// ---------- Language preference (Arabic RTL / Français / English LTR) ----------
+
+export type LanguageCode = "ar" | "fr" | "en";
+
+/** Persistence key for the chosen interface language. */
+export const LANGUAGE_STORAGE_KEY = "oranix_lang";
+export const LANGUAGE_DEFAULT: LanguageCode = "ar";
+
+export const LANGUAGE_OPTIONS: ReadonlyArray<{ value: LanguageCode; label: string }> = [
+  { value: "ar", label: "العربية" },
+  { value: "fr", label: "Français" },
+  { value: "en", label: "English" },
+];
+
+export function normalizeLanguage(value: string | null | undefined): LanguageCode {
+  return value === "fr" || value === "en" ? value : LANGUAGE_DEFAULT;
+}
+
+/** Document attributes and font class matching the language (Arabic uses Tajawal RTL). */
+export function languageDocumentAttributes(lang: LanguageCode): {
+  lang: string;
+  dir: "rtl" | "ltr";
+  fontClass: "font-tajawal" | "font-sans";
+} {
+  if (lang === "ar") return { lang: "ar", dir: "rtl", fontClass: "font-tajawal" };
+  return { lang, dir: "ltr", fontClass: "font-sans" };
+}
+
+/** Applies the language to <html lang/dir> and the document font. Safe on the server. */
+export function applyLanguageToDocument(lang: LanguageCode): void {
+  if (typeof document === "undefined") return;
+  const attrs = languageDocumentAttributes(lang);
+  const root = document.documentElement;
+  root.lang = attrs.lang;
+  root.dir = attrs.dir;
+  root.classList.toggle("font-tajawal", attrs.fontClass === "font-tajawal");
+  root.classList.toggle("font-sans", attrs.fontClass === "font-sans");
+}
+
+export function storedLanguage(): LanguageCode {
+  if (typeof window === "undefined") return LANGUAGE_DEFAULT;
+  return normalizeLanguage(window.localStorage.getItem(LANGUAGE_STORAGE_KEY));
+}
+
 // ---------- Plans: Start / Pro ----------
 
 export type PlanTier = "start" | "pro";
 export type StoreAccess = "owner" | "manager" | "agent";
+
+// ---------- Subscription pricing (1 to 6 months) ----------
+
+export const SUBSCRIPTION_MONTHLY_RATES: Record<PlanTier, number> = {
+  start: 1700,
+  pro: 3400,
+};
+
+export const SUBSCRIPTION_MIN_MONTHS = 1;
+export const SUBSCRIPTION_MAX_MONTHS = 6;
+
+// ---------- Custom domain add-on (Pro) ----------
+
+/** DNS CNAME target every custom store domain points to. */
+export const CUSTOM_DOMAIN_CNAME_TARGET = "cname.oranix.app";
+
+/** Lowercases and strips a pasted protocol/path from a domain input. */
+export function cleanDomainName(input: string): string {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "");
+}
+
+/** Domain form: labels separated by dots, hyphenated labels without leading/trailing hyphens. */
+export function isValidDomainName(input: string): boolean {
+  const domain = cleanDomainName(input);
+  return /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/.test(domain);
+}
+
+/**
+ * Price for a plan over a duration of 1..6 months in DZD.
+ * The 6-month promo is "pay 5 months, get the 6th free" (~17% off):
+ * Start: 8,500 (instead of 10,200) — Pro: 17,000 (instead of 20,400).
+ * Returns 0 for out-of-range durations.
+ */
+export function calculateSubscriptionPrice(tier: PlanTier, months: number): number {
+  if (!Number.isInteger(months) || months < SUBSCRIPTION_MIN_MONTHS || months > SUBSCRIPTION_MAX_MONTHS) return 0;
+  const monthly = SUBSCRIPTION_MONTHLY_RATES[tier];
+  if (months === SUBSCRIPTION_MAX_MONTHS) return monthly * 5;
+  return monthly * months;
+}
+
 
 /** Start plan: orders accepted per calendar month (Algiers time). Pro has no limit. */
 export const START_MONTHLY_ORDER_LIMIT = 300;

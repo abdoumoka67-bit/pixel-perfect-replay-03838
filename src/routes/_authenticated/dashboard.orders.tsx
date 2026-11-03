@@ -12,6 +12,7 @@ import {
   MoreHorizontal,
   Phone,
   Plus,
+  Printer,
   Search,
   Send,
   Trash2,
@@ -49,9 +50,21 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useMyStore } from "@/hooks/use-my-store";
-import { ORDER_STATUSES, STATUS_LABELS, formatDZD, friendlyError, whatsappLink, type OrderStatus } from "@/lib/commerce";
+import { ShippingLabelModal } from "@/components/dashboard/ShippingLabelModal";
+import {
+  ORDER_STATUSES,
+  STATUS_LABELS,
+  evaluateCustomerTrust,
+  formatDZD,
+  friendlyError,
+  normalizeDzPhone,
+  whatsappLink,
+  type CustomerTrust,
+  type OrderStatus,
+} from "@/lib/commerce";
 import { downloadText, ordersToCsv } from "@/lib/csv";
 import { cn } from "@/lib/utils";
+import { TrustRadarBadge } from "@/components/dashboard/TrustRadarBadge";
 
 export const Route = createFileRoute("/_authenticated/dashboard/orders")({
   component: OrdersPage,
@@ -69,6 +82,7 @@ function OrdersPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openId, setOpenId] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Order | null>(null);
+  const [labelOrders, setLabelOrders] = useState<Order[] | null>(null);
   const { updateStatus, remove, sendYalidine } = useOrderActions();
 
   const canAssign = canManage && isPro;
@@ -138,6 +152,36 @@ function OrdersPage() {
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const openOrder = useMemo(() => rows.find((r) => r.id === openId) ?? null, [rows, openId]);
 
+  // Trust radar: minimal order history per phone, evaluated in pure commerce.ts.
+  const history = useQuery({
+    queryKey: ["customer-phone-history", store?.id],
+    enabled: !!store,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("phone,status,created_at")
+        .eq("store_id", store!.id)
+        .order("created_at", { ascending: false })
+        .limit(2000);
+      if (error) throw error;
+      return (data ?? []) as Array<{ phone: string; status: string; created_at: string }>;
+    },
+  });
+
+  const trustByPhone = useMemo(() => {
+    const map = new Map<string, CustomerTrust>();
+    if (!history.data) return map;
+    const inputs = history.data.map((o) => ({ customer_phone: o.phone, status: o.status, created_at: o.created_at }));
+    for (const r of rows) {
+      const key = normalizeDzPhone(r.phone);
+      if (!key || map.has(key)) continue;
+      map.set(key, evaluateCustomerTrust(inputs, r.phone));
+    }
+    return map;
+  }, [rows, history.data]);
+  const trustOf = (o: Order) => trustByPhone.get(normalizeDzPhone(o.phone)) ?? null;
+
   async function exportCsv() {
     let list: Order[];
     if (selected.size) {
@@ -151,6 +195,12 @@ function OrdersPage() {
     }
     downloadText(ordersToCsv(list), `oranix-orders-${new Date().toISOString().slice(0, 10)}.csv`);
     toast.success(`تم تصدير ${list.length} طلب`);
+  }
+
+  async function printLabelsForSelected() {
+    const { data, error } = await supabase.from("orders").select("*").in("id", Array.from(selected));
+    if (error || !data?.length) { toast.error("تعذر تجهيز البوليصات"); return; }
+    setLabelOrders(data as unknown as Order[]);
   }
 
   const allOnPage = rows.length > 0 && rows.every((r) => selected.has(r.id));
@@ -220,6 +270,9 @@ function OrdersPage() {
             <MessageCircle /> محادثة واتساب
           </a>
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setLabelOrders([o])}>
+          <Printer /> طباعة بوليصة A6
+        </DropdownMenuItem>
         <DropdownMenuItem disabled={readOnly || !!o.tracking_number} onClick={() => sendYalidine.mutate(o.id)}>
           <Send /> إرسال إلى Yalidine
         </DropdownMenuItem>
@@ -245,6 +298,11 @@ function OrdersPage() {
             <Button variant="outline" onClick={exportCsv}>
               <Download /> {selected.size ? `تصدير المحدد (${selected.size})` : "تصدير Excel"}
             </Button>
+            {selected.size > 0 && (
+              <Button variant="outline" onClick={() => printLabelsForSelected()}>
+                <Printer /> طباعة بوليصة A6 ({selected.size})
+              </Button>
+            )}
             <Button asChild variant="brand" className="hidden md:inline-flex">
               <Link to="/dashboard/products" search={{ new: true }}>
                 <Plus /> منتج جديد
@@ -325,6 +383,7 @@ function OrdersPage() {
                       ORX-{o.order_number}
                     </button>
                     <p className="text-xs text-muted-foreground">{o.customer_name}</p>
+                    <TrustRadarBadge trust={trustOf(o)} className="mt-1" />
                     {memberEmail(o.assigned_member_id) && (
                       <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground" dir="ltr">
                         <UserCheck className="size-3" /> {memberEmail(o.assigned_member_id)}
@@ -381,6 +440,7 @@ function OrdersPage() {
                 <p className="text-xs text-muted-foreground">
                   <span className="num">ORX-{o.order_number}</span> · {new Date(o.created_at).toLocaleDateString("ar-DZ")}
                 </p>
+                <TrustRadarBadge trust={trustOf(o)} className="mt-1" />
               </button>
               <div className="flex items-center gap-1">
                 <StatusBadge status={o.status} />
@@ -459,7 +519,16 @@ function OrdersPage() {
         order={openOrder}
         storeName={store?.name ?? ""}
         readOnly={readOnly}
+        trust={openOrder ? trustOf(openOrder) : null}
         onOpenChange={(o) => !o && setOpenId(null)}
+      />
+
+      <ShippingLabelModal
+        open={!!labelOrders}
+        onOpenChange={(o) => !o && setLabelOrders(null)}
+        orders={labelOrders ?? []}
+        storeName={store?.name ?? ""}
+        storePhone={store?.whatsapp ?? store?.phone ?? ""}
       />
 
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>

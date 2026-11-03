@@ -4,6 +4,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { AlertTriangle, LogOut, Menu, ShieldCheck, ExternalLink, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/Logo";
+import { LanguageSwitcher, useLanguagePreference } from "@/components/LanguageSwitcher";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -290,6 +291,7 @@ function SubscriptionBanner() {
 export function DashboardShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const { store, sub } = useMyStore();
+  const { language, setLanguage } = useLanguagePreference();
   const trialLink = useMemo(() =>
     sub && sub.isTrial && sub.daysLeft > 0 ? `تجربة Pro مجانية · بقي ${sub.daysLeft} أيام` : "تجربة Pro مجانية",
   [sub]);
@@ -327,7 +329,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         )}
 
         <div className="border-b bg-card/95 px-4 py-2 md:px-8">
-          <div className="mx-auto flex max-w-[1400px] items-center justify-end">
+          <div className="mx-auto flex max-w-[1400px] items-center justify-end gap-3">
+            <LanguageSwitcher value={language} onChange={setLanguage} className="hidden sm:flex" />
             {sub?.isTrial && (
               <Link
                 to="/dashboard/billing"

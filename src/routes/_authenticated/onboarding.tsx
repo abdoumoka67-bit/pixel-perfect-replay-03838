@@ -2,12 +2,13 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
+import { LanguageSwitcher, useLanguagePreference } from "@/components/LanguageSwitcher";
 import {
   DEFAULT_ONBOARDING_INDUSTRIES,
   DEFAULT_PRODUCT_TYPES,
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   component: Onboarding,
 });
 
-const stepCount = 3;
+const stepCount = 4;
 
 function storeCreationErrorMessage(error: { code?: string; message: string; details?: string | null }) {
   const diagnostic = `${error.message} ${error.details ?? ""}`.toLowerCase();
@@ -79,7 +80,7 @@ function Onboarding() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [step, setStep] = useState(0);
-  const [language, setLanguage] = useState<"ar" | "fr" | "en">("ar");
+  const { language, setLanguage } = useLanguagePreference();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
@@ -96,13 +97,12 @@ function Onboarding() {
     phone.trim() && !isValidDzPhone(phone)
       ? "رقم غير صحيح: يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام (مثال: 0550 12 34 56)."
       : null;
+  const phoneOk = isValidDzPhone(phone);
 
   const canContinueFromStep = () => {
     if (step === 0) return Boolean(user?.email || user?.phone);
-    if (step === 1)
-      return Boolean(
-        fullName.trim() && name.trim() && isValidStoreSlug(effectiveSlug) && isValidDzPhone(phone),
-      );
+    if (step === 1) return Boolean(fullName.trim() && name.trim() && isValidStoreSlug(effectiveSlug));
+    if (step === 2) return isValidDzPhone(phone);
     return Boolean(productType && industry);
   };
 
@@ -185,6 +185,10 @@ function Onboarding() {
               ? "تم تأكيد حسابك عبر البريد الإلكتروني. لا حاجة لإدخال كلمة المرور مرة أخرى."
               : "تم تسجيل الدخول إلى حسابك. لا حاجة لإدخال كلمة المرور مرة أخرى."}
           </div>
+          <div className="flex gap-3 rounded-2xl border border-warning/30 bg-warning-soft p-4 text-sm leading-6 text-foreground">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" strokeWidth={1.8} />
+            <p>تنبيه أمني: لا تشارك كلمة السر الخاصة بك مع أي شخص، فريق oranix لن يطلبها منك أبداً.</p>
+          </div>
         </div>
       );
     }
@@ -195,15 +199,6 @@ function Onboarding() {
           <div className="space-y-1.5">
             <Label htmlFor="full-name">الاسم الكامل</Label>
             <Input id="full-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="مثال: أحمد بن علي" className="h-11" />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="phone">رقم الهاتف الجزائري</Label>
-            <Input id="phone" type="tel" dir="ltr" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" aria-invalid={Boolean(phoneError)} />
-            {phoneError ? (
-              <p className="text-xs text-destructive">{phoneError}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">نقبل أرقام 05 و06 و07 فقط، ويمكنك الكتابة بمسافات: 0550 12 34 56.</p>
-            )}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="store-name">اسم المتجر</Label>
@@ -231,6 +226,28 @@ function Onboarding() {
               🌐 يمكنك شراء وربط دومين خاص بمتجرك لاحقاً من الإعدادات (خاص بمشتركي باقة Pro) مثل: storename.com مباشرة بدون الرابط الفرعي.
             </div>
           </div>
+        </div>
+      );
+    }
+
+    if (step === 2) {
+      return (
+        <div className="space-y-6">
+          <div className="space-y-1.5">
+            <Label htmlFor="phone">رقم الواتساب الجزائري</Label>
+            <Input id="phone" type="tel" dir="ltr" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" aria-invalid={Boolean(phoneError)} />
+            {phoneError ? (
+              <p className="text-xs text-destructive">{phoneError}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">نقبل أرقام 05 و06 و07 فقط، ويمكنك الكتابة بمسافات: 0550 12 34 56.</p>
+            )}
+          </div>
+          {phoneOk && (
+            <div className="flex items-center gap-2.5 rounded-2xl border border-[#22C55E]/20 bg-[#22C55E]/10 p-4 text-sm leading-6 text-[#22C55E]">
+              <ShieldCheck className="size-5 shrink-0" strokeWidth={1.8} />
+              <span>تم تأكيد الرقم وجاهز لاستقبال إشعارات الطلبات ورسائل الزبائن</span>
+            </div>
+          )}
         </div>
       );
     }
@@ -279,15 +296,17 @@ function Onboarding() {
   };
 
   const currentTitle = [
-    "حسابك وآمنته",
+    "الحساب والأمان",
     "هوية المتجر",
-    "ملف المتجر والإنطلاق",
+    "رقم الواتساب والتأكيد",
+    "الملف التجاري ونوع النشاط",
   ][step];
 
   const currentSubtitle = [
     "تأكيد الحساب يتم عبر البريد الإلكتروني.",
-    "أدخل رقم هاتفك وبيانات متجرك.",
-    "اختر مجال نشاطك وافتح لوحة التحكم الآن.",
+    "أدخل الاسم الكامل واسم متجرك ورابطه.",
+    "أدخل رقم الواتساب لاستقبال إشعارات الطلبات.",
+    "اختر نوع منتجاتك ومجال نشاطك وافتح لوحة التحكم.",
   ][step];
 
   const isLast = step === stepCount - 1;
@@ -299,34 +318,26 @@ function Onboarding() {
           <Logo />
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-2">
-          {Array.from({ length: stepCount }).map((_, idx) => (
-            <span
-              key={idx}
-              className={[
-                "h-1.5 w-10 rounded-full",
-                idx < step ? "bg-[#111111]" : idx === step ? "bg-[#111111]" : "bg-[#EEEEEE]",
-              ].join(" ")}
-            />
-          ))}
+        <div className="mt-6 space-y-2.5">
+          <div className="flex items-center gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={stepCount} aria-valuenow={step + 1}>
+            {Array.from({ length: stepCount }).map((_, idx) => (
+              <span
+                key={idx}
+                className={[
+                  "h-1.5 flex-1 rounded-full",
+                  idx <= step
+                    ? "bg-[#111111]"
+                    : "bg-[repeating-linear-gradient(90deg,#EEEEEE_0_6px,transparent_6px_10px)]",
+                ].join(" ")}
+                aria-hidden="true"
+              />
+            ))}
+          </div>
+          <p className="text-center text-xs text-muted-foreground num">المرحلة {step + 1} من {stepCount}</p>
         </div>
 
         <div className="mt-6 flex justify-end">
-          <div className="flex rounded-full border border-[#EEEEEE] bg-[#F5F5F5] p-1">
-            {(["ar", "fr", "en"] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setLanguage(option)}
-                className={[
-                  "rounded-full px-3 py-1.5 text-sm",
-                  language === option ? "bg-white text-[#111111] shadow-sm" : "text-muted-foreground",
-                ].join(" ")}
-              >
-                {option === "ar" ? "العربية" : option === "fr" ? "Français" : "English"}
-              </button>
-            ))}
-          </div>
+          <LanguageSwitcher value={language} onChange={setLanguage} />
         </div>
 
         <div className="mt-8 text-center">
@@ -355,7 +366,11 @@ function Onboarding() {
             </Button>
           ) : (
             <Button onClick={nextStep} disabled={!canContinueFromStep()} variant="brand" size="lg" className="rounded-full">
-              {step === 0 ? "المتابعة إلى معلومات المتجر" : "المتابعة إلى نوع النشاط"}
+              {[ 
+                "المتابعة إلى هوية المتجر",
+                "المتابعة إلى رقم الواتساب",
+                "المتابعة إلى الملف التجاري",
+              ][step]}
               <ArrowRight className="size-4" />
             </Button>
           )}

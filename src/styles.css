@@ -77,6 +77,13 @@
   --shadow-brand: var(--shadow-brand);
 }
 
+/* Latin languages (French / English) switch the whole UI to the SF Pro stack. */
+html[lang="fr"],
+html[lang="en"] {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+}
+
 :root {
   --radius: 0.875rem;
   /* page #F5F5F5 */
@@ -259,4 +266,31 @@
 
 @utility pb-safe {
   padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+}
+
+/* ---------- A6 thermal shipping labels (100x150mm, pure B/W) ---------- */
+
+/* Hidden on screen; printing renders only this exact-size copy. */
+.a6-print-root {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: 100mm 150mm;
+    margin: 0;
+  }
+
+  body > *:not(.a6-print-root) {
+    display: none !important;
+  }
+
+  .a6-print-root {
+    display: block !important;
+  }
+
+  .a6-label-break {
+    break-after: page;
+    page-break-after: always;
+  }
 }

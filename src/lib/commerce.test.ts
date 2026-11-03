@@ -2,15 +2,37 @@ import { describe, expect, it } from "vitest";
 import {
   MAX_TEAM_MEMBERS,
   MAX_TEAM_USERS,
+  calculateSubscriptionPrice,
   canOpen,
+  cleanDomainName,
   effectiveTier,
+  evaluateCustomerTrust,
+  isValidDomainName,
   isValidDzPhone,
+  languageDocumentAttributes,
+  normalizeLanguage,
   orderLimitState,
   orderTotal,
   shippingPrice,
   subscriptionState,
   suggestedStoreSlug,
 } from "./commerce";
+
+describe("language preference", () => {
+  it("falls back to Arabic for unknown or missing values", () => {
+    expect(normalizeLanguage(null)).toBe("ar");
+    expect(normalizeLanguage("zz")).toBe("ar");
+    expect(normalizeLanguage("fr")).toBe("fr");
+    expect(normalizeLanguage("EN")).toBe("ar");
+  });
+  it("Arabic is RTL with the Tajawal font", () => {
+    expect(languageDocumentAttributes("ar")).toEqual({ lang: "ar", dir: "rtl", fontClass: "font-tajawal" });
+  });
+  it("French and English are LTR with the SF Pro font stack", () => {
+    expect(languageDocumentAttributes("fr")).toEqual({ lang: "fr", dir: "ltr", fontClass: "font-sans" });
+    expect(languageDocumentAttributes("en")).toEqual({ lang: "en", dir: "ltr", fontClass: "font-sans" });
+  });
+});
 
 describe("Algerian phone validation", () => {
   it("accepts 10-digit numbers starting with 05, 06 or 07", () => {
@@ -26,6 +48,69 @@ describe("Algerian phone validation", () => {
     expect(isValidDzPhone("0450123456")).toBe(false);
     expect(isValidDzPhone("055012345")).toBe(false);
     expect(isValidDzPhone("05501234567")).toBe(false);
+  });
+});
+
+describe("customer trust radar (Spam Link Shredder)", () => {
+  const order = (phone: string, status: string, minutesAgo: number) => ({
+    customer_phone: phone,
+    status,
+    created_at: new Date(Date.parse("2026-01-01T10:00:00Z") - minutesAgo * 60_000).toISOString(),
+  });
+
+  it("high: at least one delivered order and zero cancellations", () => {
+    const tiers = [
+      order("0550123456", "delivered", 48 * 60),
+      order("0550123456", "delivered", 1440),
+    ];
+    const t = evaluateCustomerTrust(tiers, "0550 12 34 56");
+    expect(t.tier).toBe("high");
+    expect(t.totalOrders).toBe(2);
+    expect(t.delivered).toBe(2);
+    expect(t.cancelled).toBe(0);
+  });
+
+  it("neutral: first-time buyer", () => {
+    const tiers = [order("0661234567", "new", 30)];
+    expect(evaluateCustomerTrust(tiers, "0661234567").tier).toBe("neutral");
+    expect(evaluateCustomerTrust([], "0661234567").tier).toBe("neutral");
+  });
+
+  it("risky: cancellations outweigh delivered orders", () => {
+    const tiers = [order("0770123456", "cancelled", 48 * 60)];
+    const t = evaluateCustomerTrust(tiers, "0770123456");
+    expect(t.tier).toBe("risky");
+  });
+
+  it("spam: rapid duplicate orders within 15 minutes", () => {
+    const tiers = [
+      order("0555112233", "new", 10),
+      order("0555112233", "new", 5),
+    ];
+    const t = evaluateCustomerTrust(tiers, "0555112233");
+    expect(t.tier).toBe("spam");
+    expect(t.rapidDuplicates).toBe(true);
+  });
+
+  it("spam: repeated cancellations even without rapid duplicates", () => {
+    const tiers = [
+      order("0555112244", "cancelled", 96 * 60),
+      order("0555112244", "cancelled", 48 * 60),
+      order("0555112244", "delivered", 24 * 60),
+    ];
+    const t = evaluateCustomerTrust(tiers, "0555112244");
+    expect(t.tier).toBe("spam");
+    expect(t.rapidDuplicates).toBe(false);
+  });
+
+  it("orders from other phones and malformed phones are ignored", () => {
+    const tiers = [
+      order("0559110033", "cancelled", 30),
+      order("", "delivered", 40),
+    ];
+    const t = evaluateCustomerTrust(tiers, "0550112233");
+    expect(t.tier).toBe("neutral");
+    expect(t.totalOrders).toBe(0);
   });
 });
 
@@ -97,7 +182,39 @@ describe("10-day trial, grace period and read-only mode", () => {
   });
 });
 
+describe("custom domain add-on", () => {
+  it("accepts normal domains", () => {
+    expect(isValidDomainName("storename.com")).toBe(true);
+    expect(isValidDomainName("shop.lina.dz")).toBe(true);
+    expect(isValidDomainName("https://My-Shop.com/")).toBe(true);
+  });
+  it("rejects single labels, symbols and bad hyphens", () => {
+    expect(isValidDomainName("localhost")).toBe(false);
+    expect(isValidDomainName("-bad.com")).toBe(false);
+    expect(isValidDomainName("bad..com")).toBe(false);
+  });
+  it("sanitizes a pasted URL", () => {
+    expect(cleanDomainName("https://StoreName.com/path")).toBe("storename.com");
+  });
+});
+
 describe("Start and Pro plans", () => {
+  it("prices 1 to 5 months at the monthly rate", () => {
+    expect(calculateSubscriptionPrice("start", 1)).toBe(1700);
+    expect(calculateSubscriptionPrice("start", 2)).toBe(3400);
+    expect(calculateSubscriptionPrice("pro", 3)).toBe(10200);
+    expect(calculateSubscriptionPrice("pro", 5)).toBe(17000);
+  });
+  it("the 6-month promo is pay 5, get one free", () => {
+    expect(calculateSubscriptionPrice("start", 6)).toBe(8500);
+    expect(calculateSubscriptionPrice("pro", 6)).toBe(17000);
+  });
+  it("rejects out-of-range durations", () => {
+    expect(calculateSubscriptionPrice("start", 0)).toBe(0);
+    expect(calculateSubscriptionPrice("start", 7)).toBe(0);
+    expect(calculateSubscriptionPrice("pro", 1.5)).toBe(0);
+  });
+
   it("Start accepts up to 300 orders a month", () => {
     expect(orderLimitState("start", 299).reached).toBe(false);
     expect(orderLimitState("start", 300).reached).toBe(true);

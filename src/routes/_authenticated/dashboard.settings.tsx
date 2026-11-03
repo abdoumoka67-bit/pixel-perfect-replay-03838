@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Copy, ImagePlus, Loader2, Save, Target } from "lucide-react";
+import { Copy, Globe, ImagePlus, Loader2, Save, Target } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { ProPill } from "@/components/dashboard/ProLock";
+import { ProLock, ProPill } from "@/components/dashboard/ProLock";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -16,10 +16,14 @@ import { WILAYAS } from "@/data/wilayas";
 import { useMyStore } from "@/hooks/use-my-store";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
 import { PRODUCT_BUCKET, fileExt } from "@/lib/images";
+import { Badge } from "@/components/ui/badge";
 import {
+  cleanDomainName,
   cleanMetaPixelId,
   cleanTiktokPixelId,
+  CUSTOM_DOMAIN_CNAME_TARGET,
   friendlyError,
+  isValidDomainName,
   isValidMetaPixelId,
   isValidStoreSlug,
   isValidTiktokPixelId,
@@ -207,6 +211,12 @@ function SettingsPage() {
       <div className="border-t border-[#EEEEEE] pt-8">
         <StorefrontThemeSettings store={store} readOnly={readOnly} />
       </div>
+
+      <div className="border-t border-[#EEEEEE] pt-8">
+      {store ? (
+        <CustomDomainSection store={store} readOnly={readOnly} isPro={isPro} />
+      ) : null}
+      </div>
     </div>
   );
 }
@@ -270,6 +280,121 @@ function PixelCard(props: {
           {props.saving ? <Loader2 className="animate-spin" /> : <Save />} حفظ البيكسل
         </Button>
       )}
+    </div>
+  );
+}
+
+type CustomDomainConfig = { domain?: string; status?: "pending" | "active" };
+
+function readCustomDomain(config: unknown): CustomDomainConfig {
+  if (!config || typeof config !== "object") return {};
+  const cd = (config as Record<string, unknown>)["custom_domain"];
+  return typeof cd === "object" && cd !== null ? (cd as CustomDomainConfig) : {};
+}
+
+function CustomDomainSection({
+  store,
+  readOnly,
+  isPro,
+}: {
+  store: NonNullable<ReturnType<typeof useMyStore>["store"]>;
+  readOnly: boolean;
+  isPro: boolean;
+}) {
+  const qc = useQueryClient();
+  const saved = useMemo(() => readCustomDomain(store.storefront_config), [store.storefront_config]);
+  const [domain, setDomain] = useState(saved.domain ?? "");
+  const domainClean = cleanDomainName(domain);
+  const domainValid = isValidDomainName(domainClean);
+
+  const saveDomain = useMutation({
+    mutationFn: async () => {
+      const base = (store.storefront_config && typeof store.storefront_config === "object"
+        ? (store.storefront_config as Record<string, unknown>)
+        : {}) as Record<string, unknown>;
+      const next = { domain: domainClean, status: "pending" as const };
+      const { error } = await supabase
+        .from("stores")
+        .update({ storefront_config: { ...base, custom_domain: next } })
+        .eq("id", store.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("تم تسجيل الدومين. تابع تعليمات DNS ثم تنتقل الحالة إلى نشط بعد التحقق.");
+      qc.invalidateQueries({ queryKey: ["my-store"] });
+    },
+    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
+  });
+
+  if (!isPro) {
+    return (
+      <div>
+        <h2 className="mb-4 font-medium">الدومين المخصص (Custom Domain)</h2>
+        <ProLock
+          title="الدومين المخصص حصري لباقة Pro"
+          description="اربط متجرك بدومينك الخاص مثل storename.com مباشرة بدل الرابط الفرعي — متاح لمشتركي باقة Pro."
+          points={[
+            "دومينك الخاص بالكامل: storename.com",
+            "شهادة SSL تلقائية عند التحقق",
+            "توجيه DNS عبر CNAME في دقيقتين",
+          ]}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl bg-card p-6 shadow-card">
+      <div className="flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+          <Globe className="size-5" strokeWidth={1.6} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-medium">الدومين المخصص (Custom Domain)</h2>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            اربط متجرك بدومينك الخاص. أضف سجل CNAME لدى مزوّد الدومين ثم انتظر التحقق.
+          </p>
+        </div>
+        {saved.domain && (
+          <Badge variant={saved.status === "active" ? "success" : "warning"}>
+            {saved.status === "active" ? "نشط (Active)" : "قيد التحقق (Pending)"}
+          </Badge>
+        )}
+      </div>
+
+      <div className="mt-5 space-y-1.5">
+        <Label htmlFor="custom-domain">دومينك (مثال: storename.com)</Label>
+        <Input
+          id="custom-domain"
+          dir="ltr"
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+          placeholder="storename.com"
+          aria-invalid={Boolean(domain) && !domainValid}
+        />
+        {domain && !domainValid && (
+          <p className="text-xs text-destructive">دومين غير صالح: مثال صحيح storename.com (بدون https أو مسارات).</p>
+        )}
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-[#EEEEEE] bg-[#F5F5F5] p-4 text-sm leading-7">
+        <p className="font-medium">تعليمات DNS</p>
+        <p>1. افتح لوحة مزوّد الدومين لديك (مثال: Namecheap أو OVH).</p>
+        <p>
+          2. أضف سجل <b>CNAME</b> بالقيم التالية:
+          <span dir="ltr" className="num">Type: CNAME · Host: @ / www · Value: {CUSTOM_DOMAIN_CNAME_TARGET}</span>
+        </p>
+        <p>3. انتظر انتشار سجل DNS (من دقائق إلى 24 ساعة) ثم تتحول الحالة إلى نشط (Active).</p>
+      </div>
+
+      <Button
+        variant="brand"
+        className="mt-5"
+        disabled={readOnly || !domainValid || saveDomain.isPending}
+        onClick={() => saveDomain.mutate()}
+      >
+        {saveDomain.isPending ? <Loader2 className="animate-spin" /> : <Save />} حفظ الدومين
+      </Button>
     </div>
   );
 }

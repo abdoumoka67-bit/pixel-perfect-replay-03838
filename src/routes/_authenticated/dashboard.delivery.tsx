@@ -1,11 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Save, Search, Wand2 } from "lucide-react";
+import { CheckCircle2, Loader2, PlugZap, Save, Search, Wand2, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -16,6 +17,34 @@ import { friendlyError } from "@/lib/commerce";
 export const Route = createFileRoute("/_authenticated/dashboard/delivery")({
   component: DeliveryRates,
 });
+
+// ---------- Algerian carrier hub (19 companies) ----------
+
+type CarrierIntegration = { connected: boolean; api_key?: string; token?: string; account_id?: string };
+type CarrierId = string;
+
+const CARRIER_LINK_INFO: Record<CarrierId, string> = {};
+const DELIVERY_CARRIERS: Array<{ id: CarrierId; name: string; note: string }> = [
+  { id: "yalidine", name: "Yalidine Express", note: "مربوط عبر صفحة Yalidine — يرسل الطلبات مباشرة" },
+  { id: "zr-express", name: "ZR Express", note: "يشمل Stopdesk في جميع الولايات" },
+  { id: "maystro", name: "Maystro Delivery", note: "توصيل سريع ناجم/عنابة" },
+  { id: "tsl", name: "TSL Express", note: "شبكة مكاتب واسعة في الوسط والشرق" },
+  { id: "dhd", name: "DHD Express", note: "متخصص في المنازل" },
+  { id: "ecotrack", name: "Ecotrack", note: "منصة تتبع مركزية" },
+  { id: "elogistia", name: "Elogistia", note: "حلول لوجستية للتجار" },
+  { id: "anderson", name: "Anderson", note: "شبكة بلدية" },
+  { id: "economiqua", name: "Economiqua", note: "أثمنة اقتصادية" },
+  { id: "navex", name: "Navex Delivery", note: "تغطية وطنية" },
+  { id: "noest", name: "NOEST", note: "استرجاع سريع للطلبات المرفوضة" },
+  { id: "goupex", name: "Goupex", note: "توصيل جماعي بالحمولة" },
+  { id: "hr48", name: "48HR Express", note: "ضمان 48 ساعة" },
+  { id: "hr48-2", name: "48HR 2 Express", note: "خط الدعم الثاني" },
+  { id: "ecom-delivery-v2", name: "Ecom Delivery V2", note: "الإصدار الجديد" },
+  { id: "wecan", name: "WeCan Services", note: "خدمة متخصصة في DIR" },
+  { id: "zimou", name: "Zimou Express", note: "أثمنة تنافسية" },
+  { id: "osen", name: "Osen Express", note: "شبكة مكاتب بالغرب" },
+  { id: "private", name: "ساعي خاص (Private Courier)", note: "مناوب خاص — بدون API، سجل بياناته للأرشفة" },
+];
 
 type Row = { home: string; desk: string; homeOn: boolean; deskOn: boolean };
 
@@ -107,6 +136,8 @@ function DeliveryRates() {
         }
       />
 
+      {store ? <CarrierHub store={store} readOnly={readOnly} /> : null}
+
       <div className="mb-6 grid gap-4 rounded-2xl bg-card p-5 shadow-card md:grid-cols-[1fr_1fr_auto] md:items-end">
         <div className="space-y-1.5">
           <Label>السعر الافتراضي للمنزل (د.ج)</Label>
@@ -174,5 +205,159 @@ function DeliveryRates() {
         </ul>
       </div>
     </>
+  );
+}
+
+function readCarrierConfig(config: unknown): Partial<Record<CarrierId, CarrierIntegration>> {
+  if (!config || typeof config !== "object") return {};
+  const dc = (config as Record<string, unknown>)["delivery_integrations"];
+  return typeof dc === "object" && dc !== null ? (dc as Partial<Record<CarrierId, CarrierIntegration>>) : {};
+}
+
+function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof useMyStore>["store"]>; readOnly: boolean }) {
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState<CarrierId | null>(null);
+  const [form, setForm] = useState<CarrierIntegration>({ connected: false });
+
+  const yalidineCreds = useQuery({
+    queryKey: ["yalidine", store.id],
+    queryFn: async () => {
+      const { error } = await supabase.from("yalidine_credentials").select("api_id").eq("store_id", store.id).limit(1);
+      if (error) throw error;
+      return true;
+    },
+  });
+
+  const integrations = useMemo(() => readCarrierConfig(store.storefront_config), [store.storefront_config]);
+  const editingCarrier = DELIVERY_CARRIERS.find((c) => c.id === editing) ?? null;
+
+  const openLink = (carrier: (typeof DELIVERY_CARRIERS)[number]) => {
+    setForm(integrations[carrier.id] ?? { connected: false });
+    setEditing(carrier.id);
+  };
+
+  const saveCarrier = useMutation({
+    mutationFn: async (): Promise<void> => {
+      if (!editing) return;
+      const next = { ...readCarrierConfig(store.storefront_config), [editing]: form };
+      const base = (store.storefront_config && typeof store.storefront_config === "object"
+        ? (store.storefront_config as Record<string, unknown>)
+        : {}) as Record<string, unknown>;
+      const { error } = await supabase
+        .from("stores")
+        .update({ storefront_config: { ...base, delivery_integrations: next } })
+        .eq("id", store.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("تم حفظ بيانات الربط");
+      qc.invalidateQueries({ queryKey: ["my-store"] });
+      setEditing(null);
+    },
+    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
+  });
+
+  return (
+    <section className="mb-10">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-brand-soft text-brand">
+          <Truck className="size-5" strokeWidth={1.6} />
+        </span>
+        <div className="flex-1">
+          <h2 className="font-medium">شركات التوصيل الجزائرية</h2>
+          <p className="text-xs text-muted-foreground">اربط حسابك عند شركتك المفضلة من {DELIVERY_CARRIERS.length} شركة مدعومة.</p>
+        </div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {DELIVERY_CARRIERS.map((carrier) => {
+          const linked =
+            carrier.id === "yalidine" ? Boolean(yalidineCreds.data) : Boolean(integrations[carrier.id]?.connected);
+          return (
+            <div key={carrier.id} className="flex flex-col gap-3 rounded-2xl bg-card p-4 shadow-card">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{carrier.name}</p>
+                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{carrier.note}</p>
+                </div>
+                <span
+                  className={[
+                    "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                    linked ? "bg-success-soft text-success" : "bg-muted text-muted-foreground",
+                  ].join(" ")}
+                >
+                  {linked ? <CheckCircle2 className="size-3" /> : null}
+                  {linked ? "مربوط" : "غير مفعل"}
+                </span>
+              </div>
+              {carrier.id === "yalidine" ? (
+                <Button asChild variant={linked ? "outline" : "brand"} size="sm" className="mt-auto w-full">
+                  <Link to="/dashboard/yalidine">
+                    <PlugZap /> إدارة ربط Yalidine
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  variant={linked ? "outline" : "brand"}
+                  size="sm"
+                  className="mt-auto w-full"
+                  disabled={readOnly}
+                  onClick={() => openLink(carrier)}
+                >
+                  <PlugZap /> {linked ? "تعديل بيانات الربط" : "ربط API"}
+                </Button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ربط API — {editingCarrier?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>API Key</Label>
+              <Input
+                dir="ltr"
+                value={form.api_key ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, api_key: e.target.value }))}
+                placeholder="مثال: ak_123456"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Token</Label>
+              <Input
+                dir="ltr"
+                value={form.token ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, token: e.target.value }))}
+                placeholder="مثال: eyJhbGciOi..."
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Account ID</Label>
+              <Input
+                dir="ltr"
+                value={form.account_id ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, account_id: e.target.value }))}
+                placeholder="رقم حسابك لدى الناقل"
+              />
+            </div>
+            <p className="rounded-xl bg-warning-soft px-3 py-2 text-xs leading-5 text-warning">
+              تُحفظ المفاتيح حالياً في إعدادات متجرك، وسيتم تشغيل الإرسال التلقائي لكل شركة تدريجياً.
+            </p>
+            <Button
+              variant="brand"
+              className="w-full"
+              onClick={() => saveCarrier.mutate()}
+              disabled={saveCarrier.isPending}
+            >
+              {saveCarrier.isPending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />} حفظ الربط
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </section>
   );
 }

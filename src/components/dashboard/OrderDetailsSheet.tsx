@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusBadge } from "./StatusBadge";
+import { SpamShredderAlert, TrustRadarBadge, TrustStatsLine } from "./TrustRadarBadge";
 import {
   CALL_LABELS,
   CALL_OUTCOMES,
@@ -18,6 +19,7 @@ import {
   friendlyError,
   whatsappLink,
   type CallOutcome,
+  type CustomerTrust,
   type OrderStatus,
 } from "@/lib/commerce";
 import { sendOrderToYalidine } from "@/lib/yalidine.functions";
@@ -82,11 +84,13 @@ export function OrderDetailsSheet({
   order,
   storeName,
   readOnly,
+  trust,
   onOpenChange,
 }: {
   order: Order | null;
   storeName: string;
   readOnly: boolean;
+  trust?: CustomerTrust | null;
   onOpenChange: (open: boolean) => void;
 }) {
   const qc = useQueryClient();
@@ -135,6 +139,24 @@ export function OrderDetailsSheet({
     onError: (e: Error) => toast.error(friendlyError(e.message)),
   });
 
+  const blockSpam = useMutation({
+    mutationFn: async () => {
+      if (!order) return;
+      // Client-side deterrent: the store phone blocklist table is a Lovable migration.
+      const stamp = `🚫 تم حظر الرقم ${order.phone} عبر رادار الثقة (${new Date().toLocaleDateString("ar-DZ")}). لا تقبلوا طلبات جديدة منه.`;
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: "cancelled" as OrderStatus, notes: order.notes ? `${order.notes}\n${stamp}` : stamp })
+        .eq("id", order.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("تم رفض الطلب وسجل حظر الرقم في ملاحظاته");
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(friendlyError(e.message)),
+  });
+
   return (
     <Sheet open={!!order} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-full overflow-y-auto sm:max-w-md">
@@ -150,8 +172,23 @@ export function OrderDetailsSheet({
 
             <div className="mt-6 space-y-6">
               <section className="rounded-2xl bg-muted/60 p-4">
-                <p className="text-lg font-medium">{order.customer_name}</p>
-                <p className="mt-0.5 text-sm text-muted-foreground num">{order.phone}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-lg font-medium">{order.customer_name}</p>
+                  <TrustRadarBadge trust={trust} />
+                </div>
+                <div className="flex items-center gap-3">
+                  <p className="mt-0.5 text-sm text-muted-foreground num">{order.phone}</p>
+                </div>
+                <TrustStatsLine trust={trust} />
+                {trust?.tier === "spam" && (
+                  <div className="mt-3">
+                    <SpamShredderAlert
+                      busy={blockSpam.isPending}
+                      onReject={() => updateStatus.mutate({ id: order.id, status: "cancelled" })}
+                      onBlock={() => blockSpam.mutate()}
+                    />
+                  </div>
+                )}
                 <p className="mt-2 text-sm">
                   {order.commune}، {order.wilaya_code} - {order.wilaya_name}
                   {order.address ? ` · ${order.address}` : ""}
