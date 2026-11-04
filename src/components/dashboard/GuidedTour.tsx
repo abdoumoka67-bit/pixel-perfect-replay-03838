@@ -57,8 +57,15 @@ export function GuidedTour() {
 
   useEffect(() => {
     if (!open) return;
-    const currentTarget = document.getElementById(steps[stepIndex]?.id ?? "");
+    const id = steps[stepIndex]?.id ?? "";
+    // The same target can exist in the desktop sidebar and the phone bottom bar; use the one actually on screen.
+    const findVisible = () =>
+      Array.from(document.querySelectorAll<HTMLElement>(`#${id}, [data-tour="${id}"]`)).find((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
+      });
     const updateHighlight = () => {
+      const currentTarget = findVisible();
       if (!currentTarget) {
         setHighlight(null);
         return;
@@ -80,9 +87,13 @@ export function GuidedTour() {
     if (!highlight) {
       return { left: "50%", top: "50%", transform: "translate(-50%, -50%)" };
     }
-    const x = Math.max(24, Math.min(window.innerWidth - 340, highlight.left + highlight.width / 2 - 170));
-    const y = Math.max(32, highlight.top - 180);
-    return { left: `${x}px`, top: `${y}px` };
+    const width = Math.min(360, window.innerWidth - 32);
+    const x = Math.max(16, Math.min(window.innerWidth - width - 16, highlight.left + highlight.width / 2 - width / 2));
+    // Lower half of the screen: open above the target; upper half: open below it.
+    if (highlight.top > window.innerHeight / 2) {
+      return { left: `${x}px`, bottom: `${window.innerHeight - highlight.top + 16}px` };
+    }
+    return { left: `${x}px`, top: `${highlight.top + highlight.height + 16}px` };
   }, [highlight]);
 
   if (!open || !step) return null;

@@ -118,7 +118,7 @@ function SettingsPage() {
     <div className="space-y-10">
       <PageHeader title="إعدادات المتجر" description="هوية متجرك، معلومات التواصل، ومظهر صفحة الهبوط." actions={<RestartTourButton />} />
       <form
-        className="grid gap-6 lg:grid-cols-[1.4fr_1fr]"
+        className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]"
         onSubmit={(e) => {
           e.preventDefault();
           save.mutate();
@@ -182,8 +182,8 @@ function SettingsPage() {
           <div className="h-fit rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
             <h2 className="font-medium">رابط متجرك</h2>
             <p className="mt-1 text-sm text-sidebar-muted">شاركه في البايو على إنستغرام وتيك توك.</p>
-            <div className="mt-4 flex items-center gap-2 rounded-xl bg-sidebar-accent px-4 py-3">
-              <span className="flex-1 truncate text-sm" dir="ltr">{storeUrl}</span>
+            <div className="mt-4 flex min-w-0 items-center gap-2 rounded-xl bg-sidebar-accent px-4 py-3">
+              <span className="min-w-0 flex-1 truncate text-sm" dir="ltr">{storeUrl}</span>
               <button
                 type="button"
                 className="rounded-lg p-1.5 text-sidebar-muted hover:text-sidebar-foreground"
