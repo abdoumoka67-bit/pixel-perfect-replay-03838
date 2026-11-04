@@ -8,45 +8,14 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { MoonStar, SunMedium } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { applyLanguageToDocument, normalizeLanguage } from "@/lib/commerce";
 import { Toaster } from "@/components/ui/sonner";
+import { applyStoredTheme } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
-
-const THEME_STORAGE_KEY = "oranix-theme";
-
-function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof window === "undefined") return "light";
-
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY) as "light" | "dark" | null;
-    return stored === "dark" ? "dark" : "light";
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const isDark = theme === "dark";
-
-    root.classList.toggle("dark", isDark);
-    root.style.colorScheme = isDark ? "dark" : "light";
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
-
-  return (
-    <button
-      type="button"
-      aria-label={theme === "dark" ? "تبديل إلى الوضع الفاتح" : "تبديل إلى الوضع الداكن"}
-      onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
-      className="fixed left-4 top-4 z-50 inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card/90 text-foreground shadow-card backdrop-blur-sm transition-transform duration-200 hover:scale-[1.02]"
-    >
-      {theme === "dark" ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
-    </button>
-  );
-}
 
 function NotFoundComponent() {
   return (
@@ -138,6 +107,7 @@ function RootComponent() {
   useEffect(() => {
     // Mirror the stored language (oranix_lang) onto <html lang/dir/font>.
     applyLanguageToDocument(normalizeLanguage(window.localStorage.getItem("oranix_lang")));
+    applyStoredTheme();
   }, []);
 
   useEffect(() => {
@@ -151,7 +121,6 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeToggle />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster position="top-center" dir="rtl" richColors />
