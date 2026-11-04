@@ -17,12 +17,16 @@ import {
   normalizeDzPhone,
   suggestedStoreSlug,
 } from "@/lib/commerce";
-import { myStoreQuery } from "@/hooks/use-my-store";
+import { isAdminQuery, myStoreQuery } from "@/hooks/use-my-store";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   beforeLoad: async ({ context }) => {
     const store = await context.queryClient.ensureQueryData(myStoreQuery);
-    if (store) throw redirect({ to: "/dashboard" });
+    if (!store) return { reviewMode: false };
+    // Platform admins may revisit onboarding to review the design; nothing is saved.
+    const isAdmin = await context.queryClient.ensureQueryData(isAdminQuery);
+    if (!isAdmin) throw redirect({ to: "/dashboard" });
+    return { reviewMode: true };
   },
   head: () => ({
     meta: [
@@ -76,7 +80,7 @@ function storeCreationErrorMessage(error: { code?: string; message: string; deta
 }
 
 function Onboarding() {
-  const { user } = Route.useRouteContext();
+  const { user, reviewMode } = Route.useRouteContext();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [step, setStep] = useState(0);
@@ -124,6 +128,11 @@ function Onboarding() {
     }
     if (!isValidDzPhone(phone)) {
       toast.error("رقم الهاتف غير صحيح: يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.");
+      return;
+    }
+    if (reviewMode) {
+      toast.success("وضع مراجعة المدير: انتهت المراحل بدون إنشاء متجر جديد.");
+      await navigate({ to: "/dashboard" });
       return;
     }
     setBusy(true);

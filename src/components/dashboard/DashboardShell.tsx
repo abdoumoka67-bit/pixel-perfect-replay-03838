@@ -150,6 +150,13 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
           >
             <ShieldCheck className="size-[19px]" strokeWidth={1.6} /> لوحة الإدارة
           </Link>
+          <Link
+            to="/onboarding"
+            onClick={onNavigate}
+            className={cn("flex items-center gap-3", t.item, t.idle)}
+          >
+            <ShieldCheck className="size-[19px]" strokeWidth={1.6} /> مراجعة مراحل إنشاء المتجر
+          </Link>
         </div>
       )}
     </nav>
