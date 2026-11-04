@@ -13,6 +13,7 @@ import { isAdminQuery, useMyStore } from "@/hooks/use-my-store";
 import { getFeaturePlanBadge, MEMBER_ROLE_LABELS, PRO_AREAS, canOpen } from "@/lib/commerce";
 import { ProPill } from "./ProLock";
 import { GuidedTour } from "./GuidedTour";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 function useSignOut() {
   const queryClient = useQueryClient();
@@ -62,7 +63,7 @@ function PlanBadge({ plan }: { plan: "Start" | "Pro" }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
-        isPro ? "bg-brand-soft text-brand" : "bg-primary/5 text-primary",
+        isPro ? "bg-brand-soft text-brand" : "border border-current/30 text-muted-foreground",
       )}
     >
       {plan}
@@ -223,12 +224,19 @@ function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) 
   );
 }
 
+const TOUR_TARGETS: Partial<Record<NavItem["to"], string>> = {
+  "/dashboard": "tour-overview",
+  "/dashboard/orders": "tour-orders",
+  "/dashboard/products": "tour-products",
+  "/dashboard/analytics": "tour-analytics",
+};
+
 function BottomNav() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { access } = useMyStore();
   const BOTTOM_NAV = MAIN_NAV.filter((i) => canOpen(access, i.area)).slice(0, 4);
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 pb-safe backdrop-blur md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 pb-safe backdrop-blur lg:hidden">
       <div className="grid" style={{ gridTemplateColumns: `repeat(${BOTTOM_NAV.length}, minmax(0, 1fr))` }}>
         {BOTTOM_NAV.map((item) => {
           const active = item.to === "/dashboard" ? path === "/dashboard" || path === "/dashboard/" : path.startsWith(item.to);
@@ -236,8 +244,9 @@ function BottomNav() {
             <Link
               key={item.to}
               to={item.to}
+              data-tour={TOUR_TARGETS[item.to]}
               className={cn(
-                "flex flex-col items-center gap-1 pt-2.5 text-[11px] font-medium",
+                "flex min-w-0 flex-col items-center gap-1 pt-2.5 text-[11px] font-medium",
                 active ? "text-brand" : "text-muted-foreground",
               )}
             >
@@ -306,7 +315,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <GuidedTour />
-      <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 md:block">
+      <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 lg:block">
         <SidebarBody />
       </aside>
 
@@ -317,13 +326,13 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </SheetContent>
       </Sheet>
 
-      <div className="md:ps-64">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card/90 px-4 backdrop-blur md:hidden">
+      <div className="overflow-x-clip lg:ps-64">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card/90 px-4 backdrop-blur lg:hidden">
           <button onClick={() => setOpen(true)} className="rounded-lg p-2 hover:bg-secondary" aria-label="فتح القائمة">
             <Menu className="size-5" />
           </button>
           <Logo />
-          <span className="w-9" />
+          <ThemeToggle />
         </header>
 
         {store && sub && sub.isTrial && sub.daysLeft <= 2 && (
@@ -336,16 +345,17 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         )}
 
         <div className="border-b bg-card/95 px-4 py-2 md:px-8">
-          <div className="mx-auto flex max-w-[1400px] items-center justify-end gap-3">
+          <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-end gap-2 sm:gap-3">
             <LanguageSwitcher value={language} onChange={setLanguage} className="hidden sm:flex" />
+            <ThemeToggle className="hidden lg:inline-flex" />
             {sub?.isTrial && (
               <Link
                 to="/dashboard/billing"
-                className="inline-flex items-center rounded-full border border-border bg-white px-3 py-1.5 text-sm text-foreground shadow-sm"
+                className="inline-flex max-w-full items-center rounded-full border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm"
               >
-                <span className="inline-flex items-center gap-2">
-                  <span className="inline-flex size-2 rounded-full bg-brand" />
-                  <span>تجربة Pro مجانية · بقي {sub.daysLeft} أيام</span>
+                <span className="inline-flex min-w-0 items-center gap-2">
+                  <span className="inline-flex size-2 shrink-0 rounded-full bg-brand" />
+                  <span className="truncate">تجربة Pro مجانية · بقي {sub.daysLeft} أيام</span>
                 </span>
               </Link>
             )}
@@ -353,7 +363,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </div>
 
         <SubscriptionBanner />
-        <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pb-12 md:pt-8">{children}</main>
+        <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pt-8 lg:pb-12">{children}</main>
       </div>
       <BottomNav />
     </div>

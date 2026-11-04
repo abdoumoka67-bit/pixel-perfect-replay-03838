@@ -22,3 +22,4 @@
 - Pro-only pages render `ProLock` instead of data; the matching SQL functions/policies also reject Start stores, so the lock is never the only protection.
 - Storefront ad pixels load only from `src/lib/pixels.ts` (IDs re-validated before injection); pages call `trackPixel` for commerce events instead of touching `fbq`/`ttq` directly.
 - Storefront look/sections live in stores.storefront_config (jsonb), parsed only through src/lib/storefront-theme.ts so old stores fall back to defaults.
+- Dashboard shows the fixed sidebar only from `lg` (1024px); below that it uses the drawer + bottom bar, so iPhone Safari "desktop website" mode (~980px) still gets the phone layout. Grid layouts with long text use `minmax(0,…)` columns so content can never widen the page.
