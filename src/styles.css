@@ -134,11 +134,11 @@ html[lang="en"] {
   --info: #1A428A;
   --info-soft: #EBF2FF;
 
-  /* Oranix Brand Accent (Subtle, controlled) */
-  --brand: #EA580C;
-  --brand-strong: #C2410C;
+  /* Shopify Official Signature Brand Accent */
+  --brand: #008060;
+  --brand-strong: #004C3F;
   --brand-foreground: #FFFFFF;
-  --brand-soft: #FFF0E6;
+  --brand-soft: #E3F1EC;
 
   --notify: #EF4444;
 
@@ -170,59 +170,59 @@ html[lang="en"] {
 }
 
 .dark {
-  --background: oklch(0.12 0.016 248);
-  --sand: oklch(0.15 0.016 248);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.17 0.014 248);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.17 0.014 248);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.86 0.08 41.1);
-  --primary-foreground: oklch(0.12 0.016 248);
-  --secondary: oklch(0.22 0.02 248);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.18 0.014 248);
-  --muted-foreground: oklch(0.76 0 0);
-  --accent: oklch(0.22 0.02 248);
-  --accent-foreground: oklch(0.98 0 0);
-  --table-header: oklch(0.2 0.014 248);
-  --notify: oklch(0.7 0.18 25.3);
-  --brand: oklch(0.75 0.2 41.1);
-  --brand-strong: oklch(0.8 0.22 41.1);
-  --brand-foreground: oklch(0.12 0.016 248);
-  --brand-soft: oklch(0.75 0.2 41.1 / 0.16);
-  --success: oklch(0.8 0.16 149.6);
-  --success-soft: oklch(0.8 0.16 149.6 / 0.15);
-  --warning: oklch(0.82 0.15 70.1);
-  --warning-soft: oklch(0.82 0.15 70.1 / 0.16);
-  --destructive: oklch(0.73 0.18 16.4);
-  --destructive-foreground: oklch(0.98 0 0);
-  --danger-soft: oklch(0.73 0.18 16.4 / 0.16);
-  --info: oklch(0.7 0.18 257.8);
-  --info-soft: oklch(0.7 0.18 257.8 / 0.14);
-  --border: oklch(0.29 0.02 248);
-  --input: oklch(0.27 0.02 248);
-  --ring: oklch(0.98 0 0 / 0.36);
-  --chart-1: oklch(0.75 0.2 41.1);
-  --chart-2: oklch(0.88 0.08 41.1);
-  --chart-3: oklch(0.8 0.16 149.6);
-  --chart-4: oklch(0.82 0.15 70.1);
-  --chart-5: oklch(0.76 0.18 25.3);
-  --sidebar: oklch(0.08 0.01 248);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-muted: oklch(0.7 0 0);
-  --sidebar-primary: oklch(0.75 0.2 41.1);
-  --sidebar-primary-foreground: oklch(0.12 0.016 248);
-  --sidebar-accent: oklch(0.18 0.014 248);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.24 0.014 248);
-  --sidebar-ring: oklch(0.75 0.2 41.1);
-  --shadow-card: 0 0 0 1px var(--border), 0 10px 24px oklch(0 0 0 / 0.32);
-  --shadow-float: 0 0 0 1px var(--border), 0 20px 55px -20px oklch(0 0 0 / 0.42);
-  --shadow-brand: 0 0 0 1px color-mix(in srgb, var(--brand) 32%, transparent), 0 12px 30px color-mix(in srgb, var(--brand) 22%, transparent);
+  --background: #0B0C0D;
+  --sand: #0B0C0D;
+  --card: #141517;
+  --card-foreground: #E3E5E8;
+  --popover: #141517;
+  --popover-foreground: #E3E5E8;
+  --foreground: #E3E5E8;
+  --muted: #1A1C1E;
+  --muted-foreground: #8C9196;
+  --primary: #FFFFFF;
+  --primary-foreground: #0B0C0D;
+  --secondary: #1A1C1E;
+  --secondary-foreground: #E3E5E8;
+  --accent: #1A1C1E;
+  --accent-foreground: #E3E5E8;
+  --table-header: #141517;
+  --border: #2E3033;
+  --input: #2E3033;
+  --ring: rgba(255, 255, 255, 0.2);
+  --success: #22C55E;
+  --success-soft: rgba(34, 197, 94, 0.12);
+  --warning: #EAB308;
+  --warning-soft: rgba(234, 179, 8, 0.12);
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --info: #3B82F6;
+  --info-soft: rgba(59, 130, 246, 0.12);
+  --brand: #10B981;
+  --brand-strong: #059669;
+  --brand-foreground: #0B0C0D;
+  --brand-soft: rgba(16, 185, 129, 0.14);
+  --notify: #EF4444;
+  --chart-1: #10B981;
+  --chart-2: #E3E5E8;
+  --chart-3: #22C55E;
+  --chart-4: #EAB308;
+  --chart-5: #8C9196;
+  --sidebar: #0B0C0D;
+  --sidebar-foreground: #E3E5E8;
+  --sidebar-muted: #8C9196;
+  --sidebar-primary: #10B981;
+  --sidebar-primary-foreground: #0B0C0D;
+  --sidebar-accent: #1A1C1E;
+  --sidebar-accent-foreground: #E3E5E8;
+  --sidebar-border: #2E3033;
+  --sidebar-ring: #10B981;
+  --shadow-card: 0 0 0 1px var(--border), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-float: 0 0 0 1px var(--border), 0 12px 32px -8px rgba(0, 0, 0, 0.5);
+  --shadow-brand: none;
   --gradient-brand: linear-gradient(135deg, var(--brand), var(--brand-strong));
   --gradient-hero: linear-gradient(var(--card), var(--card));
-  --gradient-dark: linear-gradient(135deg, oklch(0.12 0.016 248) 0%, oklch(0.16 0.02 248) 60%, oklch(0.2 0.02 248) 100%);
+  --gradient-dark: linear-gradient(135deg, #0B0C0D 0%, #141517 60%, #1A1C1E 100%);
 }
 
 @layer base {
