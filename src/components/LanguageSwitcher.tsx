@@ -40,7 +40,7 @@ export function LanguageSwitcher({
       dir="ltr"
       role="group"
       aria-label="اختيار اللغة"
-      className={cn("flex rounded-full border border-[#EEEEEE] bg-[#F5F5F5] p-1", className)}
+      className={cn("flex rounded-full border border-border bg-background p-1", className)}
     >
       {LANGUAGE_OPTIONS.map((option) => (
         <button
@@ -50,7 +50,7 @@ export function LanguageSwitcher({
           onClick={() => onChange(option.value)}
           className={cn(
             "rounded-full px-3 py-1.5 text-sm transition-colors",
-            option.value === value ? "bg-white text-[#111111] shadow-sm" : "text-muted-foreground hover:text-foreground",
+            option.value === value ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
           )}
         >
           {option.label}

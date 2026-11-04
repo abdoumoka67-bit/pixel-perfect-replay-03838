@@ -62,7 +62,7 @@ function PlanBadge({ plan }: { plan: "Start" | "Pro" }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
-        isPro ? "bg-[#EA580C]/10 text-[#EA580C]" : "bg-[#111111]/5 text-[#111111]",
+        isPro ? "bg-brand-soft text-brand" : "bg-primary/5 text-primary",
       )}
     >
       {plan}
@@ -320,9 +320,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </header>
 
         {store && sub && sub.isTrial && sub.daysLeft <= 2 && (
-          <div className="border-b border-[#EA580C]/20 bg-[#EA580C]/10 px-4 py-3 text-sm text-[#EA580C] md:px-8">
+          <div className="border-b border-brand/20 bg-brand-soft px-4 py-3 text-sm text-brand md:px-8">
             <div className="mx-auto flex max-w-[1400px] items-center gap-2">
-              <span className="inline-flex size-2 rounded-full bg-[#EA580C]" />
+              <span className="inline-flex size-2 rounded-full bg-brand" />
               <span>تنبيه: تنتهي تجربتك المجانية بعد {sub.daysLeft === 1 ? "يوم واحد" : `${sub.daysLeft} أيام`}. اختر باقتك الآن للاستمرار.</span>
             </div>
           </div>
@@ -334,10 +334,10 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             {sub?.isTrial && (
               <Link
                 to="/dashboard/billing"
-                className="inline-flex items-center rounded-full border border-[#EEEEEE] bg-white px-3 py-1.5 text-sm text-foreground shadow-sm"
+                className="inline-flex items-center rounded-full border border-border bg-white px-3 py-1.5 text-sm text-foreground shadow-sm"
               >
                 <span className="inline-flex items-center gap-2">
-                  <span className="inline-flex size-2 rounded-full bg-[#EA580C]" />
+                  <span className="inline-flex size-2 rounded-full bg-brand" />
                   <span>تجربة Pro مجانية · بقي {sub.daysLeft} أيام</span>
                 </span>
               </Link>

@@ -198,7 +198,7 @@ export function StorefrontThemeSettings({
         {/* Main Configuration Card */}
         <div className="space-y-6">
           {/* Colors & Hero config card */}
-          <div className="space-y-5 rounded-2xl border border-[#EEEEEE] bg-card p-6 shadow-card">
+          <div className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card">
             <h3 className="text-base font-bold text-foreground">الواجهة الرئيسية (Hero)</h3>
 
             {/* 6 Round Swatches */}
@@ -218,7 +218,7 @@ export function StorefrontThemeSettings({
                       className={cn(
                         "relative flex size-11 items-center justify-center rounded-full transition-transform hover:scale-105 active:scale-95 disabled:pointer-events-none",
                         isSelected
-                          ? "ring-2 ring-[#111111] ring-offset-2 scale-105"
+                          ? "ring-2 ring-primary ring-offset-2 scale-105"
                           : "border border-border/80",
                       )}
                       style={{
@@ -284,7 +284,7 @@ export function StorefrontThemeSettings({
 
             {/* Announcement Bar */}
             <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between rounded-xl border border-[#EEEEEE] p-3.5">
+              <div className="flex items-center justify-between rounded-xl border border-border p-3.5">
                 <div>
                   <Label htmlFor="sw-bar" className="cursor-pointer text-sm font-medium">
                     شريط الإعلانات العلوي
@@ -327,7 +327,7 @@ export function StorefrontThemeSettings({
             </div>
 
             {/* 1. FAQ Card */}
-            <div className="space-y-4 rounded-2xl border border-[#EEEEEE] bg-card p-5 shadow-card">
+            <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-bold text-foreground">الأسئلة الشائعة (FAQ)</p>
@@ -341,7 +341,7 @@ export function StorefrontThemeSettings({
                   {faqItems.map((item, idx) => (
                     <div
                       key={idx}
-                      className="space-y-2 rounded-xl border border-[#EEEEEE] bg-background/50 p-3.5"
+                      className="space-y-2 rounded-xl border border-border bg-background/50 p-3.5"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-muted-foreground">
@@ -394,7 +394,7 @@ export function StorefrontThemeSettings({
             </div>
 
             {/* 2. Reviews Card */}
-            <div className="space-y-4 rounded-2xl border border-[#EEEEEE] bg-card p-5 shadow-card">
+            <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-bold text-foreground">تقييمات وآراء العملاء</p>
@@ -420,7 +420,7 @@ export function StorefrontThemeSettings({
                   {reviewItems.map((rev, idx) => (
                     <div
                       key={idx}
-                      className="space-y-2.5 rounded-xl border border-[#EEEEEE] bg-background/50 p-3.5"
+                      className="space-y-2.5 rounded-xl border border-border bg-background/50 p-3.5"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1">
@@ -437,7 +437,7 @@ export function StorefrontThemeSettings({
                                 className={cn(
                                   "size-4",
                                   star <= rev.rating
-                                    ? "fill-[#EA580C] text-[#EA580C]"
+                                    ? "fill-brand text-brand"
                                     : "fill-muted text-muted-foreground/30",
                                 )}
                               />
@@ -493,7 +493,7 @@ export function StorefrontThemeSettings({
             </div>
 
             {/* 3. Social Links Card */}
-            <div className="space-y-4 rounded-2xl border border-[#EEEEEE] bg-card p-5 shadow-card">
+            <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-bold text-foreground">روابط التواصل الاجتماعي</p>
@@ -562,7 +562,7 @@ export function StorefrontThemeSettings({
             </div>
 
             {/* 4. Trust Badges Card */}
-            <div className="space-y-4 rounded-2xl border border-[#EEEEEE] bg-card p-5 shadow-card">
+            <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-bold text-foreground">شارات الثقة والضمان</p>
@@ -591,7 +591,7 @@ export function StorefrontThemeSettings({
                         className={cn(
                           "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium transition-colors disabled:pointer-events-none",
                           active
-                            ? "border-[#111111] bg-[#111111] text-white"
+                            ? "border-primary bg-primary text-primary-foreground"
                             : "border-border bg-card text-muted-foreground hover:border-foreground/50",
                         )}
                       >
@@ -609,7 +609,7 @@ export function StorefrontThemeSettings({
         {/* Live Preview Column (Sticky on Desktop) */}
         <div className="space-y-6">
           <div className="sticky top-6 space-y-4">
-            <div className="overflow-hidden rounded-2xl border border-[#EEEEEE] bg-card shadow-card">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
               <div className="flex items-center justify-between border-b bg-muted/60 px-4 py-2.5 text-xs text-muted-foreground">
                 <span className="font-medium">معاينة مباشرة</span>
                 <span className="rounded-full bg-card px-2.5 py-0.5 text-[11px] font-medium border text-foreground">
@@ -618,7 +618,7 @@ export function StorefrontThemeSettings({
               </div>
 
               {barEnabled && (
-                <div className="bg-[#111111] px-3 py-2 text-center text-xs text-white">
+                <div className="bg-primary px-3 py-2 text-center text-xs text-white">
                   {barText || "مرحبا بك في متجرنا"}
                 </div>
               )}
@@ -643,12 +643,12 @@ export function StorefrontThemeSettings({
             </div>
 
             {/* Save Button */}
-            <div className="rounded-2xl border border-[#EEEEEE] bg-card p-5 shadow-card space-y-3">
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-card space-y-3">
               <Button
                 type="button"
                 onClick={() => saveTheme.mutate()}
                 disabled={saveTheme.isPending || readOnly}
-                className="w-full rounded-full bg-[#111111] text-white hover:bg-[#222222]"
+                className="w-full rounded-full bg-primary text-primary-foreground hover:opacity-90"
               >
                 {saveTheme.isPending ? (
                   <Loader2 className="animate-spin" />

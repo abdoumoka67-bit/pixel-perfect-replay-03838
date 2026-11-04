@@ -181,7 +181,7 @@ function Storefront() {
                     key={badgeKey}
                     className="flex flex-col items-center gap-3 rounded-2xl border bg-card p-5 text-center shadow-card"
                   >
-                    <div className="flex size-12 items-center justify-center rounded-full bg-[#EA580C]/10 text-[#EA580C]">
+                    <div className="flex size-12 items-center justify-center rounded-full bg-brand-soft text-brand">
                       <Icon className="size-6" strokeWidth={1.5} />
                     </div>
                     <span className="text-sm font-medium leading-relaxed">{badge.label}</span>
@@ -202,7 +202,7 @@ function Storefront() {
               {config.sections.reviews.items.map((rev, i) => (
                 <div
                   key={i}
-                  className="flex flex-col justify-between rounded-2xl border border-[#EEEEEE] bg-card p-6 shadow-card"
+                  className="flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-card"
                 >
                   <div>
                     <div className="mb-3 flex items-center gap-1">
@@ -212,7 +212,7 @@ function Storefront() {
                           className={cn(
                             "size-4",
                             starIndex < rev.rating
-                              ? "fill-[#EA580C] text-[#EA580C]"
+                              ? "fill-brand text-brand"
                               : "fill-muted text-muted-foreground/30",
                           )}
                           strokeWidth={1.5}
@@ -248,7 +248,7 @@ function Storefront() {
                   href={whatsappLink(socialWhatsapp, `السلام عليكم، عندي استفسار عن متجر ${store.name}`)}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-[#111111] hover:bg-secondary"
+                  className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary hover:bg-secondary"
                   aria-label="واتساب"
                 >
                   <MessageCircle className="size-5" strokeWidth={1.5} />
@@ -259,7 +259,7 @@ function Storefront() {
                   href={socialInstagram}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-[#111111] hover:bg-secondary"
+                  className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary hover:bg-secondary"
                   aria-label="إنستغرام"
                 >
                   <Instagram className="size-5" strokeWidth={1.5} />
@@ -270,7 +270,7 @@ function Storefront() {
                   href={socialFacebook}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-[#111111] hover:bg-secondary"
+                  className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary hover:bg-secondary"
                   aria-label="فيسبوك"
                 >
                   <Facebook className="size-5" strokeWidth={1.5} />
@@ -281,7 +281,7 @@ function Storefront() {
                   href={socialTiktok}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-[#111111] hover:bg-secondary"
+                  className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary hover:bg-secondary"
                   aria-label="تيك توك"
                 >
                   <TikTokIcon className="size-5" />

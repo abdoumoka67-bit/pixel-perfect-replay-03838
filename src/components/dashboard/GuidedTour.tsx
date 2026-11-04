@@ -21,10 +21,10 @@ export function RestartTourButton({ className }: { className?: string }) {
       }}
       className={
         className ||
-        "inline-flex items-center gap-1.5 rounded-full border border-[#EEEEEE] bg-white px-3.5 py-1.5 text-xs font-medium text-[#111111] hover:bg-[#F5F5F5] transition-colors"
+        "inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-medium text-primary hover:bg-background transition-colors"
       }
     >
-      <Sparkles className="size-3.5 text-[#EA580C]" />
+      <Sparkles className="size-3.5 text-brand" />
       <span>بدء الجولة الإرشادية</span>
     </button>
   );
@@ -119,24 +119,24 @@ export function GuidedTour() {
           }}
         />
       )}
-      <div className="absolute z-20 w-[min(360px,calc(100vw-32px))] rounded-2xl border border-[#EEEEEE] bg-white p-4 shadow-float" style={tooltipStyle}>
+      <div className="absolute z-20 w-[min(360px,calc(100vw-32px))] rounded-2xl border border-border bg-white p-4 shadow-float" style={tooltipStyle}>
         <div className="mb-3 flex items-center justify-between">
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#EA580C]/10 px-2 py-1 text-[11px] font-medium text-[#EA580C]">
+          <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-2 py-1 text-[11px] font-medium text-brand">
             <Sparkles className="size-3.5" /> {stepIndex + 1} من 5
           </span>
-          <button type="button" onClick={closeTour} className="rounded-full p-1.5 text-muted-foreground hover:bg-[#F5F5F5]" aria-label="إغلاق">
+          <button type="button" onClick={closeTour} className="rounded-full p-1.5 text-muted-foreground hover:bg-background" aria-label="إغلاق">
             <X className="size-4" />
           </button>
         </div>
-        <h3 className="text-xl font-medium text-[#111111]">{step.title}</h3>
+        <h3 className="text-xl font-medium text-primary">{step.title}</h3>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.body}</p>
         <div className="mt-5 flex items-center justify-between gap-2">
-          <button type="button" onClick={goPrev} disabled={stepIndex === 0} className="inline-flex items-center gap-1 rounded-full border border-[#EEEEEE] px-3 py-2 text-sm text-muted-foreground disabled:opacity-40">
+          <button type="button" onClick={goPrev} disabled={stepIndex === 0} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-2 text-sm text-muted-foreground disabled:opacity-40">
             <ChevronLeft className="size-4" /> السابق
           </button>
           <div className="flex items-center gap-2">
             <button type="button" onClick={closeTour} className="rounded-full px-3 py-2 text-sm text-muted-foreground">تخطي</button>
-            <button type="button" onClick={goNext} className="inline-flex items-center gap-1 rounded-full bg-[#111111] px-4 py-2 text-sm text-white">
+            <button type="button" onClick={goNext} className="inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm text-white">
               {isLast ? "تم" : "التالي"} <ArrowRight className="size-4" />
             </button>
           </div>

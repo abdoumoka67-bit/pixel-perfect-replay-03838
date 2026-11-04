@@ -210,11 +210,11 @@ function SettingsPage() {
         </div>
       </form>
 
-      <div className="border-t border-[#EEEEEE] pt-8">
+      <div className="border-t border-border pt-8">
         <StorefrontThemeSettings store={store} readOnly={readOnly} />
       </div>
 
-      <div className="border-t border-[#EEEEEE] pt-8">
+      <div className="border-t border-border pt-8">
       {store ? (
         <CustomDomainSection store={store} readOnly={readOnly} isPro={isPro} />
       ) : null}
@@ -397,7 +397,7 @@ function CustomDomainSection({
         )}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-[#EEEEEE] bg-[#F5F5F5] p-4 text-sm leading-7">
+      <div className="mt-4 rounded-2xl border border-border bg-background p-4 text-sm leading-7">
         <p className="font-medium">تعليمات DNS</p>
         <p>1. افتح لوحة مزوّد الدومين لديك (مثال: Namecheap أو OVH).</p>
         <p>

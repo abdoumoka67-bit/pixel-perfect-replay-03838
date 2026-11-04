@@ -86,59 +86,68 @@ html[lang="en"] {
 
 :root {
   --radius: 0.875rem;
-  /* page #F5F5F5 */
-  --background: oklch(0.97 0 0);
-  --sand: oklch(0.97 0 0);
-  /* text primary #111111 */
-  --foreground: oklch(0.178 0 0);
-  /* card #FFFFFF */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.178 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.178 0 0);
-  /* primary black #111111 — main buttons, active pagination */
-  --primary: oklch(0.178 0 0);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.178 0 0);
-  --muted: oklch(0.97 0 0);
-  /* text secondary #8A8A8A */
-  --muted-foreground: oklch(0.633 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.178 0 0);
-  /* table header #FAFAFA */
-  --table-header: oklch(0.985 0 0);
-  /* notification dot #EF4444 */
-  --notify: oklch(0.637 0.208 25.3);
 
-  /* orange accent #EA580C — icons, badges, highlights */
-  --brand: oklch(0.646 0.222 41.1);
-  --brand-strong: oklch(0.646 0.222 41.1);
-  --brand-foreground: oklch(1 0 0);
-  --brand-soft: oklch(0.646 0.222 41.1 / 0.1);
+  /* Shopify Polaris Canvas & Surfaces */
+  --background: #F7F7F8;
+  --sand: #F7F7F8;
+  --card: #FFFFFF;
+  --card-foreground: #202223;
+  --popover: #FFFFFF;
+  --popover-foreground: #202223;
 
-  /* success #22C55E / 10% */
-  --success: oklch(0.723 0.192 149.6);
-  --success-soft: oklch(0.723 0.192 149.6 / 0.1);
-  --warning: oklch(0.769 0.165 70.1);
-  --warning-soft: oklch(0.769 0.165 70.1 / 0.12);
-  /* danger #F43F5E / 10% */
-  --destructive: oklch(0.645 0.215 16.4);
-  --destructive-foreground: oklch(1 0 0);
-  --danger-soft: oklch(0.645 0.215 16.4 / 0.1);
-  --info: oklch(0.604 0.217 257.8);
-  --info-soft: oklch(0.604 0.217 257.8 / 0.1);
+  /* Shopify Polaris Typography */
+  --foreground: #202223;
+  --muted: #F1F2F4;
+  --muted-foreground: #6D7175;
 
-  /* border #EEEEEE */
-  --border: oklch(0.949 0 0);
-  --input: oklch(0.949 0 0);
-  --ring: oklch(0.178 0 0 / 0.4);
+  /* Primary Action (Solid Crisp Dark) */
+  --primary: #1A1A1A;
+  --primary-foreground: #FFFFFF;
 
-  --chart-1: oklch(0.646 0.222 41.1);
-  --chart-2: oklch(0.178 0 0);
-  --chart-3: oklch(0.723 0.192 149.6);
-  --chart-4: oklch(0.769 0.165 70.1);
-  --chart-5: oklch(0.633 0 0);
+  /* Secondary & Surfaces */
+  --secondary: #F1F2F4;
+  --secondary-foreground: #202223;
+  --accent: #F1F2F4;
+  --accent-foreground: #202223;
+
+  /* Table Header & Borders */
+  --table-header: #F7F7F8;
+  --border: #E1E3E5;
+  --input: #E1E3E5;
+  --ring: rgba(26, 26, 26, 0.2);
+
+  /* Shopify Subdued Status Badges */
+  /* Success / Delivered / Paid */
+  --success: #0E5C2F;
+  --success-soft: #E4F8EB;
+
+  /* Warning / Confirmed / Pending */
+  --warning: #8A6116;
+  --warning-soft: #FCF1CD;
+
+  /* Danger / Cancelled / Refused */
+  --destructive: #8F1D1D;
+  --destructive-foreground: #FFFFFF;
+  --danger-soft: #FEEBEE;
+
+  /* Info / In-Transit */
+  --info: #1A428A;
+  --info-soft: #EBF2FF;
+
+  /* Oranix Brand Accent (Subtle, controlled) */
+  --brand: #EA580C;
+  --brand-strong: #C2410C;
+  --brand-foreground: #FFFFFF;
+  --brand-soft: #FFF0E6;
+
+  --notify: #EF4444;
+
+  /* Charts — remapped to the Polaris palette */
+  --chart-1: #EA580C;
+  --chart-2: #202223;
+  --chart-3: #0E5C2F;
+  --chart-4: #8A6116;
+  --chart-5: #6D7175;
 
   /* sidebar #111111, active item #1E1E1E, inactive text #6B6B6B, active text #FFFFFF */
   --sidebar: oklch(0.178 0 0);
@@ -151,8 +160,9 @@ html[lang="en"] {
   --sidebar-border: oklch(0.285 0 0);
   --sidebar-ring: oklch(0.646 0.222 41.1);
 
-  --shadow-card: 0 0 0 1px var(--border), 0 1px 2px oklch(0 0 0 / 0.03);
-  --shadow-float: 0 0 0 1px var(--border), 0 18px 50px -20px oklch(0 0 0 / 0.25);
+  /* Shadows (Subtle, crisp Shopify-style elevation) */
+  --shadow-card: 0 0 0 1px var(--border), 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  --shadow-float: 0 0 0 1px var(--border), 0 12px 32px -8px rgba(0, 0, 0, 0.12);
   --shadow-brand: none;
   --gradient-brand: linear-gradient(135deg, var(--brand), var(--brand-strong));
   --gradient-hero: linear-gradient(var(--card), var(--card));

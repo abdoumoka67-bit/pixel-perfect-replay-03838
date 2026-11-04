@@ -156,14 +156,14 @@ function Billing() {
               className={[
                 "relative flex flex-col items-center rounded-2xl border px-2 py-3 transition-all",
                 months === m
-                  ? "border-[#111111] bg-[#111111] text-white"
-                  : "border-[#EEEEEE] bg-white text-foreground hover:border-[#111111]/30",
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-white text-foreground hover:border-primary/30",
               ].join(" ")}
             >
               <span className="font-medium num">{m}</span>
               <span className="text-[11px]">{m === 1 ? "شهر" : "أشهر"}</span>
               {m === 6 && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#EA580C] px-2 py-0.5 text-[9px] text-white">
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-brand px-2 py-0.5 text-[9px] text-white">
                   شهر مجاني
                 </span>
               )}

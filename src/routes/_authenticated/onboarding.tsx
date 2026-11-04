@@ -180,7 +180,7 @@ function Onboarding() {
             <Label htmlFor="account-contact">{user.email ? "البريد الإلكتروني" : "رقم الهاتف"}</Label>
             <Input id="account-contact" value={user.email ?? user.phone ?? ""} readOnly className="h-11 bg-muted" />
           </div>
-          <div className="rounded-2xl border border-[#22C55E]/20 bg-[#22C55E]/10 p-4 text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-success/20 bg-success-soft p-4 text-sm text-muted-foreground">
             {user.email
               ? "تم تأكيد حسابك عبر البريد الإلكتروني. لا حاجة لإدخال كلمة المرور مرة أخرى."
               : "تم تسجيل الدخول إلى حسابك. لا حاجة لإدخال كلمة المرور مرة أخرى."}
@@ -222,7 +222,7 @@ function Onboarding() {
             <p className="text-xs text-muted-foreground">
               رابط المتجر يجب أن يكون بحروف إنجليزية وأرقام وشرطات. إذا كان اسم المتجر بالعربية، سنقترح الرابط من بريدك ويمكنك تغييره.
             </p>
-            <div className="rounded-2xl border border-dashed border-[#EEEEEE] bg-white p-4 text-sm text-muted-foreground">
+            <div className="rounded-2xl border border-dashed border-border bg-white p-4 text-sm text-muted-foreground">
               🌐 يمكنك شراء وربط دومين خاص بمتجرك لاحقاً من الإعدادات (خاص بمشتركي باقة Pro) مثل: storename.com مباشرة بدون الرابط الفرعي.
             </div>
           </div>
@@ -243,7 +243,7 @@ function Onboarding() {
             )}
           </div>
           {phoneOk && (
-            <div className="flex items-center gap-2.5 rounded-2xl border border-[#22C55E]/20 bg-[#22C55E]/10 p-4 text-sm leading-6 text-[#22C55E]">
+            <div className="flex items-center gap-2.5 rounded-2xl border border-success/20 bg-success-soft p-4 text-sm leading-6 text-success">
               <ShieldCheck className="size-5 shrink-0" strokeWidth={1.8} />
               <span>تم تأكيد الرقم وجاهز لاستقبال إشعارات الطلبات ورسائل الزبائن</span>
             </div>
@@ -264,7 +264,7 @@ function Onboarding() {
                 onClick={() => setProductType(option.value)}
                 className={[
                   "rounded-2xl border p-4 text-right transition-all",
-                  productType === option.value ? "border-[#111111] bg-[#111111] text-white" : "border-[#EEEEEE] bg-white text-foreground",
+                  productType === option.value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-white text-foreground",
                 ].join(" ")}
               >
                 <div className="font-medium">{option.label}</div>
@@ -283,7 +283,7 @@ function Onboarding() {
                 onClick={() => setIndustry(item)}
                 className={[
                   "rounded-2xl border px-3 py-2.5 text-right transition-all",
-                  industry === item ? "border-[#111111] bg-[#111111] text-white" : "border-[#EEEEEE] bg-white text-foreground",
+                  industry === item ? "border-primary bg-primary text-primary-foreground" : "border-border bg-white text-foreground",
                 ].join(" ")}
               >
                 {item}
@@ -312,8 +312,8 @@ function Onboarding() {
   const isLast = step === stepCount - 1;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F5F5F5] px-5 py-8">
-      <div className="w-full max-w-2xl rounded-[32px] border border-[#EEEEEE] bg-white p-6 shadow-[0_0_0_1px_rgba(17,17,17,0.02),0_18px_50px_-20px_rgba(0,0,0,0.25)] sm:p-9">
+    <div className="flex min-h-screen items-center justify-center bg-background px-5 py-8">
+      <div className="w-full max-w-2xl rounded-[32px] border border-border bg-white p-6 shadow-[0_0_0_1px_rgba(17,17,17,0.02),0_18px_50px_-20px_rgba(0,0,0,0.25)] sm:p-9">
         <div className="flex justify-center">
           <Logo />
         </div>
@@ -326,7 +326,7 @@ function Onboarding() {
                 className={[
                   "h-1.5 flex-1 rounded-full",
                   idx <= step
-                    ? "bg-[#111111]"
+                    ? "bg-primary"
                     : "bg-[repeating-linear-gradient(90deg,#EEEEEE_0_6px,transparent_6px_10px)]",
                 ].join(" ")}
                 aria-hidden="true"
@@ -341,10 +341,10 @@ function Onboarding() {
         </div>
 
         <div className="mt-8 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#EA580C]/10 px-3 py-1.5 text-xs text-[#EA580C]">
+          <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1.5 text-xs text-brand">
             <Sparkles className="size-3.5" /> تجربة Pro مجانية · 10 أيام
           </span>
-          <h1 className="mt-4 text-3xl font-medium text-[#111111]">{currentTitle}</h1>
+          <h1 className="mt-4 text-3xl font-medium text-primary">{currentTitle}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{currentSubtitle}</p>
         </div>
 
@@ -355,7 +355,7 @@ function Onboarding() {
             type="button"
             onClick={prevStep}
             disabled={step === 0}
-            className="inline-flex items-center gap-2 rounded-full border border-[#EEEEEE] px-4 py-2 text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ArrowLeft className="size-4" /> السابق
           </button>

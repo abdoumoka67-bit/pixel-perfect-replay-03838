@@ -30,7 +30,7 @@ export function ShippingLabelModal({
           <DialogHeader>
             <DialogTitle>بوليصة A6 حرارية ({orders.length} طلب)</DialogTitle>
           </DialogHeader>
-          <div className="max-h-[60vh] space-y-4 overflow-y-auto rounded-xl bg-[#EEEEEE] p-4">
+          <div className="max-h-[60vh] space-y-4 overflow-y-auto rounded-xl bg-muted p-4">
             {orders.map((o) => (
               <A6Label key={o.id} order={o} storeName={storeName} storePhone={storePhone} preview />
             ))}
@@ -75,7 +75,7 @@ function A6Label({
     <div
       className={[
         "a6-label h-[150mm] w-[100mm] overflow-hidden bg-white text-[#000000]",
-        preview ? "rounded-lg border-2 border-dashed border-[#EEEEEE]" : "",
+        preview ? "rounded-lg border-2 border-dashed border-border" : "",
         last ? "" : "a6-label-break",
       ].join(" ")}
       style={preview ? { transform: "scale(0.9)", transformOrigin: "top left" } : undefined}
