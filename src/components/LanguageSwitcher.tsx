@@ -54,17 +54,23 @@ export function LanguageSwitcher({
   value,
   onChange,
   className,
+  compact = false,
 }: {
   value: LanguageCode;
   onChange: (lang: LanguageCode) => void;
   className?: string;
+  compact?: boolean;
 }) {
   return (
     <div
       dir="ltr"
       role="group"
       aria-label={translate(value, "lang.group")}
-      className={cn("flex rounded-full border border-border bg-background p-1", className)}
+      className={cn(
+        "flex rounded-full border border-border bg-background",
+        compact ? "p-0.5" : "p-1",
+        className,
+      )}
     >
       {LANGUAGE_OPTIONS.map((option) => (
         <button
@@ -73,7 +79,8 @@ export function LanguageSwitcher({
           aria-pressed={option.value === value}
           onClick={() => onChange(option.value)}
           className={cn(
-            "rounded-full px-3 py-1.5 text-sm transition-colors",
+            "rounded-full transition-colors",
+            compact ? "px-2 py-1 text-xs" : "px-3 py-1.5 text-sm",
             option.value === value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
           )}
         >
