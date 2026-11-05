@@ -225,7 +225,7 @@ function AuthPage() {
     sessionStorage.setItem("oranix:after-login", target);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth?redirect=${encodeURIComponent(target)}` },
+      options: { redirectTo: `${window.location.origin}/auth` },
     });
     if (error) toast.error(t("auth.err.google"));
   }
