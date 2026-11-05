@@ -13,7 +13,6 @@ import { isAdminQuery, useMyStore } from "@/hooks/use-my-store";
 import { getFeaturePlanBadge, MEMBER_ROLE_LABELS, PRO_AREAS, canOpen } from "@/lib/commerce";
 import { ProPill } from "./ProLock";
 import { GuidedTour } from "./GuidedTour";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 function useSignOut() {
   const queryClient = useQueryClient();
@@ -332,7 +331,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             <Menu className="size-5" />
           </button>
           <Logo />
-          <ThemeToggle />
+          <div className="size-9" />
         </header>
 
         {store && sub && sub.isTrial && sub.daysLeft <= 2 && (
@@ -347,7 +346,6 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         <div className="border-b bg-card/95 px-4 py-2 md:px-8">
           <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-end gap-2 sm:gap-3">
             <LanguageSwitcher value={language} onChange={setLanguage} className="hidden sm:flex" />
-            <ThemeToggle className="hidden lg:inline-flex" />
             {sub?.isTrial && (
               <Link
                 to="/dashboard/billing"

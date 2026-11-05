@@ -14,7 +14,6 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { applyLanguageToDocument, normalizeLanguage } from "@/lib/commerce";
 import { Toaster } from "@/components/ui/sonner";
-import { applyStoredTheme } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
@@ -107,7 +106,9 @@ function RootComponent() {
   useEffect(() => {
     // Mirror the stored language (oranix_lang) onto <html lang/dir/font>.
     applyLanguageToDocument(normalizeLanguage(window.localStorage.getItem("oranix_lang")));
-    applyStoredTheme();
+    document.documentElement.classList.remove("dark");
+    document.documentElement.style.colorScheme = "light";
+    window.localStorage.removeItem("oranix-theme");
   }, []);
 
   useEffect(() => {

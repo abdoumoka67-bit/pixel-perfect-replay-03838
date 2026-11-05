@@ -53,9 +53,9 @@ function AuthPage() {
   const [cooldown, setCooldown] = useState(0);
   const resetting = useRef(false);
 
-  const [googleEnabled, setGoogleEnabled] = useState(false);
+  const [googleEnabled, setGoogleEnabled] = useState(true);
   // Phone (SMS) sign-in is offered only when the Supabase project has a phone provider configured.
-  const [phoneEnabled, setPhoneEnabled] = useState(false);
+  const [phoneEnabled, setPhoneEnabled] = useState(true);
   const [usePhone, setUsePhone] = useState(false);
   const [phone, setPhone] = useState("");
 
@@ -311,7 +311,7 @@ function AuthPage() {
                     : t("auth.sub.forgot")}
               </p>
 
-              {mode !== "forgot" && phoneEnabled && (
+              {mode !== "forgot" && (
                 <div className="mt-8 grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary p-1 text-sm">
                   <button
                     type="button"
@@ -330,7 +330,7 @@ function AuthPage() {
                 </div>
               )}
 
-              {mode !== "forgot" && googleEnabled && (
+              {mode !== "forgot" && (
                 <>
                   <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
                     <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
