@@ -13,6 +13,7 @@ import { StoreChrome, StoreFaq } from "@/components/store/StoreChrome";
 import { formatDZD, friendlyError, isValidDzPhone, normalizeDzPhone, orderTotal, shippingPrice, type DeliveryType } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
 import { trackPixel } from "@/lib/pixels";
+import { useStorefrontLanguage } from "@/components/LanguageSwitcher";
 import { tr } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/m/$store/p/$product")({
@@ -58,7 +59,8 @@ type Communes = Record<string, [string, string][]>;
 
 function ProductLanding() {
   const { store, product, rates } = Route.useLoaderData();
-  const language = store.storefront_config?.language ?? "en";
+  const storeLanguage = store.storefront_config?.language ?? "en";
+  const { language } = useStorefrontLanguage(storeLanguage);
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
   const isRtl = language === "ar";
   const navigate = useNavigate();
@@ -188,8 +190,8 @@ function ProductLanding() {
         <div>
           <h1 className="text-2xl font-normal leading-tight sm:text-3xl">{product.name}</h1>
           <div className="mt-3 flex items-baseline gap-3">
-            <span className="font-display text-3xl font-medium text-brand num">{formatDZD(product.price)}</span>
-            {discount > 0 && <span className="text-lg text-muted-foreground line-through num">{formatDZD(product.compare_at_price!)}</span>}
+            <span className="font-display text-3xl font-medium text-brand num">{formatDZD(product.price, language)}</span>
+            {discount > 0 && <span className="text-lg text-muted-foreground line-through num">{formatDZD(product.compare_at_price!, language)}</span>}
           </div>
 
           <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
@@ -324,7 +326,7 @@ function ProductLanding() {
                         <Icon className={cn("mb-1 size-5", delivery === kind ? "text-brand" : "text-muted-foreground")} />
                         <p className="text-sm font-medium">{kind === "home" ? t("للمنزل") : t("للمكتب (Stopdesk)")}</p>
                         <p className="text-xs text-muted-foreground num">
-                          {!wCode ? t("اختر الولاية") : price == null ? t("غير متوفر") : price === 0 ? t("مجاني") : formatDZD(price)}
+                          {!wCode ? t("اختر الولاية") : price == null ? t("غير متوفر") : price === 0 ? t("مجاني") : formatDZD(price, language)}
                         </p>
                       </button>
                     );
@@ -348,15 +350,15 @@ function ProductLanding() {
               <div className="space-y-1.5 rounded-2xl bg-muted/70 p-4 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("سعر المنتج × {qty}", { qty })}</span>
-                  <span className="num">{formatDZD(product.price * qty)}</span>
+                  <span className="num">{formatDZD(product.price * qty, language)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("التوصيل")}</span>
-                  <span className="num">{wCode && currentShip != null ? formatDZD(currentShip) : "—"}</span>
+                  <span className="num">{wCode && currentShip != null ? formatDZD(currentShip, language) : "—"}</span>
                 </div>
                 <div className="flex justify-between border-t pt-2 text-lg font-medium">
                   <span>{t("الإجمالي")}</span>
-                  <span className="text-brand num">{formatDZD(total)}</span>
+                  <span className="text-brand num">{formatDZD(total, language)}</span>
                 </div>
               </div>
 
@@ -372,7 +374,7 @@ function ProductLanding() {
         <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 p-3 pb-safe backdrop-blur lg:hidden">
           <Button asChild variant="brand" size="lg" className="w-full">
             <a href="#order">
-              {t("اطلب الآن ·")} <span className="num">{formatDZD(total)}</span>
+              {t("اطلب الآن ·")} <span className="num">{formatDZD(total, language)}</span>
             </a>
           </Button>
         </div>

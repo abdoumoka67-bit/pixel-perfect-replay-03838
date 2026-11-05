@@ -187,13 +187,13 @@ function Billing() {
         {months === 6 && (
           <p className="mt-3 rounded-xl bg-warning-soft px-3 py-2 text-sm leading-6 text-warning">
             {t("🎁 عرض خاص: ادفع 5 أشهر واحصل على شهر مجاناً — توفير {amount}.", {
-              amount: formatDZD(selectedTier === "pro" ? 3400 : 1700),
+              amount: formatDZD(selectedTier === "pro" ? 3400 : 1700, language),
             })}
           </p>
         )}
         <p className="mt-4 flex items-baseline gap-2">
           <span className="text-sm text-muted-foreground">{t("المبلغ المطلوب تحويله:")}</span>
-          <span className="text-xl font-medium num">{formatDZD(amountDue)}</span>
+          <span className="text-xl font-medium num">{formatDZD(amountDue, language)}</span>
         </p>
       </div>
 
@@ -201,7 +201,7 @@ function Billing() {
         <div className="rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
           <h2 className="font-medium">{t("معلومات الدفع")}</h2>
           <p className="mt-1 text-sm text-sidebar-muted">
-            {t("حوّل مبلغ الخطة المختارة ({amount}) إلى أحد الحسابين:", { amount: formatDZD(amountDue) })}
+            {t("حوّل مبلغ الخطة المختارة ({amount}) إلى أحد الحسابين:", { amount: formatDZD(amountDue, language) })}
           </p>
           <div className="mt-5 space-y-3">
             <p className="text-xs font-medium text-sidebar-primary">{t("بريد الجزائر — CCP")}</p>
@@ -258,7 +258,7 @@ function Billing() {
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
                 <div>
                   <p className="font-medium">
-                    {(r.plans as { name: string } | null)?.name} · <span className="num">{formatDZD(r.amount)}</span>
+                    {(r.plans as { name: string } | null)?.name} · <span className="num">{formatDZD(r.amount, language)}</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(r.created_at).toLocaleDateString(locale)} · {t("رقم المعاملة")} <span className="num">{r.transaction_ref}</span>

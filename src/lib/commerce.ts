@@ -112,8 +112,10 @@ export function subscriptionState(
   };
 }
 
-export function formatDZD(value: number): string {
-  return `${new Intl.NumberFormat("fr-DZ").format(value)} د.ج`;
+export function formatDZD(value: number, language: LanguageCode = "ar"): string {
+  const amount = new Intl.NumberFormat("fr-DZ").format(value);
+  // Arabic puts the unit after the amount; French/English use the DZ prefix.
+  return language === "ar" ? `${amount} د.ج` : `DZ ${amount}`;
 }
 
 export function slugify(input: string): string {
@@ -286,8 +288,10 @@ export function friendlyError(message: string | undefined | null, fallback = "ح
 
 export type LanguageCode = "ar" | "fr" | "en";
 
-/** Persistence key for the chosen interface language. */
+/** Persistence key for the dashboard interface language. */
 export const LANGUAGE_STORAGE_KEY = "oranix_lang";
+/** Persistence key for the public storefront language (independent from the dashboard). */
+export const STOREFRONT_LANGUAGE_STORAGE_KEY = "oranix_store_lang";
 export const LANGUAGE_DEFAULT: LanguageCode = "ar";
 
 export const LANGUAGE_OPTIONS: ReadonlyArray<{ value: LanguageCode; label: string }> = [

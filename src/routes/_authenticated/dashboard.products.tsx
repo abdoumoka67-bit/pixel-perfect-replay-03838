@@ -143,9 +143,9 @@ function ProductsPage() {
                 </p>
               )}
               <div className="mt-1 flex items-baseline gap-2">
-                <span className="font-display text-lg font-medium text-brand num">{formatDZD(p.price)}</span>
+                <span className="font-display text-lg font-medium text-brand num">{formatDZD(p.price, language)}</span>
                 {p.compare_at_price ? (
-                  <span className="text-sm text-muted-foreground line-through num">{formatDZD(p.compare_at_price)}</span>
+                  <span className="text-sm text-muted-foreground line-through num">{formatDZD(p.compare_at_price, language)}</span>
                 ) : null}
               </div>
               <div className="mt-4 flex gap-2">

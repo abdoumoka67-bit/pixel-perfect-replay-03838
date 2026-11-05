@@ -4,7 +4,7 @@ import { Menu, MessageCircle, X, Home } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { whatsappLink } from "@/lib/commerce";
-import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { LanguageMenu, useDocumentLanguage, useStorefrontLanguage } from "@/components/LanguageSwitcher";
 import type { PublicStore } from "@/lib/storefront.functions";
 import { initPixels } from "@/lib/pixels";
 import {
@@ -17,8 +17,10 @@ import { tr, UiLanguageProvider, useUiLanguage, useTr } from "@/lib/ui-i18n";
 export function StoreChrome({ store, children }: { store: PublicStore; children: ReactNode }) {
   const [bar, setBar] = useState(true);
   const [open, setOpen] = useState(false);
-  // Every storefront page follows the language saved in the store settings.
-  const language = store.storefront_config?.language ?? parseStorefrontConfig({}, store.name).language;
+  // The store language is the default; visitors can switch it and their choice is remembered.
+  const storeLanguage = store.storefront_config?.language ?? parseStorefrontConfig({}, store.name).language;
+  const { language, setLanguage } = useStorefrontLanguage(storeLanguage);
+  const isRtl = language === "ar";
   useDocumentLanguage(language);
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
 
@@ -31,7 +33,7 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
 
   return (
     <UiLanguageProvider language={language}>
-      <div className="min-h-screen bg-card">
+      <div className="min-h-screen bg-card" dir={isRtl ? "rtl" : "ltr"}>
         {bar && barEnabled && (
           <div className="relative bg-primary px-10 py-2.5 text-center text-sm text-primary-foreground">
             {barText}
@@ -59,7 +61,8 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
               {store.logo && <img src={store.logo} alt="" className="size-8 rounded-full object-cover" />}
               <span className="text-xl font-normal">{store.name}</span>
             </Link>
-            <div className="flex justify-end">
+            <div className="flex items-center justify-end gap-1">
+              <LanguageMenu value={language} onChange={setLanguage} />
               <button onClick={() => setOpen(true)} className="rounded-full p-2 hover:bg-secondary" aria-label={t("القائمة")}>
                 <Menu className="size-6" strokeWidth={1.6} />
               </button>
@@ -68,7 +71,7 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
         </header>
 
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetContent side="right" className="w-[80vw] max-w-sm bg-background">
+          <SheetContent side={isRtl ? "right" : "left"} className="w-[80vw] max-w-sm bg-background">
             <SheetTitle className="text-start font-normal">{store.name}</SheetTitle>
             <nav className="mt-6 space-y-1">
               <Link

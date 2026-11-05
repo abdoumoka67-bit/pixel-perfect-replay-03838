@@ -20,6 +20,7 @@ import {
   trustBadgeLabel,
   type TrustBadgeKey,
 } from "@/lib/storefront-theme";
+import { useStorefrontLanguage } from "@/components/LanguageSwitcher";
 import { tr } from "@/lib/ui-i18n";
 import { cn } from "@/lib/utils";
 
@@ -97,10 +98,11 @@ function normalizeUrl(url: string | undefined): string {
 
 function Storefront() {
   const { store, products } = Route.useLoaderData();
+  const storeLanguage = store?.storefront_config?.language ?? "en";
+  const { language } = useStorefrontLanguage(storeLanguage);
   if (!store) return null;
 
   const config = store.storefront_config ?? parseStorefrontConfig({}, store.name);
-  const language = config.language;
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
   const styles = presetStyles(config.preset);
 
@@ -168,7 +170,7 @@ function Storefront() {
                 </div>
                 <div className="p-3">
                   <p className="truncate text-[15px]">{p.name}</p>
-                  <p className="mt-1 font-medium num">{formatDZD(p.price)}</p>
+                  <p className="mt-1 font-medium num">{formatDZD(p.price, language)}</p>
                 </div>
               </Link>
             ))}

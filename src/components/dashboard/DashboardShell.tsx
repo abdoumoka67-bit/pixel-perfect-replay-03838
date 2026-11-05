@@ -4,7 +4,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { AlertTriangle, LogOut, Menu, ShieldCheck, ExternalLink, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/Logo";
-import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { useDocumentLanguage, LanguageMenu, useDashboardLanguage } from "@/components/LanguageSwitcher";
 import { parseStorefrontConfig } from "@/lib/storefront-theme";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { MAIN_NAV, SETTINGS_NAV, type NavItem } from "./nav";
 import { isAdminQuery, useMyStore } from "@/hooks/use-my-store";
 import { getFeaturePlanBadge, MEMBER_ROLE_LABELS, PRO_AREAS, canOpen } from "@/lib/commerce";
-import { tr, UiLanguageProvider, useTr } from "@/lib/ui-i18n";
+import { tr, UiLanguageProvider, useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { ProPill } from "./ProLock";
 import { GuidedTour } from "./GuidedTour";
 
@@ -201,11 +201,18 @@ function MerchantCard({ tone = "dark" }: { tone?: Tone }) {
 
 function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | undefined; tone?: Tone }) {
   const { store } = useMyStore();
+  const language = useUiLanguage();
+  const { setLanguage } = useDashboardLanguage(language);
   const styles = TONES[tone];
   return (
     <div className={cn("flex h-full flex-col gap-6 p-4", styles.body)}>
-      <div className="flex items-center justify-between px-2 pt-2">
+      <div className="flex items-center justify-between gap-2 px-2 pt-2">
         <Logo tone={tone === "dark" ? "light" : "dark"} />
+        <LanguageMenu
+          value={language}
+          onChange={setLanguage}
+          className={tone === "dark" ? "border-sidebar-border bg-sidebar-accent/70 text-sidebar-foreground hover:bg-sidebar-accent" : undefined}
+        />
       </div>
       {store && (
         <a
@@ -314,26 +321,28 @@ function SubscriptionBanner() {
 export function DashboardShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const { store, sub } = useMyStore();
-  // The dashboard follows the language saved with the store (English by default).
+  // The dashboard has its own language choice; the store language is only the initial default.
   const storeLanguage = parseStorefrontConfig(store?.storefront_config, store?.name ?? "").language;
-  useDocumentLanguage(storeLanguage);
-  const t = (text: string, vars?: Record<string, string | number>) => tr(storeLanguage, text, vars);
+  const { language, setLanguage } = useDashboardLanguage(storeLanguage);
+  const isRtl = language === "ar";
+  useDocumentLanguage(language);
+  const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
   const trialLink = useMemo(() =>
     sub && sub.isTrial && sub.daysLeft > 0
       ? t("تجربة Pro مجانية · بقي {n} أيام", { n: sub.daysLeft })
       : t("تجربة Pro مجانية"),
-  [sub, storeLanguage]);
+  [sub, language]);
 
   return (
-    <UiLanguageProvider language={storeLanguage}>
-    <div className="min-h-screen bg-background">
+    <UiLanguageProvider language={language}>
+    <div className="min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
       <GuidedTour />
       <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 lg:block">
         <SidebarBody />
       </aside>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-[82vw] max-w-sm border-0 bg-background p-0">
+        <SheetContent side={isRtl ? "right" : "left"} className="w-[82vw] max-w-sm border-0 bg-background p-0">
           <SheetTitle className="sr-only">{t("القائمة")}</SheetTitle>
           <SidebarBody tone="light" onNavigate={() => setOpen(false)} />
         </SheetContent>
@@ -345,7 +354,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             <Menu className="size-5" />
           </button>
           <Logo />
-          <div className="size-9" />
+          <LanguageMenu value={language} onChange={setLanguage} />
         </header>
 
         {store && sub && sub.isTrial && sub.daysLeft <= 2 && (

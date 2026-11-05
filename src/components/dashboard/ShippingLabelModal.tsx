@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 import { formatDZD } from "@/lib/commerce";
-import { useTr } from "@/lib/ui-i18n";
+import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 import type { Order } from "./OrderDetailsSheet";
 
 /**
@@ -74,6 +74,7 @@ function A6Label({
   last?: boolean;
 }) {
   const t = useTr();
+  const language = useUiLanguage();
   return (
     <div
       className={[
@@ -134,7 +135,7 @@ function A6Label({
         {/* COD amount */}
         <div className="mt-2 border-2 border-[#000000] p-2 text-center">
           <p className="text-[10px] font-medium">{t("المبلغ المطلوب (دفع عند الاستلام)")}</p>
-          <p className="mt-0.5 text-[24px] font-bold num">{formatDZD(order.total)}</p>
+          <p className="mt-0.5 text-[24px] font-bold num">{formatDZD(order.total, language)}</p>
         </div>
 
         {/* Carrier + notes */}

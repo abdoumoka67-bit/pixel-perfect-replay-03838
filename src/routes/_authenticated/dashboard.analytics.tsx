@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { ProLock } from "@/components/dashboard/ProLock";
 import { useMyStore } from "@/hooks/use-my-store";
 import { ORDER_STATUSES, STATUS_LABELS, formatDZD, type OrderStatus } from "@/lib/commerce";
-import { useTr } from "@/lib/ui-i18n";
+import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/analytics")({
   component: Analytics,
@@ -51,6 +51,7 @@ function Analytics() {
 function AnalyticsPro() {
   const { store } = useMyStore();
   const t = useTr();
+  const language = useUiLanguage();
   const q = useQuery({
     queryKey: ["analytics", store?.id, DAYS],
     enabled: !!store,
@@ -81,7 +82,7 @@ function AnalyticsPro() {
 
   const kpis = [
     { label: t("طلبات آخر 30 يوماً"), value: String(m.total) },
-    { label: t("مداخيل مُسلّمة"), value: formatDZD(m.revenue) },
+    { label: t("مداخيل مُسلّمة"), value: formatDZD(m.revenue, language) },
     { label: t("نسبة التأكيد"), value: `${m.confirmRate}%` },
     { label: t("نسبة التوصيل"), value: `${m.deliveryRate}%` },
   ];
@@ -166,7 +167,7 @@ function AnalyticsPro() {
                       {t("{orders} طلب · {delivered} مُسلّم", { orders: p.orders, delivered: p.delivered })}
                     </p>
                   </div>
-                  <span className="shrink-0 font-medium num">{formatDZD(p.revenue)}</span>
+                  <span className="shrink-0 font-medium num">{formatDZD(p.revenue, language)}</span>
                 </li>
               ))}
               {m.products.length === 0 && <li className="text-muted-foreground">{t("لا توجد بيانات بعد.")}</li>}

@@ -128,7 +128,7 @@ export function PlanCards({
               )}
             </div>
             <p className="mt-4 flex items-baseline gap-1.5">
-              <span className="text-4xl font-medium num">{formatDZD(p.price)}</span>
+              <span className="text-4xl font-medium num">{formatDZD(p.price, language)}</span>
               <span className={cn("text-sm", pro ? "text-sidebar-muted" : "text-muted-foreground")}>
                 / {p.months === 1 ? labels.perMonth : `${p.months} ${labels.months}`}
               </span>

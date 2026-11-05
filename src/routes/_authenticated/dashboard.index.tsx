@@ -84,7 +84,7 @@ function Overview() {
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{t(c.label)}</p>
               <p className="mt-0.5 font-display text-2xl font-medium num">{Number(row?.orders_count ?? 0)}</p>
-              <p className="text-xs text-muted-foreground num">{formatDZD(Number(row?.orders_total ?? 0))}</p>
+              <p className="text-xs text-muted-foreground num">{formatDZD(Number(row?.orders_total ?? 0), language)}</p>
             </div>
           );
         })}
@@ -108,7 +108,7 @@ function Overview() {
                       {o.product_name} · {o.wilaya_name}
                     </p>
                   </div>
-                  <span className="text-sm font-medium num">{formatDZD(o.total)}</span>
+                  <span className="text-sm font-medium num">{formatDZD(o.total, language)}</span>
                   <StatusBadge status={o.status} />
                 </li>
               ))}
@@ -125,7 +125,7 @@ function Overview() {
           <div className="my-5 h-px bg-sidebar-border" />
           <p className="text-sm text-sidebar-muted">{t("مداخيل الطلبات المسلّمة")}</p>
           <p className="mt-1 font-display text-2xl font-medium text-sidebar-primary num">
-            {formatDZD(Number(delivered?.orders_total ?? 0))}
+            {formatDZD(Number(delivered?.orders_total ?? 0), language)}
           </p>
           <p className="mt-4 text-xs text-sidebar-muted">
             {t("نسبة التوصيل: {value}", {

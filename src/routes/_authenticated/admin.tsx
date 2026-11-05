@@ -15,9 +15,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { isAdminQuery, useMyStore } from "@/hooks/use-my-store";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
 import { RECEIPT_BUCKET } from "@/lib/images";
-import { formatDZD, subscriptionState } from "@/lib/commerce";
+import { formatDZD, subscriptionState, type LanguageCode } from "@/lib/commerce";
 import { parseStorefrontConfig } from "@/lib/storefront-theme";
-import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { LanguageMenu, useDashboardLanguage, useDocumentLanguage } from "@/components/LanguageSwitcher";
 import { tr, UiLanguageProvider, useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -38,8 +38,9 @@ export const Route = createFileRoute("/_authenticated/admin")({
 function AdminPage() {
   const isAdmin = useQuery(isAdminQuery);
   const { store } = useMyStore();
-  // The admin area follows the admin's own store language, English by default.
-  const language = parseStorefrontConfig(store?.storefront_config, store?.name ?? "").language;
+  // The admin area has its own language choice; the admin's store language is only the default.
+  const storeLanguage = parseStorefrontConfig(store?.storefront_config, store?.name ?? "").language;
+  const { language, setLanguage } = useDashboardLanguage(storeLanguage);
   useDocumentLanguage(language);
   if (isAdmin.isLoading) {
     return (
@@ -61,26 +62,33 @@ function AdminPage() {
   }
   return (
     <UiLanguageProvider language={language}>
-      <AdminContent />
+      <AdminContent setLanguage={setLanguage} />
     </UiLanguageProvider>
   );
 }
 
-function AdminContent() {
+function AdminContent({ setLanguage }: { setLanguage: (lang: LanguageCode) => void }) {
   const t = useTr();
   const language = useUiLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" dir={dir}>
       <header className="bg-sidebar text-sidebar-foreground">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
             <Logo tone="light" />
             <Badge variant="brand">{t("الإدارة")}</Badge>
           </div>
-          <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-sidebar-muted hover:text-sidebar-foreground">
-            <ArrowRight className="size-4" /> {t("لوحة التاجر")}
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguageMenu
+              value={language}
+              onChange={setLanguage}
+              className="border-sidebar-border bg-sidebar-accent/70 text-sidebar-foreground hover:bg-sidebar-accent"
+            />
+            <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-sidebar-muted hover:text-sidebar-foreground">
+              <ArrowRight className="size-4 rtl:rotate-180" /> {t("لوحة التاجر")}
+            </Link>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-5 py-8">
@@ -204,7 +212,7 @@ function Receipts() {
                 </div>
                 <p className="truncate text-xs text-muted-foreground" dir="ltr">{s?.owner_email}</p>
                 <p>
-                  {(r.plans as { name: string } | null)?.name} · <b className="num">{formatDZD(r.amount)}</b>
+                  {(r.plans as { name: string } | null)?.name} · <b className="num">{formatDZD(r.amount, language)}</b>
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {t("رقم المعاملة:")} <span className="num">{r.transaction_ref}</span> · {new Date(r.created_at).toLocaleDateString(locale)}

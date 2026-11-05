@@ -4,10 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { verifyCustomDomain } from "@/lib/domain.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Globe, ImagePlus, Languages, Loader2, Save, Target } from "lucide-react";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { parseStorefrontConfig, type StorefrontLanguage } from "@/lib/storefront-theme";
-import { translate } from "@/lib/i18n";
+import { Copy, Globe, ImagePlus, Loader2, Save, Target } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { ProLock, ProPill } from "@/components/dashboard/ProLock";
 import { supabase } from "@/integrations/supabase/client";
@@ -221,8 +218,6 @@ function SettingsPage() {
         </div>
       </form>
 
-      {store ? <LanguageCard store={store} readOnly={readOnly} /> : null}
-
       <div className="border-t border-border pt-8">
         <StorefrontThemeSettings store={store} readOnly={readOnly} />
       </div>
@@ -232,58 +227,6 @@ function SettingsPage() {
         <CustomDomainSection store={store} readOnly={readOnly} isPro={isPro} />
       ) : null}
       </div>
-    </div>
-  );
-}
-
-function LanguageCard({
-  store,
-  readOnly,
-}: {
-  store: NonNullable<ReturnType<typeof useMyStore>["store"]>;
-  readOnly: boolean;
-}) {
-  const qc = useQueryClient();
-  // The store's saved language drives its dashboard and storefront (English by default).
-  const language = parseStorefrontConfig(store.storefront_config, store.name).language;
-
-  const saveLanguage = useMutation({
-    mutationFn: async (next: StorefrontLanguage) => {
-      const base =
-        store.storefront_config && typeof store.storefront_config === "object"
-          ? (store.storefront_config as Record<string, unknown>)
-          : {};
-      const { error } = await supabase
-        .from("stores")
-        .update({ storefront_config: { ...base, language: next } })
-        .eq("id", store.id);
-      if (error) throw error;
-      return next;
-    },
-    onSuccess: (next) => {
-      toast.success(translate(next, "lang.saved"));
-      qc.invalidateQueries({ queryKey: ["my-store"] });
-    },
-    onError: (e: Error) => toast.error(tr(language, friendlyError(e.message, tr(language, "تعذر حفظ اللغة")))),
-  });
-
-  return (
-    <div className="flex flex-col gap-4 rounded-2xl bg-card p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
-          <Languages className="size-5" strokeWidth={1.6} />
-        </span>
-        <div className="min-w-0">
-          <h2 className="font-medium">{translate(language, "lang.title")}</h2>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">{translate(language, "lang.description")}</p>
-        </div>
-      </div>
-      <LanguageSwitcher
-        value={language}
-        onChange={(next) => saveLanguage.mutate(next)}
-        disabled={readOnly || saveLanguage.isPending}
-        className="self-start sm:self-auto"
-      />
     </div>
   );
 }

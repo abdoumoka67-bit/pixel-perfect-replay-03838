@@ -409,7 +409,7 @@ function OrdersPage() {
                       )}
                     </p>
                   </td>
-                  <td className="whitespace-nowrap p-4 font-medium num">{formatDZD(o.total)}</td>
+                  <td className="whitespace-nowrap p-4 font-medium num">{formatDZD(o.total, language)}</td>
                   <td className="p-4">
                     <PaymentBadge status={o.payment_status} />
                   </td>
@@ -458,7 +458,7 @@ function OrdersPage() {
                 <span className="text-muted-foreground">
                   {o.commune}، {o.wilaya_name}
                 </span>
-                <span className="font-medium num">{formatDZD(o.total)}</span>
+                <span className="font-medium num">{formatDZD(o.total, language)}</span>
               </div>
             </button>
             {memberEmail(o.assigned_member_id) && (
