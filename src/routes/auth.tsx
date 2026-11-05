@@ -54,7 +54,8 @@ function AuthPage() {
   const [cooldown, setCooldown] = useState(0);
   const resetting = useRef(false);
 
-  const [googleEnabled, setGoogleEnabled] = useState(true);
+  // Hide Google until Supabase confirms the provider is enabled for this project.
+  const [googleEnabled, setGoogleEnabled] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -278,7 +279,7 @@ function AuthPage() {
                     : t("auth.sub.forgot")}
               </p>
 
-              {mode !== "forgot" && (
+              {mode !== "forgot" && googleEnabled && (
                 <>
                   <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
                     <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
