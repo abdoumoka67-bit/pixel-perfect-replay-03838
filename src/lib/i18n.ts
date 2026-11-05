@@ -7,7 +7,7 @@ import type { LanguageCode } from "@/lib/commerce";
 const ar = {
   // Language
   "lang.title": "لغة الواجهة",
-  "lang.description": "اختر لغة لوحة التحكم وصفحات الدخول. يمكنك تغييرها في أي وقت.",
+  "lang.description": "اختر لغة لوحة التحكم وصفحة متجرك. يمكنك تغييرها في أي وقت.",
   "lang.saved": "تم تغيير اللغة",
   "lang.group": "اختيار اللغة",
 
@@ -186,7 +186,7 @@ type Dictionary = Partial<Record<TranslationKey, string>>;
 
 const fr: Dictionary = {
   "lang.title": "Langue de l'interface",
-  "lang.description": "Choisissez la langue du tableau de bord et des pages de connexion. Modifiable à tout moment.",
+  "lang.description": "Choisissez la langue du tableau de bord et de votre boutique. Modifiable à tout moment.",
   "lang.saved": "Langue modifiée",
   "lang.group": "Choisir la langue",
   "common.back": "Précédent",
@@ -352,7 +352,7 @@ const fr: Dictionary = {
 
 const en: Dictionary = {
   "lang.title": "Interface language",
-  "lang.description": "Choose the language of the dashboard and sign-in pages. You can change it anytime.",
+  "lang.description": "Choose the language of your dashboard and storefront. You can change it anytime.",
   "lang.saved": "Language changed",
   "lang.group": "Choose language",
   "common.back": "Back",

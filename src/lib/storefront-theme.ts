@@ -3,6 +3,11 @@ import { z } from "zod";
 export const PRESET_KEYS = ["noir", "charcoal_gold", "midnight", "emerald", "plum", "minimal"] as const;
 export type PresetKey = (typeof PRESET_KEYS)[number];
 
+/** Interface language of a store, saved with its storefront settings. */
+export const STOREFRONT_LANGUAGES = ["ar", "fr", "en"] as const;
+export type StorefrontLanguage = (typeof STOREFRONT_LANGUAGES)[number];
+export const STOREFRONT_LANGUAGE_DEFAULT: StorefrontLanguage = "en";
+
 export interface HeroPreset {
   id: PresetKey;
   label: string;
@@ -121,6 +126,7 @@ export const socialLinksSchema = z.object({
 
 export const storefrontConfigSchema = z.object({
   preset: z.enum(PRESET_KEYS).default("noir"),
+  language: z.enum(STOREFRONT_LANGUAGES).default(STOREFRONT_LANGUAGE_DEFAULT),
   hero_title: z.string().trim().max(80).default(""),
   hero_subtitle: z.string().trim().max(160).default("اطلب الآن والدفع عند الاستلام"),
   hero_button: z.string().trim().max(30).default("تسوق الآن"),
@@ -183,6 +189,10 @@ function isPresetKey(value: unknown): value is PresetKey {
   return typeof value === "string" && PRESET_KEYS.some((key) => key === value);
 }
 
+function isStorefrontLanguage(value: unknown): value is StorefrontLanguage {
+  return typeof value === "string" && STOREFRONT_LANGUAGES.some((key) => key === value);
+}
+
 function isTrustBadgeKey(value: unknown): value is TrustBadgeKey {
   return typeof value === "string" && TRUST_BADGE_KEYS.some((key) => key === value);
 }
@@ -193,6 +203,7 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
   if (!isRecord(raw)) {
     return {
       preset: "noir",
+      language: STOREFRONT_LANGUAGE_DEFAULT,
       hero_title: fallbackTitle,
       hero_subtitle: "اطلب الآن والدفع عند الاستلام",
       hero_button: "تسوق الآن",
@@ -210,6 +221,11 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
   const obj = raw;
   const rawPreset = obj["preset"];
   const preset: PresetKey = isPresetKey(rawPreset) ? rawPreset : "noir";
+
+  const rawLanguage = obj["language"];
+  const language: StorefrontLanguage = isStorefrontLanguage(rawLanguage)
+    ? rawLanguage
+    : STOREFRONT_LANGUAGE_DEFAULT;
 
   const rawTitle = obj["hero_title"];
   const hero_title =
@@ -298,6 +314,7 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
 
   return {
     preset,
+    language,
     hero_title,
     hero_subtitle,
     hero_button,

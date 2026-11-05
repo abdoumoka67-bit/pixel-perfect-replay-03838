@@ -4,13 +4,17 @@ import { Menu, MessageCircle, X, Home } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { whatsappLink } from "@/lib/commerce";
+import { useDocumentLanguage } from "@/components/LanguageSwitcher";
 import type { PublicStore } from "@/lib/storefront.functions";
 import { initPixels } from "@/lib/pixels";
-import { DEFAULT_FAQ, type FaqItem } from "@/lib/storefront-theme";
+import { DEFAULT_FAQ, parseStorefrontConfig, type FaqItem } from "@/lib/storefront-theme";
 
 export function StoreChrome({ store, children }: { store: PublicStore; children: ReactNode }) {
   const [bar, setBar] = useState(true);
   const [open, setOpen] = useState(false);
+  // Every storefront page follows the language saved in the store settings.
+  const language = store.storefront_config?.language ?? parseStorefrontConfig({}, store.name).language;
+  useDocumentLanguage(language);
 
   useEffect(() => {
     initPixels(store);

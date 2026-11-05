@@ -226,12 +226,20 @@ html[lang="en"] {
 }
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   * {
     border-color: var(--color-border);
   }
 
   html {
     -webkit-tap-highlight-color: transparent;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   body {
@@ -240,7 +248,27 @@ html[lang="en"] {
     font-family: var(--font-sans);
     font-feature-settings: "kern";
     -webkit-font-smoothing: antialiased;
+    max-width: 100%;
     transition: background-color 180ms ease, color 180ms ease;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  img,
+  video {
+    height: auto;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    max-width: 100%;
   }
 
   h1,

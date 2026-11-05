@@ -1,29 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
-import { LanguageSwitcher, useLanguagePreference, useT } from "@/components/LanguageSwitcher";
-import { LANGUAGE_STORAGE_KEY } from "@/lib/commerce";
 import { getPublicPlans } from "@/lib/storefront.functions";
 import { PlanCards } from "@/components/PlanCards";
 import { cn } from "@/lib/utils";
-import type { TranslationKey } from "@/lib/i18n";
+import { translate, type TranslationKey } from "@/lib/i18n";
+import { useDocumentLanguage } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/")({
   loader: () => getPublicPlans(),
   head: () => ({
     meta: [
-      { title: "oranix — صفحة طلب لمنتجك وطلباتك مرتبة في مكان واحد" },
+      { title: "oranix — Build your store, manage your sales, and launch with ease" },
       {
         name: "description",
         content:
-          "للتجار في الجزائر: أنشئ متجرك، أضف منتجك، وانشر الرابط. طلبات الدفع عند الاستلام من 58 ولاية تصلك مباشرة في لوحتك. 7 أيام مجاناً.",
+          "For merchants in Algeria: create your store, add your product, and share the link. Cash-on-delivery orders from all 58 wilayas land straight in your dashboard. 7 days free.",
       },
-      { property: "og:title", content: "oranix — صفحة طلب لمنتجك وطلباتك مرتبة في مكان واحد" },
+      {
+        property: "og:title",
+        content: "oranix — Build your store, manage your sales, and launch with ease",
+      },
       {
         property: "og:description",
-        content: "أنشئ متجرك، أضف منتجك، وانشر الرابط. الطلبات تصلك مباشرة في لوحتك.",
+        content: "Create your store, add your product, and share the link. Orders land straight in your dashboard.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -41,8 +43,12 @@ const FEATURES: { title: TranslationKey; text: TranslationKey }[] = [
   { title: "landing.f6.title", text: "landing.f6.text" },
 ];
 
+/** Public pages always render in English, regardless of the visitor's browser. */
+function t(key: TranslationKey, vars?: Record<string, string | number>) {
+  return translate("en", key, vars);
+}
+
 function FeaturesAccordion() {
-  const { t } = useT();
   const [open, setOpen] = useState<number | null>(0);
   return (
     <ul className="space-y-2">
@@ -65,7 +71,7 @@ function FeaturesAccordion() {
               className="flex w-full items-center gap-4 px-5 py-2.5 text-start sm:px-6"
             >
               <span className="w-7 shrink-0 text-sm text-muted-foreground num">{String(i + 1).padStart(2, "0")}</span>
-              <span className="flex-1 text-lg font-medium sm:text-xl">{t(f.title)}</span>
+              <span className="min-w-0 flex-1 text-lg font-medium sm:text-xl">{t(f.title)}</span>
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <ChevronDown className={cn("size-4 transition-transform duration-300", isOpen && "rotate-180")} />
               </span>
@@ -90,30 +96,22 @@ function FeaturesAccordion() {
 
 function Home() {
   const plans = Route.useLoaderData();
-  const { t } = useT();
-  const { language, setLanguage } = useLanguagePreference();
+  // The public site always opens in English and never reads or stores a visitor preference.
+  useDocumentLanguage("en");
 
-  useEffect(() => {
-    // First visit: open the landing page in English, while keeping the Arabic toggle.
-    if (!window.localStorage.getItem(LANGUAGE_STORAGE_KEY)) setLanguage("en");
-  }, [setLanguage]);
-
-  const underline = "underline decoration-[#3A0D0D] decoration-[3px] underline-offset-[6px]";
+  const underline = "underline decoration-[#DC143C] decoration-[3px] underline-offset-[6px]";
 
   return (
-    <div className="min-h-screen bg-card">
-      <header className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-5 py-5">
-        <Logo />
-        <div className="flex items-center gap-2">
-          <LanguageSwitcher value={language} onChange={setLanguage} compact />
-          <Button asChild variant="outline">
-            <Link to="/auth">{t("landing.login")}</Link>
-          </Button>
-        </div>
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-card">
+      <header className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-5">
+        <Logo className="min-w-0 shrink" />
+        <Button asChild variant="outline" className="shrink-0">
+          <Link to="/auth">{t("landing.login")}</Link>
+        </Button>
       </header>
 
-      <section className="mx-auto max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
-        <h1 className="mt-7 text-balance text-[1.75rem] font-medium leading-[1.45] text-foreground sm:text-5xl sm:leading-[1.3]">
+      <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
+        <h1 className="mx-auto mt-7 max-w-full text-balance break-words text-[2rem] font-medium leading-[1.4] text-foreground sm:text-5xl sm:leading-[1.3]">
           {t("landing.hero.before")}
           <span className={underline}>{t("landing.hero.w1")}</span>
           {t("landing.hero.mid")}
@@ -123,14 +121,14 @@ function Home() {
         <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-muted-foreground">
           {t("landing.hero.sub")}
         </p>
-        <div className="mx-auto mt-9 flex max-w-md flex-col gap-3">
+        <div className="mx-auto mt-9 flex w-full max-w-md flex-col gap-3">
           <Button asChild size="xl" className="w-full">
             <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
           </Button>
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-5 pb-16">
+      <section className="mx-auto w-full max-w-3xl px-5 pb-16">
         <div className="mb-8 text-center">
           <span className="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground">
             {t("landing.features.badge")}
@@ -144,12 +142,13 @@ function Home() {
 
       {plans.length > 0 && (
         <section className="border-t bg-background">
-          <div className="mx-auto max-w-3xl px-5 py-16">
+          <div className="mx-auto w-full max-w-3xl px-5 py-16">
             <h2 className="text-center text-3xl font-medium">{t("landing.pricing.title")}</h2>
             <p className="mt-2 text-center text-muted-foreground">{t("landing.pricing.sub")}</p>
             <div className="mt-8">
               <PlanCards
                 plans={plans}
+                language="en"
                 action={(p) => (
                   <Button asChild size="xl" variant={p.tier === "pro" ? "outline" : "default"} className={p.tier === "pro" ? "w-full border-transparent text-foreground" : "w-full"}>
                     <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
@@ -162,7 +161,7 @@ function Home() {
       )}
 
       <footer className="border-t">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-5 py-8 text-sm text-muted-foreground">
+        <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-muted-foreground">
           <Logo />
           <p>© {new Date().getFullYear()} oranix</p>
         </div>

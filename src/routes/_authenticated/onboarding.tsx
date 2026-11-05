@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
-import { LanguageSwitcher, useLanguagePreference, useT } from "@/components/LanguageSwitcher";
-import type { TranslationKey } from "@/lib/i18n";
+import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { translate, type TranslationKey } from "@/lib/i18n";
 import {
   DEFAULT_ONBOARDING_INDUSTRIES,
   DEFAULT_PRODUCT_TYPES,
@@ -85,8 +85,9 @@ function Onboarding() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [step, setStep] = useState(0);
-  const { language, setLanguage } = useLanguagePreference();
-  const { t } = useT();
+  // Store setup happens before the store exists, so it stays English-only.
+  useDocumentLanguage("en");
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate("en", key, vars);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
@@ -335,10 +336,6 @@ function Onboarding() {
             ))}
           </div>
           <p className="text-center text-xs text-muted-foreground num">{t("onb.step", { n: step + 1, total: stepCount })}</p>
-        </div>
-
-        <div className="mt-6 flex justify-end">
-          <LanguageSwitcher value={language} onChange={setLanguage} />
         </div>
 
         <div className="mt-8 text-center">

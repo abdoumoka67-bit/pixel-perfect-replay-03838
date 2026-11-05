@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
-import { LanguageSwitcher, useLanguagePreference, useT } from "@/components/LanguageSwitcher";
+import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { translate, type TranslationKey } from "@/lib/i18n";
 
 const search = z.object({
   redirect: z.string().optional(),
@@ -20,10 +21,10 @@ export const Route = createFileRoute("/auth")({
   validateSearch: search,
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول — oranix" },
-      { name: "description", content: "ادخل إلى لوحة تحكم متجرك على oranix أو أنشئ حساباً جديداً مع تجربة مجانية 7 أيام." },
-      { property: "og:title", content: "تسجيل الدخول — oranix" },
-      { property: "og:description", content: "ادخل إلى لوحة تحكم متجرك على oranix." },
+      { title: "Sign in — oranix" },
+      { name: "description", content: "Sign in to your oranix store dashboard or create a new account with a 7-day free trial." },
+      { property: "og:title", content: "Sign in — oranix" },
+      { property: "og:description", content: "Sign in to your oranix store dashboard." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -40,8 +41,9 @@ const RESEND_SECONDS = 60;
 function AuthPage() {
   const { redirect, mode: initialMode } = Route.useSearch();
   const navigate = useNavigate();
-  const { t } = useT();
-  const { language, setLanguage } = useLanguagePreference();
+  // Sign-in is a public page: always English, no language switcher or saved preference.
+  useDocumentLanguage("en");
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate("en", key, vars);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -237,7 +239,6 @@ function AuthPage() {
           <Link to="/">
             <Logo />
           </Link>
-          <LanguageSwitcher value={language} onChange={setLanguage} />
         </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           {step ? (

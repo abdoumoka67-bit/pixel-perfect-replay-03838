@@ -4,7 +4,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import { AlertTriangle, LogOut, Menu, ShieldCheck, ExternalLink, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/Logo";
-import { LanguageSwitcher, useLanguagePreference } from "@/components/LanguageSwitcher";
+import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { parseStorefrontConfig } from "@/lib/storefront-theme";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -306,7 +307,9 @@ function SubscriptionBanner() {
 export function DashboardShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const { store, sub } = useMyStore();
-  const { language, setLanguage } = useLanguagePreference();
+  // The dashboard follows the language saved with the store (English by default).
+  const storeLanguage = parseStorefrontConfig(store?.storefront_config, store?.name ?? "").language;
+  useDocumentLanguage(storeLanguage);
   const trialLink = useMemo(() =>
     sub && sub.isTrial && sub.daysLeft > 0 ? `تجربة Pro مجانية · بقي ${sub.daysLeft} أيام` : "تجربة Pro مجانية",
   [sub]);
@@ -343,10 +346,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           </div>
         )}
 
-        <div className="border-b bg-card/95 px-4 py-2 md:px-8">
-          <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-end gap-2 sm:gap-3">
-            <LanguageSwitcher value={language} onChange={setLanguage} className="hidden sm:flex" />
-            {sub?.isTrial && (
+        {sub?.isTrial && (
+          <div className="border-b bg-card/95 px-4 py-2 md:px-8">
+            <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-end gap-2 sm:gap-3">
               <Link
                 to="/dashboard/billing"
                 className="inline-flex max-w-full items-center rounded-full border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm"
@@ -356,9 +358,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
                   <span className="truncate">تجربة Pro مجانية · بقي {sub.daysLeft} أيام</span>
                 </span>
               </Link>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         <SubscriptionBanner />
         <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pt-8 lg:pb-12">{children}</main>
