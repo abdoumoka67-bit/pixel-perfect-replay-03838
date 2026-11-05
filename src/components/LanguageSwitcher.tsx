@@ -4,6 +4,7 @@ import {
   LANGUAGE_DEFAULT,
   LANGUAGE_OPTIONS,
   LANGUAGE_STORAGE_KEY,
+  PUBLIC_LANGUAGE_STORAGE_KEY,
   STOREFRONT_LANGUAGE_STORAGE_KEY,
   applyLanguageToDocument,
   normalizeLanguage,
@@ -65,6 +66,11 @@ export function useDashboardLanguage(fallback: LanguageCode = LANGUAGE_DEFAULT) 
 /** Public storefront language: its own preference, defaulting to the store language. */
 export function useStorefrontLanguage(fallback: LanguageCode = LANGUAGE_DEFAULT) {
   return useLanguagePreference(fallback, STOREFRONT_LANGUAGE_STORAGE_KEY);
+}
+
+/** Landing and auth pages: English by default, remembered once the visitor picks another language. */
+export function usePublicLanguage(fallback: LanguageCode = "en") {
+  return useLanguagePreference(fallback, PUBLIC_LANGUAGE_STORAGE_KEY);
 }
 
 /** Translator bound to the current interface language, or to `language` when given. */
@@ -142,10 +148,12 @@ export function LanguageMenu({
   value,
   onChange,
   className,
+  compact = false,
 }: {
   value: LanguageCode;
   onChange: (lang: LanguageCode) => void;
   className?: string | undefined;
+  compact?: boolean;
 }) {
   return (
     <DropdownMenu>
@@ -153,13 +161,16 @@ export function LanguageMenu({
         <button
           type="button"
           aria-label={translate(value, "lang.group")}
+          title={translate(value, "lang.group")}
           className={cn(
-            "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary",
+            compact
+              ? "inline-flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              : "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary",
             className,
           )}
         >
-          <Languages className="size-4" strokeWidth={1.8} />
-          <span className="uppercase">{value}</span>
+          <Languages className={compact ? "size-[18px]" : "size-4"} strokeWidth={1.8} />
+          {!compact && <span className="uppercase">{value}</span>}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-36">

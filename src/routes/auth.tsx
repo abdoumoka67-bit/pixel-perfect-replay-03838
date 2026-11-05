@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
-import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
 import { translate, type TranslationKey } from "@/lib/i18n";
 
 const search = z.object({
@@ -40,9 +40,11 @@ const RESEND_SECONDS = 60;
 function AuthPage() {
   const { redirect, mode: initialMode } = Route.useSearch();
   const navigate = useNavigate();
-  // Sign-in is a public page: always English, no language switcher or saved preference.
-  useDocumentLanguage("en");
-  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate("en", key, vars);
+  // Public pages open in English by default; the visitor can switch language.
+  const { language, setLanguage } = usePublicLanguage("en");
+  const isRtl = language === "ar";
+  useDocumentLanguage(language);
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -176,12 +178,13 @@ function AuthPage() {
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="grid min-h-screen lg:grid-cols-2" dir={isRtl ? "rtl" : "ltr"}>
       <div className="flex flex-col px-6 py-8 sm:px-12">
         <div className="flex items-center justify-between gap-3">
           <Link to="/">
             <Logo />
           </Link>
+          <LanguageMenu compact value={language} onChange={setLanguage} />
         </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           {step ? (

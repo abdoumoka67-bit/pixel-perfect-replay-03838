@@ -292,6 +292,8 @@ export type LanguageCode = "ar" | "fr" | "en";
 export const LANGUAGE_STORAGE_KEY = "oranix_lang";
 /** Persistence key for the public storefront language (independent from the dashboard). */
 export const STOREFRONT_LANGUAGE_STORAGE_KEY = "oranix_store_lang";
+/** Persistence key for public pages (landing and auth); defaults to English. */
+export const PUBLIC_LANGUAGE_STORAGE_KEY = "oranix_public_lang";
 export const LANGUAGE_DEFAULT: LanguageCode = "ar";
 
 export const LANGUAGE_OPTIONS: ReadonlyArray<{ value: LanguageCode; label: string }> = [

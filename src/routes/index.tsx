@@ -7,7 +7,8 @@ import { getPublicPlans } from "@/lib/storefront.functions";
 import { PlanCards } from "@/components/PlanCards";
 import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
-import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
+import { UiLanguageProvider, useTr } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/")({
   loader: () => getPublicPlans(),
@@ -43,12 +44,8 @@ const FEATURES: { title: TranslationKey; text: TranslationKey }[] = [
   { title: "landing.f6.title", text: "landing.f6.text" },
 ];
 
-/** Public pages always render in English, regardless of the visitor's browser. */
-function t(key: TranslationKey, vars?: Record<string, string | number>) {
-  return translate("en", key, vars);
-}
-
 function FeaturesAccordion() {
+  const t = useTr();
   const [open, setOpen] = useState<number | null>(0);
   return (
     <ul className="space-y-2">
@@ -96,74 +93,82 @@ function FeaturesAccordion() {
 
 function Home() {
   const plans = Route.useLoaderData();
-  // The public site always opens in English and never reads or stores a visitor preference.
-  useDocumentLanguage("en");
+  // The public site opens in English by default; the visitor can switch language.
+  const { language, setLanguage } = usePublicLanguage("en");
+  const isRtl = language === "ar";
+  useDocumentLanguage(language);
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-card">
-      <header className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-5">
-        <Logo className="min-w-0 shrink" />
-        <Button asChild variant="outline" className="shrink-0">
-          <Link to="/auth">{t("landing.login")}</Link>
-        </Button>
-      </header>
+    <UiLanguageProvider language={language}>
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-card" dir={isRtl ? "rtl" : "ltr"}>
+        <header className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-5">
+          <Logo className="min-w-0 shrink" />
+          <div className="flex shrink-0 items-center gap-1.5">
+            <LanguageMenu compact value={language} onChange={setLanguage} />
+            <Button asChild variant="outline" className="shrink-0">
+              <Link to="/auth">{t("landing.login")}</Link>
+            </Button>
+          </div>
+        </header>
 
-      <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
-        <h1 className="mx-auto mt-7 max-w-full text-balance break-words text-[2rem] font-medium leading-[1.4] text-foreground sm:text-5xl sm:leading-[1.3]">
-          {t("landing.hero.before")}
-          {t("landing.hero.w1")}
-          {t("landing.hero.mid")}
-          {t("landing.hero.w2")}
-          {t("landing.hero.after")}
-        </h1>
-        <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-muted-foreground">
-          {t("landing.hero.sub")}
-        </p>
-        <div className="mx-auto mt-9 flex w-full max-w-md flex-col gap-3">
-          <Button asChild size="xl" className="w-full">
-            <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
-          </Button>
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-3xl px-5 pb-16">
-        <div className="mb-8 text-center">
-          <span className="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground">
-            {t("landing.features.badge")}
-          </span>
-          <h2 className="mt-4 text-balance text-2xl font-medium sm:text-3xl">
-            {t("landing.features.title")}
-          </h2>
-        </div>
-        <FeaturesAccordion />
-      </section>
-
-      {plans.length > 0 && (
-        <section className="border-t bg-background">
-          <div className="mx-auto w-full max-w-3xl px-5 py-16">
-            <h2 className="text-center text-3xl font-medium">{t("landing.pricing.title")}</h2>
-            <p className="mt-2 text-center text-muted-foreground">{t("landing.pricing.sub")}</p>
-            <div className="mt-8">
-              <PlanCards
-                plans={plans}
-                language="en"
-                action={(p) => (
-                  <Button asChild size="xl" variant={p.tier === "pro" ? "outline" : "default"} className={p.tier === "pro" ? "w-full border-transparent text-foreground" : "w-full"}>
-                    <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
-                  </Button>
-                )}
-              />
-            </div>
+        <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
+          <h1 className="mx-auto mt-7 max-w-full text-balance break-words text-[2rem] font-medium leading-[1.4] text-foreground sm:text-5xl sm:leading-[1.3]">
+            {t("landing.hero.before")}
+            {t("landing.hero.w1")}
+            {t("landing.hero.mid")}
+            {t("landing.hero.w2")}
+            {t("landing.hero.after")}
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-muted-foreground">
+            {t("landing.hero.sub")}
+          </p>
+          <div className="mx-auto mt-9 flex w-full max-w-md flex-col gap-3">
+            <Button asChild size="xl" className="w-full">
+              <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
+            </Button>
           </div>
         </section>
-      )}
 
-      <footer className="border-t">
-        <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-muted-foreground">
-          <Logo />
-          <p>© {new Date().getFullYear()} oranix</p>
-        </div>
-      </footer>
-    </div>
+        <section className="mx-auto w-full max-w-3xl px-5 pb-16">
+          <div className="mb-8 text-center">
+            <span className="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground">
+              {t("landing.features.badge")}
+            </span>
+            <h2 className="mt-4 text-balance text-2xl font-medium sm:text-3xl">
+              {t("landing.features.title")}
+            </h2>
+          </div>
+          <FeaturesAccordion />
+        </section>
+
+        {plans.length > 0 && (
+          <section className="border-t bg-background">
+            <div className="mx-auto w-full max-w-3xl px-5 py-16">
+              <h2 className="text-center text-3xl font-medium">{t("landing.pricing.title")}</h2>
+              <p className="mt-2 text-center text-muted-foreground">{t("landing.pricing.sub")}</p>
+              <div className="mt-8">
+                <PlanCards
+                  plans={plans}
+                  language={language}
+                  action={(p) => (
+                    <Button asChild size="xl" variant={p.tier === "pro" ? "outline" : "default"} className={p.tier === "pro" ? "w-full border-transparent text-foreground" : "w-full"}>
+                      <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
+                    </Button>
+                  )}
+                />
+              </div>
+            </div>
+          </section>
+        )}
+
+        <footer className="border-t">
+          <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-muted-foreground">
+            <Logo />
+            <p>© {new Date().getFullYear()} oranix</p>
+          </div>
+        </footer>
+      </div>
+    </UiLanguageProvider>
   );
 }
