@@ -4,7 +4,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { verifyCustomDomain } from "@/lib/domain.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Globe, ImagePlus, Loader2, Save, Target } from "lucide-react";
+import { Copy, Globe, ImagePlus, Languages, Loader2, Save, Target } from "lucide-react";
+import { LanguageSwitcher, useLanguagePreference, useT } from "@/components/LanguageSwitcher";
+import { translate } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { ProLock, ProPill } from "@/components/dashboard/ProLock";
 import { supabase } from "@/integrations/supabase/client";
@@ -210,6 +212,8 @@ function SettingsPage() {
         </div>
       </form>
 
+      <LanguageCard />
+
       <div className="border-t border-border pt-8">
         <StorefrontThemeSettings store={store} readOnly={readOnly} />
       </div>
@@ -219,6 +223,32 @@ function SettingsPage() {
         <CustomDomainSection store={store} readOnly={readOnly} isPro={isPro} />
       ) : null}
       </div>
+    </div>
+  );
+}
+
+function LanguageCard() {
+  const { language, setLanguage } = useLanguagePreference();
+  const { t } = useT();
+  return (
+    <div className="flex flex-col gap-4 rounded-2xl bg-card p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+          <Languages className="size-5" strokeWidth={1.6} />
+        </span>
+        <div className="min-w-0">
+          <h2 className="font-medium">{t("lang.title")}</h2>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{t("lang.description")}</p>
+        </div>
+      </div>
+      <LanguageSwitcher
+        value={language}
+        onChange={(l) => {
+          setLanguage(l);
+          toast.success(translate(l, "lang.saved"));
+        }}
+        className="self-start sm:self-auto"
+      />
     </div>
   );
 }

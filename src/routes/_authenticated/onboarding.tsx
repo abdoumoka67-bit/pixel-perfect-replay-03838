@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
-import { LanguageSwitcher, useLanguagePreference } from "@/components/LanguageSwitcher";
+import { LanguageSwitcher, useLanguagePreference, useT } from "@/components/LanguageSwitcher";
+import type { TranslationKey } from "@/lib/i18n";
 import {
   DEFAULT_ONBOARDING_INDUSTRIES,
   DEFAULT_PRODUCT_TYPES,
@@ -85,6 +86,7 @@ function Onboarding() {
   const qc = useQueryClient();
   const [step, setStep] = useState(0);
   const { language, setLanguage } = useLanguagePreference();
+  const { t } = useT();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
@@ -99,7 +101,7 @@ function Onboarding() {
   const normalizedPhone = normalizeDzPhone(phone);
   const phoneError =
     phone.trim() && !isValidDzPhone(phone)
-      ? "رقم غير صحيح: يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام (مثال: 0550 12 34 56)."
+      ? t("onb.phoneError")
       : null;
   const phoneOk = isValidDzPhone(phone);
 
@@ -118,20 +120,20 @@ function Onboarding() {
 
   async function submit() {
     if (name.trim().length < 2) {
-      toast.error("اسم المتجر يجب أن يتكون من حرفين على الأقل.");
+      toast.error(t("onb.err.name"));
       return;
     }
     const safeSlug = effectiveSlug.trim().toLowerCase();
     if (!isValidStoreSlug(safeSlug)) {
-      toast.error("الرابط يجب أن يكون 3 أحرف على الأقل: حروف لاتينية صغيرة وأرقام وشرطات.");
+      toast.error(t("onb.err.slug"));
       return;
     }
     if (!isValidDzPhone(phone)) {
-      toast.error("رقم الهاتف غير صحيح: يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.");
+      toast.error(t("onb.err.phone"));
       return;
     }
     if (reviewMode) {
-      toast.success("وضع مراجعة المدير: انتهت المراحل بدون إنشاء متجر جديد.");
+      toast.success(t("onb.review"));
       await navigate({ to: "/dashboard" });
       return;
     }
@@ -163,18 +165,18 @@ function Onboarding() {
       });
       if (profileError) {
         console.error("Saving onboarding profile failed", profileError);
-        toast.error("تم إنشاء المتجر، لكن تعذر حفظ الاسم الكامل في الملف الشخصي.");
+        toast.error(t("onb.profileFail"));
       }
 
       await qc.invalidateQueries({ queryKey: ["my-store"] });
-      toast.success("تم إنشاء متجرك! بدأت تجربتك المجانية لمدة 10 أيام.");
+      toast.success(t("onb.created"));
       await navigate({ to: "/dashboard", replace: true });
     } catch (error) {
       console.error("Store creation flow failed", error);
       toast.error(
         storeCreated
-          ? "تم إنشاء المتجر، لكن تعذر فتح لوحة التحكم. أعد تحميل الصفحة للمتابعة."
-          : "تعذر الاتصال لإنشاء المتجر. تحقق من اتصالك وحاول مرة أخرى.",
+          ? t("onb.openFail")
+          : t("onb.netFail"),
       );
     } finally {
       setBusy(false);
@@ -186,17 +188,17 @@ function Onboarding() {
       return (
         <div className="space-y-6">
           <div className="space-y-1.5">
-            <Label htmlFor="account-contact">{user.email ? "البريد الإلكتروني" : "رقم الهاتف"}</Label>
+            <Label htmlFor="account-contact">{user.email ? t("onb.email") : t("onb.phone")}</Label>
             <Input id="account-contact" value={user.email ?? user.phone ?? ""} readOnly className="h-11 bg-muted" />
           </div>
           <div className="rounded-2xl border border-success/20 bg-success-soft p-4 text-sm text-muted-foreground">
             {user.email
-              ? "تم تأكيد حسابك عبر البريد الإلكتروني. لا حاجة لإدخال كلمة المرور مرة أخرى."
-              : "تم تسجيل الدخول إلى حسابك. لا حاجة لإدخال كلمة المرور مرة أخرى."}
+              ? t("onb.confirmedEmail")
+              : t("onb.confirmedOther")}
           </div>
           <div className="flex gap-3 rounded-2xl border border-warning/30 bg-warning-soft p-4 text-sm leading-6 text-foreground">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" strokeWidth={1.8} />
-            <p>تنبيه أمني: لا تشارك كلمة السر الخاصة بك مع أي شخص، فريق oranix لن يطلبها منك أبداً.</p>
+            <p>{t("onb.security")}</p>
           </div>
         </div>
       );
@@ -206,15 +208,15 @@ function Onboarding() {
       return (
         <div className="space-y-6">
           <div className="space-y-1.5">
-            <Label htmlFor="full-name">الاسم الكامل</Label>
-            <Input id="full-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="مثال: أحمد بن علي" className="h-11" />
+            <Label htmlFor="full-name">{t("onb.fullName")}</Label>
+            <Input id="full-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder={t("onb.fullNamePh")} className="h-11" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="store-name">اسم المتجر</Label>
-            <Input id="store-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="مثال: Lina Store" className="h-11" />
+            <Label htmlFor="store-name">{t("onb.storeName")}</Label>
+            <Input id="store-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("onb.storeNamePh")} className="h-11" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="slug">اسم المتجر الفرعي</Label>
+            <Label htmlFor="slug">{t("onb.slug")}</Label>
             <div className="flex h-11 items-center overflow-hidden rounded-xl border border-input bg-card focus-within:ring-2 focus-within:ring-ring/50" dir="ltr">
               <span className="border-e bg-muted px-3 py-2.5 text-sm text-muted-foreground">oranix.app/m/</span>
               <input
@@ -229,10 +231,10 @@ function Onboarding() {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              رابط المتجر يجب أن يكون بحروف إنجليزية وأرقام وشرطات. إذا كان اسم المتجر بالعربية، سنقترح الرابط من بريدك ويمكنك تغييره.
+              {t("onb.slugHint")}
             </p>
             <div className="rounded-2xl border border-dashed border-border bg-white p-4 text-sm text-muted-foreground">
-              🌐 يمكنك شراء وربط دومين خاص بمتجرك لاحقاً من الإعدادات (خاص بمشتركي باقة Pro) مثل: storename.com مباشرة بدون الرابط الفرعي.
+              {t("onb.domainHint")}
             </div>
           </div>
         </div>
@@ -243,18 +245,18 @@ function Onboarding() {
       return (
         <div className="space-y-6">
           <div className="space-y-1.5">
-            <Label htmlFor="phone">رقم الواتساب الجزائري</Label>
+            <Label htmlFor="phone">{t("onb.whatsapp")}</Label>
             <Input id="phone" type="tel" dir="ltr" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" aria-invalid={Boolean(phoneError)} />
             {phoneError ? (
               <p className="text-xs text-destructive">{phoneError}</p>
             ) : (
-              <p className="text-xs text-muted-foreground">نقبل أرقام 05 و06 و07 فقط، ويمكنك الكتابة بمسافات: 0550 12 34 56.</p>
+              <p className="text-xs text-muted-foreground">{t("onb.phoneHint")}</p>
             )}
           </div>
           {phoneOk && (
             <div className="flex items-center gap-2.5 rounded-2xl border border-success/20 bg-success-soft p-4 text-sm leading-6 text-success">
               <ShieldCheck className="size-5 shrink-0" strokeWidth={1.8} />
-              <span>تم تأكيد الرقم وجاهز لاستقبال إشعارات الطلبات ورسائل الزبائن</span>
+              <span>{t("onb.phoneOk")}</span>
             </div>
           )}
         </div>
@@ -264,7 +266,7 @@ function Onboarding() {
     return (
       <div className="space-y-6">
         <div className="space-y-3">
-          <Label className="text-base">نوع المنتج</Label>
+          <Label className="text-base">{t("onb.productType")}</Label>
           <div className="grid gap-3 sm:grid-cols-2">
             {DEFAULT_PRODUCT_TYPES.map((option) => (
               <button
@@ -276,16 +278,16 @@ function Onboarding() {
                   productType === option.value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-white text-foreground",
                 ].join(" ")}
               >
-                <div className="font-medium">{option.label}</div>
+                <div className="font-medium">{t(`onb.type.${option.value}` as TranslationKey)}</div>
               </button>
             ))}
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label>مجال النشاط</Label>
+          <Label>{t("onb.industry")}</Label>
           <div className="grid gap-2 sm:grid-cols-2">
-            {DEFAULT_ONBOARDING_INDUSTRIES.map((item) => (
+            {DEFAULT_ONBOARDING_INDUSTRIES.map((item, idx) => (
               <button
                 key={item}
                 type="button"
@@ -295,7 +297,7 @@ function Onboarding() {
                   industry === item ? "border-primary bg-primary text-primary-foreground" : "border-border bg-white text-foreground",
                 ].join(" ")}
               >
-                {item}
+                {idx < 5 ? t(`onb.ind.${idx}` as TranslationKey) : item}
               </button>
             ))}
           </div>
@@ -304,19 +306,9 @@ function Onboarding() {
     );
   };
 
-  const currentTitle = [
-    "الحساب والأمان",
-    "هوية المتجر",
-    "رقم الواتساب والتأكيد",
-    "الملف التجاري ونوع النشاط",
-  ][step];
+  const currentTitle = t(`onb.title.${step}` as TranslationKey);
 
-  const currentSubtitle = [
-    "تأكيد الحساب يتم عبر البريد الإلكتروني.",
-    "أدخل الاسم الكامل واسم متجرك ورابطه.",
-    "أدخل رقم الواتساب لاستقبال إشعارات الطلبات.",
-    "اختر نوع منتجاتك ومجال نشاطك وافتح لوحة التحكم.",
-  ][step];
+  const currentSubtitle = t(`onb.sub.${step}` as TranslationKey);
 
   const isLast = step === stepCount - 1;
 
@@ -342,7 +334,7 @@ function Onboarding() {
               />
             ))}
           </div>
-          <p className="text-center text-xs text-muted-foreground num">المرحلة {step + 1} من {stepCount}</p>
+          <p className="text-center text-xs text-muted-foreground num">{t("onb.step", { n: step + 1, total: stepCount })}</p>
         </div>
 
         <div className="mt-6 flex justify-end">
@@ -351,7 +343,7 @@ function Onboarding() {
 
         <div className="mt-8 text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1.5 text-xs text-brand">
-            <Sparkles className="size-3.5" /> تجربة Pro مجانية · 10 أيام
+            <Sparkles className="size-3.5" /> {t("onb.trial")}
           </span>
           <h1 className="mt-4 text-3xl font-medium text-primary">{currentTitle}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{currentSubtitle}</p>
@@ -366,20 +358,16 @@ function Onboarding() {
             disabled={step === 0}
             className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <ArrowLeft className="size-4" /> السابق
+            <ArrowLeft className="size-4" /> {t("common.back")}
           </button>
 
           {isLast ? (
             <Button onClick={submit} disabled={busy || !canContinueFromStep()} variant="brand" size="lg" className="rounded-full">
-              {busy ? <Loader2 className="animate-spin" /> : <ShieldCheck className="size-4" />} فتح لوحة التحكم وبدء التجربة المجانية 🚀
+              {busy ? <Loader2 className="animate-spin" /> : <ShieldCheck className="size-4" />} {t("onb.finish")} 🚀
             </Button>
           ) : (
             <Button onClick={nextStep} disabled={!canContinueFromStep()} variant="brand" size="lg" className="rounded-full">
-              {[ 
-                "المتابعة إلى هوية المتجر",
-                "المتابعة إلى رقم الواتساب",
-                "المتابعة إلى الملف التجاري",
-              ][step]}
+              {t(`onb.next.${step}` as TranslationKey)}
               <ArrowRight className="size-4" />
             </Button>
           )}
