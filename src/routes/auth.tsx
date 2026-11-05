@@ -54,9 +54,6 @@ function AuthPage() {
   const [cooldown, setCooldown] = useState(0);
   const resetting = useRef(false);
 
-  // Hide Google until Supabase confirms the provider is enabled for this project.
-  const [googleEnabled, setGoogleEnabled] = useState(false);
-
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user && !resetting.current) navigate({ to: safePath(redirect), replace: true });
@@ -67,21 +64,6 @@ function AuthPage() {
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate, redirect]);
-
-  useEffect(() => {
-    // Only offer Google when it is switched on for this project.
-    const url = import.meta.env["VITE_SUPABASE_URL"];
-    const key = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
-    if (!url || !key) return;
-    fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: { external?: { google?: boolean } } | null) => {
-        setGoogleEnabled(Boolean(d?.external?.google));
-      })
-      .catch(() => {
-        setGoogleEnabled(false);
-      });
-  }, []);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -193,16 +175,6 @@ function AuthPage() {
     }
   }
 
-  async function google() {
-    const target = safePath(redirect);
-    sessionStorage.setItem("oranix:after-login", target);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth` },
-    });
-    if (error) toast.error(t("auth.err.google"));
-  }
-
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="flex flex-col px-6 py-8 sm:px-12">
@@ -279,24 +251,7 @@ function AuthPage() {
                     : t("auth.sub.forgot")}
               </p>
 
-              {mode !== "forgot" && googleEnabled && (
-                <>
-                  <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
-                    <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
-                      <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.6c2-1.9 3.2-4.7 3.2-8z" />
-                      <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8C3.9 20.6 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.8 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.7-2.8z" />
-                      <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2C17.5 2.1 15 1 12 1 7.7 1 3.9 3.4 2.1 7l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z" />
-                    </svg>
-                    {t("auth.google")}
-                  </Button>
-                  <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="h-px flex-1 bg-border" /> {t("auth.orEmail")} <span className="h-px flex-1 bg-border" />
-                  </div>
-                </>
-              )}
-
-              <form onSubmit={submit} className="mt-6 space-y-4">
+              <form onSubmit={submit} className="mt-8 space-y-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="email">{t("auth.email")}</Label>
                   <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
