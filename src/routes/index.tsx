@@ -99,8 +99,6 @@ function Home() {
   // The public site always opens in English and never reads or stores a visitor preference.
   useDocumentLanguage("en");
 
-  const underline = "underline decoration-[#DC143C] decoration-[3px] underline-offset-[6px]";
-
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-card">
       <header className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-5">
@@ -113,9 +111,9 @@ function Home() {
       <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
         <h1 className="mx-auto mt-7 max-w-full text-balance break-words text-[2rem] font-medium leading-[1.4] text-foreground sm:text-5xl sm:leading-[1.3]">
           {t("landing.hero.before")}
-          <span className={underline}>{t("landing.hero.w1")}</span>
+          {t("landing.hero.w1")}
           {t("landing.hero.mid")}
-          <span className={underline}>{t("landing.hero.w2")}</span>
+          {t("landing.hero.w2")}
           {t("landing.hero.after")}
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-muted-foreground">
