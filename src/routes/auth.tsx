@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
+import { LanguageSwitcher, useLanguagePreference, useT } from "@/components/LanguageSwitcher";
 
 const search = z.object({
   redirect: z.string().optional(),
@@ -39,6 +40,8 @@ const RESEND_SECONDS = 60;
 function AuthPage() {
   const { redirect, mode: initialMode } = Route.useSearch();
   const navigate = useNavigate();
+  const { t } = useT();
+  const { language, setLanguage } = useLanguagePreference();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -99,13 +102,13 @@ function AuthPage() {
 
   function showError(err: unknown) {
     const msg = err instanceof Error ? err.message : "";
-    if (msg.includes("Invalid login")) toast.error("البريد أو كلمة المرور غير صحيحة.");
-    else if (msg.includes("already registered")) toast.error("هذا البريد مسجل مسبقاً. سجّل الدخول.");
+    if (msg.includes("Invalid login")) toast.error(t("auth.err.invalidLogin"));
+    else if (msg.includes("already registered")) toast.error(t("auth.err.registered"));
     else if (/sms provider|phone.*not enabled|phone.*disabled|unsupported phone/i.test(msg))
-      toast.error("إرسال SMS غير مفعّل في Supabase. فعّل تسجيل الهاتف واربط مزود رسائل نصية.");
-    else if (/expired|invalid/i.test(msg) && step) toast.error("الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزاً جديداً.");
-    else if (/rate limit|security purposes/i.test(msg)) toast.error("طلبات كثيرة. انتظر قليلاً ثم حاول مرة أخرى.");
-    else toast.error(msg || "حدث خطأ، حاول مرة أخرى.");
+      toast.error(t("auth.err.sms"));
+    else if (/expired|invalid/i.test(msg) && step) toast.error(t("auth.err.code"));
+    else if (/rate limit|security purposes/i.test(msg)) toast.error(t("auth.err.rate"));
+    else toast.error(msg || t("auth.err.generic"));
   }
 
   async function submit(e: React.FormEvent) {
@@ -115,7 +118,7 @@ function AuthPage() {
       if (usePhone) {
         const internationalPhone = toInternationalDzPhone(phone);
         if (!internationalPhone) {
-          toast.error("أدخل رقماً جزائرياً صحيحاً يبدأ بـ 05 أو 06 أو 07.");
+          toast.error(t("auth.err.phone"));
           return;
         }
         const { error } = await supabase.auth.signInWithOtp({
@@ -125,7 +128,7 @@ function AuthPage() {
         if (error) throw error;
         setPhone(internationalPhone);
         openCodeStep("phone");
-        toast.success("أرسلنا رمز التحقق عبر SMS.");
+        toast.success(t("auth.ok.smsSent"));
         return;
       }
       if (mode === "signin") {
@@ -134,7 +137,7 @@ function AuthPage() {
           if (error.message.includes("Email not confirmed")) {
             const { error: resendError } = await supabase.auth.resend({ type: "signup", email });
             if (resendError) throw resendError;
-            toast.info("حسابك غير مؤكد بعد. أرسلنا لك رمز التحقق.");
+            toast.info(t("auth.ok.unconfirmed"));
             openCodeStep("confirm");
             return;
           }
@@ -142,7 +145,7 @@ function AuthPage() {
         }
         navigate({ to: safePath(redirect), replace: true });
       } else if (mode === "signup") {
-        if (password.length < 8) throw new Error("كلمة المرور يجب أن تحتوي 8 أحرف على الأقل.");
+        if (password.length < 8) throw new Error(t("auth.err.password"));
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         if (data.session) navigate({ to: "/dashboard", replace: true });
@@ -163,21 +166,21 @@ function AuthPage() {
     e.preventDefault();
     const token = code.replace(/\D/g, "");
     if (token.length < 6) {
-      toast.error(step === "phone" ? "اكتب الرمز الذي وصلك في SMS." : "اكتب الرمز كاملاً كما وصلك في البريد.");
+      toast.error(step === "phone" ? t("auth.err.codeSms") : t("auth.err.codeEmail"));
       return;
     }
-    if (step === "reset" && newPassword.length < 8) { toast.error("كلمة المرور يجب أن تحتوي 8 أحرف على الأقل."); return; }
+    if (step === "reset" && newPassword.length < 8) { toast.error(t("auth.err.password")); return; }
     setBusy(true);
     try {
       if (step === "phone") {
         const { error } = await supabase.auth.verifyOtp({ phone, token, type: "sms" });
         if (error) throw error;
-        toast.success("تم التحقق من رقم هاتفك.");
+        toast.success(t("auth.ok.phoneVerified"));
         navigate({ to: safePath(redirect), replace: true });
       } else if (step === "confirm") {
         const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
         if (error) throw error;
-        toast.success("تم تأكيد حسابك.");
+        toast.success(t("auth.ok.confirmed"));
         navigate({ to: safePath(redirect), replace: true });
       } else {
         resetting.current = true;
@@ -186,7 +189,7 @@ function AuthPage() {
         const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
         if (updateError) throw updateError;
         resetting.current = false;
-        toast.success("تم تحديث كلمة المرور.");
+        toast.success(t("auth.ok.passwordUpdated"));
         navigate({ to: safePath(redirect), replace: true });
       }
     } catch (err) {
@@ -208,7 +211,7 @@ function AuthPage() {
             ? await supabase.auth.resend({ type: "signup", email })
             : await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
-      toast.success("أرسلنا رمزاً جديداً.");
+      toast.success(t("auth.ok.resent"));
       setCooldown(RESEND_SECONDS);
     } catch (err) {
       showError(err);
@@ -224,15 +227,18 @@ function AuthPage() {
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth?redirect=${encodeURIComponent(target)}` },
     });
-    if (error) toast.error("تسجيل الدخول عبر Google غير متاح حالياً.");
+    if (error) toast.error(t("auth.err.google"));
   }
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="flex flex-col px-6 py-8 sm:px-12">
-        <Link to="/" className="self-start">
-          <Logo />
-        </Link>
+        <div className="flex items-center justify-between gap-3">
+          <Link to="/">
+            <Logo />
+          </Link>
+          <LanguageSwitcher value={language} onChange={setLanguage} />
+        </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           {step ? (
             <div>
@@ -240,19 +246,19 @@ function AuthPage() {
                 <MailCheck className="size-7" />
               </div>
               <h1 className="mt-5 text-2xl font-medium">
-                {step === "phone" ? "أدخل رمز SMS" : step === "confirm" ? "أدخل رمز التحقق" : "أدخل رمز إعادة التعيين"}
+                {step === "phone" ? t("auth.code.titlePhone") : step === "confirm" ? t("auth.code.titleConfirm") : t("auth.code.titleReset")}
               </h1>
               <p className="mt-2 text-muted-foreground">
                 {step === "phone" ? (
-                  <>أرسلنا رمزاً في رسالة SMS إلى <span dir="ltr" className="font-medium text-foreground">{phone}</span>.</>
+                  <>{t("auth.code.sentPhone")} <span dir="ltr" className="font-medium text-foreground">{phone}</span>.</>
                 ) : (
-                  <>أرسلنا رمزاً إلى <span dir="ltr" className="font-medium text-foreground">{email}</span>. إن لم تجده، تحقق من مجلد الرسائل غير المرغوب فيها (Spam).</>
+                  <>{t("auth.code.sentEmail")} <span dir="ltr" className="font-medium text-foreground">{email}</span>. {t("auth.code.spam")}</>
                 )}
               </p>
 
               <form onSubmit={verify} className="mt-8 space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="code">رمز التحقق</Label>
+                  <Label htmlFor="code">{t("auth.code.label")}</Label>
                   <Input
                     id="code"
                     dir="ltr"
@@ -268,19 +274,19 @@ function AuthPage() {
                 </div>
                 {step === "reset" && (
                   <div className="space-y-1.5">
-                    <Label htmlFor="new-password">كلمة المرور الجديدة</Label>
+                    <Label htmlFor="new-password">{t("auth.code.newPassword")}</Label>
                     <Input id="new-password" type="password" dir="ltr" required minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="h-11" />
                   </div>
                 )}
                 <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
                   {busy && <Loader2 className="animate-spin" />}
-                  {step === "reset" ? "حفظ كلمة المرور" : "تأكيد الرمز"}
+                  {step === "reset" ? t("auth.code.savePassword") : t("auth.code.confirm")}
                 </Button>
               </form>
 
               <div className="mt-6 flex items-center justify-between text-sm">
                 <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => { setStep(null); setMode("signin"); }}>
-                  العودة لتسجيل الدخول
+                  {t("auth.backToSignin")}
                 </button>
                 <button
                   type="button"
@@ -288,21 +294,21 @@ function AuthPage() {
                   disabled={cooldown > 0 || busy}
                   onClick={resend}
                 >
-                  {cooldown > 0 ? `إعادة الإرسال بعد ${cooldown} ث` : "إعادة إرسال الرمز"}
+                  {cooldown > 0 ? t("auth.code.resendIn", { n: cooldown }) : t("auth.code.resend")}
                 </button>
               </div>
             </div>
           ) : (
             <>
               <h1 className="text-3xl font-medium">
-                {mode === "signin" ? "مرحباً بعودتك" : mode === "signup" ? "أنشئ متجرك في دقيقة" : "نسيت كلمة المرور؟"}
+                {mode === "signin" ? t("auth.title.signin") : mode === "signup" ? t("auth.title.signup") : t("auth.title.forgot")}
               </h1>
               <p className="mt-2 text-muted-foreground">
                 {mode === "signup"
-                  ? "7 أيام تجربة مجانية بكل الميزات، بدون بطاقة دفع."
+                  ? t("auth.sub.signup")
                   : mode === "signin"
-                    ? "ادخل إلى لوحة تحكم متجرك."
-                    : "اكتب بريدك وسنرسل لك رمزاً لإعادة تعيينها."}
+                    ? t("auth.sub.signin")
+                    : t("auth.sub.forgot")}
               </p>
 
               {mode !== "forgot" && phoneEnabled && (
@@ -312,14 +318,14 @@ function AuthPage() {
                     onClick={() => setUsePhone(false)}
                     className={["rounded-full px-3 py-2", !usePhone ? "bg-card font-medium shadow-sm" : "text-muted-foreground"].join(" ")}
                   >
-                    بالبريد الإلكتروني
+                    {t("auth.byEmail")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setUsePhone(true)}
                     className={["rounded-full px-3 py-2", usePhone ? "bg-card font-medium shadow-sm" : "text-muted-foreground"].join(" ")}
                   >
-                    برقم الهاتف
+                    {t("auth.byPhone")}
                   </button>
                 </div>
               )}
@@ -333,10 +339,10 @@ function AuthPage() {
                       <path fill="#FBBC05" d="M5.8 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.7-2.8z" />
                       <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2C17.5 2.1 15 1 12 1 7.7 1 3.9 3.4 2.1 7l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z" />
                     </svg>
-                    المتابعة عبر Google
+                    {t("auth.google")}
                   </Button>
                   <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="h-px flex-1 bg-border" /> أو بالبريد الإلكتروني <span className="h-px flex-1 bg-border" />
+                    <span className="h-px flex-1 bg-border" /> {t("auth.orEmail")} <span className="h-px flex-1 bg-border" />
                   </div>
                 </>
               )}
@@ -344,23 +350,23 @@ function AuthPage() {
               <form onSubmit={submit} className="mt-6 space-y-4">
                 {usePhone ? (
                   <div className="space-y-1.5">
-                    <Label htmlFor="phone">رقم الهاتف</Label>
+                    <Label htmlFor="phone">{t("auth.phone")}</Label>
                     <Input id="phone" type="tel" dir="ltr" inputMode="tel" autoComplete="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 12 34 56" className="h-11" />
-                    <p className="text-xs text-muted-foreground">نقبل أرقام 05 و06 و07 فقط. سنرسل لك رمزاً في رسالة SMS.</p>
+                    <p className="text-xs text-muted-foreground">{t("auth.phoneHint")}</p>
                   </div>
                 ) : (
                   <>
                     <div className="space-y-1.5">
-                      <Label htmlFor="email">البريد الإلكتروني</Label>
+                      <Label htmlFor="email">{t("auth.email")}</Label>
                       <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
                     </div>
                     {mode !== "forgot" && (
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor="password">كلمة المرور</Label>
+                          <Label htmlFor="password">{t("auth.password")}</Label>
                           {mode === "signin" && (
                             <button type="button" className="text-xs text-brand hover:underline" onClick={() => setMode("forgot")}>
-                              نسيت كلمة المرور؟
+                              {t("auth.forgotLink")}
                             </button>
                           )}
                         </div>
@@ -372,25 +378,25 @@ function AuthPage() {
                 <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
                   {busy && <Loader2 className="animate-spin" />}
                   {usePhone
-                    ? "إرسال رمز التحقق"
+                    ? t("auth.sendCode")
                     : mode === "forgot"
-                      ? "إرسال الرمز"
+                      ? t("auth.sendResetCode")
                       : mode === "signin"
-                        ? "تسجيل الدخول"
-                        : "إنشاء الحساب"}
+                        ? t("auth.signin")
+                        : t("auth.signup")}
                 </Button>
               </form>
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
                 {mode === "signin" ? (
-                  <>ليس لديك حساب؟ <button className="font-medium text-brand hover:underline" onClick={() => setMode("signup")}>أنشئ متجرك مجاناً</button></>
+                  <>{t("auth.noAccount")} <button className="font-medium text-brand hover:underline" onClick={() => setMode("signup")}>{t("auth.createFree")}</button></>
                 ) : (
-                  <>لديك حساب؟ <button className="font-medium text-brand hover:underline" onClick={() => setMode("signin")}>سجّل الدخول</button></>
+                  <>{t("auth.haveAccount")} <button className="font-medium text-brand hover:underline" onClick={() => setMode("signin")}>{t("auth.signinLink")}</button></>
                 )}
               </p>
               {mode === "forgot" && (
                 <button type="button" className="mt-4 w-full text-center text-sm text-brand hover:underline" onClick={() => setMode("signin")}>
-                  العودة لتسجيل الدخول
+                  {t("auth.backToSignin")}
                 </button>
               )}
             </>
@@ -401,11 +407,11 @@ function AuthPage() {
         <div className="absolute inset-0 bg-hero opacity-20" />
         <div className="relative flex h-full flex-col justify-end p-12 text-sidebar-foreground">
           <p className="font-display text-4xl font-medium leading-tight">
-            استقبل طلبات <span className="text-sidebar-primary">الدفع عند الاستلام</span>
-            <br /> من 58 ولاية، بلا تعقيد.
+            {t("auth.side.title1")} <span className="text-sidebar-primary">{t("auth.side.title2")}</span>
+            <br /> {t("auth.side.title3")}
           </p>
           <p className="mt-4 max-w-md text-sidebar-muted">
-            صفحات هبوط سريعة لإعلانات تيك توك وإنستغرام، تأكيد هاتفي منظم، وإرسال مباشر إلى Yalidine.
+            {t("auth.side.body")}
           </p>
         </div>
       </div>
