@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 import { formatDZD } from "@/lib/commerce";
+import { useTr } from "@/lib/ui-i18n";
 import type { Order } from "./OrderDetailsSheet";
 
 /**
@@ -23,12 +24,13 @@ export function ShippingLabelModal({
   storeName: string;
   storePhone: string;
 }) {
+  const t = useTr();
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>بوليصة A6 حرارية ({orders.length} طلب)</DialogTitle>
+            <DialogTitle>{t("بوليصة A6 حرارية ({n} طلب)", { n: orders.length })}</DialogTitle>
           </DialogHeader>
           <div className="max-h-[60vh] space-y-4 overflow-y-auto rounded-xl bg-muted p-4">
             {orders.map((o) => (
@@ -37,10 +39,10 @@ export function ShippingLabelModal({
           </div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs leading-6 text-muted-foreground">
-              مقاس الورق: 100×150 ملم — الطابعة الحرارية. لا طُبع اللون بإعدادات النظام.
+              {t("مقاس الورق: 100×150 ملم — الطابعة الحرارية. اطبع بالأبيض والأسود.")}
             </p>
             <Button variant="brand" onClick={() => window.print()} disabled={orders.length === 0}>
-              <Printer /> طباعة
+              <Printer /> {t("طباعة")}
             </Button>
           </div>
         </DialogContent>
@@ -71,6 +73,7 @@ function A6Label({
   preview?: boolean;
   last?: boolean;
 }) {
+  const t = useTr();
   return (
     <div
       className={[
@@ -84,8 +87,8 @@ function A6Label({
         {/* Store + order barcode */}
         <div className="flex items-start justify-between border-b-2 border-[#000000] pb-2">
           <div>
-            <p className="text-[15px] font-bold">{storeName || "متجر oranix"}</p>
-            <p className="mt-0.5 text-[9px]">شحن الدفع عند الاستلام (COD)</p>
+            <p className="text-[15px] font-bold">{storeName || t("متجر oranix")}</p>
+            <p className="mt-0.5 text-[9px]">{t("شحن الدفع عند الاستلام (COD)")}</p>
           </div>
           <span className="rounded border-2 border-[#000000] px-1.5 py-0.5 text-[11px] font-bold num" dir="ltr">
             #{order.order_number}
@@ -107,7 +110,7 @@ function A6Label({
 
         {/* Recipient */}
         <div className="mt-3">
-          <p className="text-[9px]">الزبون</p>
+          <p className="text-[9px]">{t("الزبون")}</p>
           <p className="text-[15px] font-bold">{order.customer_name}</p>
           <p className="mt-1 text-[20px] font-bold">
             {order.wilaya_code} - {order.wilaya_name}
@@ -119,27 +122,27 @@ function A6Label({
         {/* Phones */}
         <div className="mt-2 grid grid-cols-2 gap-0 border-2 border-[#000000]">
           <div className="border-s-2 border-[#000000] p-1.5">
-            <p className="text-[9px]">هاتف 1</p>
+            <p className="text-[9px]">{t("هاتف 1")}</p>
             <p className="text-[12px] font-bold num" dir="ltr">{order.phone}</p>
           </div>
           <div className="p-1.5">
-            <p className="text-[9px]">هاتف 2</p>
+            <p className="text-[9px]">{t("هاتف 2")}</p>
             <p className="text-[12px] font-bold num" dir="ltr">{storePhone || "—"}</p>
           </div>
         </div>
 
         {/* COD amount */}
         <div className="mt-2 border-2 border-[#000000] p-2 text-center">
-          <p className="text-[10px] font-medium">المبلغ المطلوب (دفع عند الاستلام)</p>
+          <p className="text-[10px] font-medium">{t("المبلغ المطلوب (دفع عند الاستلام)")}</p>
           <p className="mt-0.5 text-[24px] font-bold num">{formatDZD(order.total)}</p>
         </div>
 
         {/* Carrier + notes */}
         <div className="mt-auto border-t border-dashed border-[#000000] pt-1.5">
           <p className="text-[11px] font-bold">
-            شركة التوصيل: {order.delivery_type === "home" ? "توصيل للمنزل" : "Stopdesk — المكتب"}
+            {t("شركة التوصيل:")} {order.delivery_type === "home" ? t("توصيل للمنزل") : t("Stopdesk — المكتب")}
           </p>
-          {order.notes && <p className="mt-0.5 line-clamp-2 text-[9px] leading-snug">ملاحظات: {order.notes}</p>}
+          {order.notes && <p className="mt-0.5 line-clamp-2 text-[9px] leading-snug">{t("ملاحظات:")} {order.notes}</p>}
         </div>
       </div>
     </div>

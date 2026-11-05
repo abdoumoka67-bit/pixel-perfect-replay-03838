@@ -63,6 +63,7 @@ import {
   type OrderStatus,
 } from "@/lib/commerce";
 import { downloadText, ordersToCsv } from "@/lib/csv";
+import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { cn } from "@/lib/utils";
 import { TrustRadarBadge } from "@/components/dashboard/TrustRadarBadge";
 
@@ -73,6 +74,8 @@ export const Route = createFileRoute("/_authenticated/dashboard/orders")({
 const PAGE_SIZE = 10;
 
 function OrdersPage() {
+  const t = useTr();
+  const language = useUiLanguage();
   const { store, readOnly, canManage, isPro } = useMyStore();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
@@ -107,18 +110,18 @@ function OrdersPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم إسناد الطلب");
+      toast.success(t("تم إسناد الطلب"));
       qc.invalidateQueries({ queryKey: ["orders"] });
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message)),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
   });
 
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setQ(qInput.trim());
       setPage(1);
     }, 300);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [qInput]);
 
   const buildQuery = (sel = "*", count = false) => {
@@ -186,20 +189,20 @@ function OrdersPage() {
     let list: Order[];
     if (selected.size) {
       const { data, error } = await supabase.from("orders").select("*").in("id", Array.from(selected));
-      if (error) { toast.error("تعذر التصدير"); return; }
+      if (error) { toast.error(t("تعذر التصدير")); return; }
       list = data;
     } else {
       const { data, error } = await buildQuery("*").limit(5000);
-      if (error) { toast.error("تعذر التصدير"); return; }
+      if (error) { toast.error(t("تعذر التصدير")); return; }
       list = (data ?? []) as unknown as Order[];
     }
-    downloadText(ordersToCsv(list), `oranix-orders-${new Date().toISOString().slice(0, 10)}.csv`);
-    toast.success(`تم تصدير ${list.length} طلب`);
+    downloadText(ordersToCsv(list, language), `oranix-orders-${new Date().toISOString().slice(0, 10)}.csv`);
+    toast.success(t("تم تصدير {n} طلب", { n: list.length }));
   }
 
   async function printLabelsForSelected() {
     const { data, error } = await supabase.from("orders").select("*").in("id", Array.from(selected));
-    if (error || !data?.length) { toast.error("تعذر تجهيز البوليصات"); return; }
+    if (error || !data?.length) { toast.error(t("تعذر تجهيز البوليصات")); return; }
     setLabelOrders(data as unknown as Order[]);
   }
 
@@ -220,21 +223,21 @@ function OrdersPage() {
   const ActionsMenu = ({ o }: { o: Order }) => (
     <DropdownMenu dir="rtl">
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="إجراءات">
+        <Button variant="ghost" size="icon" aria-label={t("إجراءات")}>
           <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuItem onClick={() => setOpenId(o.id)}>
-          <Eye /> التفاصيل وسجل الاتصال
+          <Eye /> {t("التفاصيل وسجل الاتصال")}
         </DropdownMenuItem>
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger disabled={readOnly}>تعديل الحالة</DropdownMenuSubTrigger>
+          <DropdownMenuSubTrigger disabled={readOnly}>{t("تعديل الحالة")}</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             <DropdownMenuRadioGroup value={o.status} onValueChange={(v) => updateStatus.mutate({ id: o.id, status: v as OrderStatus })}>
               {ORDER_STATUSES.map((s) => (
                 <DropdownMenuRadioItem key={s} value={s}>
-                  {STATUS_LABELS[s]}
+                  {t(STATUS_LABELS[s])}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
@@ -243,14 +246,14 @@ function OrdersPage() {
         {canAssign && (members.data?.length ?? 0) > 0 && (
           <DropdownMenuSub>
             <DropdownMenuSubTrigger disabled={readOnly}>
-              <UserCheck className="size-4" /> إسناد إلى
+              <UserCheck className="size-4" /> {t("إسناد إلى")}
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               <DropdownMenuRadioGroup
                 value={o.assigned_member_id ?? "none"}
                 onValueChange={(v) => assign.mutate({ orderId: o.id, memberId: v === "none" ? null : v })}
               >
-                <DropdownMenuRadioItem value="none">بدون إسناد</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="none">{t("بدون إسناد")}</DropdownMenuRadioItem>
                 {members.data?.map((m) => (
                   <DropdownMenuRadioItem key={m.id} value={m.id}>
                     <span dir="ltr" className="truncate">{m.email}</span>
@@ -262,25 +265,25 @@ function OrdersPage() {
         )}
         <DropdownMenuItem asChild>
           <a href={`tel:${o.phone}`}>
-            <Phone /> اتصال بالزبون
+            <Phone /> {t("اتصال بالزبون")}
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <a href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))} target="_blank" rel="noreferrer">
-            <MessageCircle /> محادثة واتساب
+            <MessageCircle /> {t("محادثة واتساب")}
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setLabelOrders([o])}>
-          <Printer /> طباعة بوليصة A6
+          <Printer /> {t("طباعة بوليصة A6")}
         </DropdownMenuItem>
         <DropdownMenuItem disabled={readOnly || !!o.tracking_number} onClick={() => sendYalidine.mutate(o.id)}>
-          <Send /> إرسال إلى Yalidine
+          <Send /> {t("إرسال إلى Yalidine")}
         </DropdownMenuItem>
         {canManage && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled={readOnly} className="text-danger focus:text-danger" onClick={() => setToDelete(o)}>
-              <Trash2 /> حذف الطلب
+              <Trash2 /> {t("حذف الطلب")}
             </DropdownMenuItem>
           </>
         )}
@@ -291,21 +294,21 @@ function OrdersPage() {
   return (
     <>
       <PageHeader
-        title="إدارة الطلبات"
-        description={`${total} طلب${status !== "all" ? ` · ${STATUS_LABELS[status]}` : ""}`}
+        title={t("إدارة الطلبات")}
+        description={`${t("{n} طلب", { n: total })}${status !== "all" ? ` · ${t(STATUS_LABELS[status])}` : ""}`}
         actions={
           <>
             <Button variant="outline" onClick={exportCsv}>
-              <Download /> {selected.size ? `تصدير المحدد (${selected.size})` : "تصدير Excel"}
+              <Download /> {selected.size ? t("تصدير المحدد ({n})", { n: selected.size }) : t("تصدير Excel")}
             </Button>
             {selected.size > 0 && (
               <Button variant="outline" onClick={() => printLabelsForSelected()}>
-                <Printer /> طباعة بوليصة A6 ({selected.size})
+                <Printer /> {t("طباعة بوليصة A6 ({n})", { n: selected.size })}
               </Button>
             )}
             <Button asChild variant="brand" className="hidden md:inline-flex">
               <Link to="/dashboard/products" search={{ new: true }}>
-                <Plus /> منتج جديد
+                <Plus /> {t("منتج جديد")}
               </Link>
             </Button>
           </>
@@ -318,18 +321,18 @@ function OrdersPage() {
           <Input
             value={qInput}
             onChange={(e) => setQInput(e.target.value)}
-            placeholder="ابحث برقم الهاتف أو اسم الزبون..."
+            placeholder={t("ابحث برقم الهاتف أو اسم الزبون...")}
             className="h-11 bg-card ps-10"
           />
         </div>
         <DropdownMenu dir="rtl">
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-11">
-              <Filter /> <span className="hidden sm:inline">{status === "all" ? "تصفية" : STATUS_LABELS[status]}</span>
+              <Filter /> <span className="hidden sm:inline">{status === "all" ? t("تصفية") : t(STATUS_LABELS[status])}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>حالة الطلب</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("حالة الطلب")}</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={status}
               onValueChange={(v) => {
@@ -337,10 +340,10 @@ function OrdersPage() {
                 setPage(1);
               }}
             >
-              <DropdownMenuRadioItem value="all">الكل</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all">{t("الكل")}</DropdownMenuRadioItem>
               {ORDER_STATUSES.map((s) => (
                 <DropdownMenuRadioItem key={s} value={s}>
-                  {STATUS_LABELS[s]}
+                  {t(STATUS_LABELS[s])}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
@@ -355,16 +358,16 @@ function OrdersPage() {
             <thead>
               <tr className="border-b bg-table-header text-xs text-muted-foreground">
                 <th className="w-10 p-4">
-                  <Checkbox checked={allOnPage} onCheckedChange={toggleAll} aria-label="تحديد الكل" />
+                  <Checkbox checked={allOnPage} onCheckedChange={toggleAll} aria-label={t("تحديد الكل")} />
                 </th>
                 <th className="p-4 text-start font-medium">#</th>
-                <th className="p-4 text-start font-medium">رقم الطلب</th>
-                <th className="p-4 text-start font-medium">التاريخ</th>
-                <th className="p-4 text-start font-medium">المنتجات</th>
-                <th className="p-4 text-start font-medium">السعر الإجمالي</th>
-                <th className="p-4 text-start font-medium">حالة الدفع</th>
-                <th className="p-4 text-start font-medium">العنوان والولاية</th>
-                <th className="p-4 text-start font-medium">حالة الطلب</th>
+                <th className="p-4 text-start font-medium">{t("رقم الطلب")}</th>
+                <th className="p-4 text-start font-medium">{t("التاريخ")}</th>
+                <th className="p-4 text-start font-medium">{t("المنتجات")}</th>
+                <th className="p-4 text-start font-medium">{t("السعر الإجمالي")}</th>
+                <th className="p-4 text-start font-medium">{t("حالة الدفع")}</th>
+                <th className="p-4 text-start font-medium">{t("العنوان والولاية")}</th>
+                <th className="p-4 text-start font-medium">{t("حالة الطلب")}</th>
                 <th className="w-12 p-4" />
               </tr>
             </thead>
@@ -375,7 +378,7 @@ function OrdersPage() {
                   className={cn("border-b last:border-0 transition-colors hover:bg-muted/40", selected.has(o.id) && "bg-brand-soft/40")}
                 >
                   <td className="p-4">
-                    <Checkbox checked={selected.has(o.id)} onCheckedChange={() => toggle(o.id)} aria-label="تحديد" />
+                    <Checkbox checked={selected.has(o.id)} onCheckedChange={() => toggle(o.id)} aria-label={t("تحديد")} />
                   </td>
                   <td className="p-4 text-muted-foreground num">{(page - 1) * PAGE_SIZE + i + 1}</td>
                   <td className="p-4">
@@ -397,7 +400,7 @@ function OrdersPage() {
                   <td className="max-w-[200px] p-4">
                     <p className="truncate font-medium">{o.product_name}</p>
                     <p className="text-xs text-muted-foreground">
-                      الكمية: <span className="num">{o.quantity}</span>
+                      {t("الكمية")}: <span className="num">{o.quantity}</span>
                       {o.call_attempts > 0 && (
                         <span className="ms-2 inline-flex items-center gap-1 text-brand">
                           <PhoneCall className="size-3" />
@@ -413,7 +416,7 @@ function OrdersPage() {
                   <td className="max-w-[200px] p-4">
                     <p className="truncate">{o.commune}</p>
                     <p className="truncate text-xs text-muted-foreground">
-                      <span className="num">{o.wilaya_code}</span> - {o.wilaya_name} · {o.delivery_type === "home" ? "منزل" : "مكتب"}
+                      <span className="num">{o.wilaya_code}</span> - {o.wilaya_name} · {o.delivery_type === "home" ? t("منزل") : t("مكتب")}
                     </p>
                   </td>
                   <td className="p-4">
@@ -465,18 +468,18 @@ function OrdersPage() {
             )}
             {o.call_attempts > 0 && (
               <p className="mt-2 text-xs text-brand">
-                <span className="num">{o.call_attempts}</span> محاولات اتصال
+                <span className="num">{o.call_attempts}</span> {t("محاولات اتصال")}
               </p>
             )}
             <div className="mt-3 grid grid-cols-2 gap-2">
               <Button asChild size="sm" variant="default">
                 <a href={`tel:${o.phone}`}>
-                  <Phone /> اتصال
+                  <Phone /> {t("اتصال")}
                 </a>
               </Button>
               <Button asChild size="sm" variant="success">
                 <a href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))} target="_blank" rel="noreferrer">
-                  <MessageCircle /> واتساب
+                  <MessageCircle /> {t("واتساب")}
                 </a>
               </Button>
             </div>
@@ -492,12 +495,12 @@ function OrdersPage() {
       {total > 0 && (
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            عرض <span className="num">{(page - 1) * PAGE_SIZE + 1}</span>–<span className="num">{Math.min(page * PAGE_SIZE, total)}</span> من{" "}
-            <span className="num">{total}</span>
+            {t("عرض")} <span className="num">{(page - 1) * PAGE_SIZE + 1}</span>–<span className="num">{Math.min(page * PAGE_SIZE, total)}</span>{" "}
+            {t("من")} <span className="num">{total}</span>
           </p>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-              <ChevronRight /> السابق
+              <ChevronRight /> {t("السابق")}
             </Button>
             {pageNumbers(page, pages).map((n, idx) =>
               n === -1 ? (
@@ -509,7 +512,7 @@ function OrdersPage() {
               ),
             )}
             <Button variant="outline" size="sm" disabled={page >= pages} onClick={() => setPage(page + 1)}>
-              التالي <ChevronLeft />
+              {t("التالي")} <ChevronLeft />
             </Button>
           </div>
         </div>
@@ -534,16 +537,16 @@ function OrdersPage() {
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader className="text-start">
-            <AlertDialogTitle>حذف الطلب ORX-{toDelete?.order_number}؟</AlertDialogTitle>
-            <AlertDialogDescription>لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription>
+            <AlertDialogTitle>{t("حذف الطلب ORX-{n}؟", { n: toDelete?.order_number ?? "" })}</AlertDialogTitle>
+            <AlertDialogDescription>{t("لا يمكن التراجع عن هذا الإجراء.")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogCancel>{t("إلغاء")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => toDelete && remove.mutate(toDelete.id)}
             >
-              حذف نهائي
+              {t("حذف نهائي")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -553,10 +556,11 @@ function OrdersPage() {
 }
 
 function EmptyState() {
+  const t = useTr();
   return (
     <div className="p-10 text-center">
-      <p className="font-medium">لا توجد طلبات</p>
-      <p className="mt-1 text-sm text-muted-foreground">ستظهر هنا طلبات الزبائن من صفحات الهبوط فور وصولها.</p>
+      <p className="font-medium">{t("لا توجد طلبات")}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{t("ستظهر هنا طلبات الزبائن من صفحات الهبوط فور وصولها.")}</p>
     </div>
   );
 }

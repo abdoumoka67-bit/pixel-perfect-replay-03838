@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { WILAYAS } from "@/data/wilayas";
 import { useMyStore } from "@/hooks/use-my-store";
 import { friendlyError } from "@/lib/commerce";
+import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/delivery")({
   component: DeliveryRates,
@@ -49,6 +50,8 @@ const DELIVERY_CARRIERS: Array<{ id: CarrierId; name: string; note: string }> = 
 type Row = { home: string; desk: string; homeOn: boolean; deskOn: boolean };
 
 function DeliveryRates() {
+  const t = useTr();
+  const language = useUiLanguage();
   const { store, readOnly } = useMyStore();
   const qc = useQueryClient();
   const [rows, setRows] = useState<Record<number, Row>>({});
@@ -89,7 +92,7 @@ function DeliveryRates() {
     const next: Record<number, Row> = {};
     for (const w of WILAYAS) next[w.code] = { home: defHome, desk: defDesk, homeOn: true, deskOn: true };
     setRows(next);
-    toast.success("تم تطبيق السعر الافتراضي على كل الولايات. لا تنسَ الحفظ.");
+    toast.success(t("تم تطبيق السعر الافتراضي على كل الولايات. لا تنسَ الحفظ."));
   };
 
   const save = useMutation({
@@ -115,11 +118,11 @@ function DeliveryRates() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم حفظ أسعار التوصيل");
+      toast.success(t("تم حفظ أسعار التوصيل"));
       qc.invalidateQueries({ queryKey: ["delivery-rates"] });
       qc.invalidateQueries({ queryKey: ["my-store"] });
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message, t("تعذر الحفظ")))),
   });
 
   const set = (code: number, patch: Partial<Row>) => setRows((r) => ({ ...r, [code]: { ...(r[code] as Row), ...patch } }));
@@ -127,11 +130,11 @@ function DeliveryRates() {
   return (
     <>
       <PageHeader
-        title="أسعار التوصيل"
-        description="حدّد سعر التوصيل للمنزل وللمكتب في كل ولاية من الـ 58 ولاية."
+        title={t("أسعار التوصيل")}
+        description={t("حدّد سعر التوصيل للمنزل وللمكتب في كل ولاية من الـ 58 ولاية.")}
         actions={
           <Button variant="brand" disabled={readOnly || save.isPending || !Object.keys(rows).length} onClick={() => save.mutate()}>
-            {save.isPending ? <Loader2 className="animate-spin" /> : <Save />} حفظ الأسعار
+            {save.isPending ? <Loader2 className="animate-spin" /> : <Save />} {t("حفظ الأسعار")}
           </Button>
         }
       />
@@ -140,28 +143,28 @@ function DeliveryRates() {
 
       <div className="mb-6 grid gap-4 rounded-2xl bg-card p-5 shadow-card md:grid-cols-[1fr_1fr_auto] md:items-end">
         <div className="space-y-1.5">
-          <Label>السعر الافتراضي للمنزل (د.ج)</Label>
+          <Label>{t("السعر الافتراضي للمنزل (د.ج)")}</Label>
           <Input type="number" dir="ltr" value={defHome} onChange={(e) => setDefHome(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <Label>السعر الافتراضي للمكتب (د.ج)</Label>
+          <Label>{t("السعر الافتراضي للمكتب (د.ج)")}</Label>
           <Input type="number" dir="ltr" value={defDesk} onChange={(e) => setDefDesk(e.target.value)} />
         </div>
         <Button variant="outline" onClick={applyDefault} disabled={readOnly}>
-          <Wand2 /> تطبيق على كل الولايات
+          <Wand2 /> {t("تطبيق على كل الولايات")}
         </Button>
       </div>
 
       <div className="relative mb-4">
         <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input className="h-11 bg-card ps-10" placeholder="ابحث عن ولاية..." value={filter} onChange={(e) => setFilter(e.target.value)} />
+        <Input className="h-11 bg-card ps-10" placeholder={t("ابحث عن ولاية...")} value={filter} onChange={(e) => setFilter(e.target.value)} />
       </div>
 
       <div className="overflow-hidden rounded-2xl bg-card shadow-card">
         <div className="hidden grid-cols-[2fr_1.5fr_1.5fr] gap-4 border-b bg-table-header px-5 py-3 text-xs font-medium text-muted-foreground md:grid">
-          <span>الولاية</span>
-          <span>توصيل للمنزل</span>
-          <span>توصيل للمكتب (Stopdesk)</span>
+          <span>{t("الولاية")}</span>
+          <span>{t("توصيل للمنزل")}</span>
+          <span>{t("توصيل للمكتب (Stopdesk)")}</span>
         </div>
         <ul className="divide-y">
           {visible.map((w) => {
@@ -172,7 +175,7 @@ function DeliveryRates() {
                 <div className="flex items-center gap-3">
                   <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-xs font-medium num">{w.code}</span>
                   <div>
-                    <p className="font-medium">{w.ar}</p>
+                    <p className="font-medium">{language === "ar" ? w.ar : w.fr}</p>
                     <p className="text-xs text-muted-foreground" dir="ltr">{w.fr}</p>
                   </div>
                 </div>
@@ -180,12 +183,12 @@ function DeliveryRates() {
                   const on = k === "home" ? r.homeOn : r.deskOn;
                   return (
                     <div key={k} className="flex items-center gap-2">
-                      <span className="w-14 text-xs text-muted-foreground md:hidden">{k === "home" ? "منزل" : "مكتب"}</span>
+                      <span className="w-14 text-xs text-muted-foreground md:hidden">{k === "home" ? t("منزل") : t("مكتب")}</span>
                       <Switch
                         checked={on}
                         disabled={readOnly}
                         onCheckedChange={(v) => set(w.code, k === "home" ? { homeOn: v } : { deskOn: v })}
-                        aria-label="متوفر"
+                        aria-label={t("متوفر")}
                       />
                       <Input
                         type="number"
@@ -194,7 +197,7 @@ function DeliveryRates() {
                         disabled={!on || readOnly}
                         value={k === "home" ? r.home : r.desk}
                         onChange={(e) => set(w.code, k === "home" ? { home: e.target.value } : { desk: e.target.value })}
-                        placeholder={on ? "0" : "غير متوفر"}
+                        placeholder={on ? "0" : t("غير متوفر")}
                       />
                     </div>
                   );
@@ -210,6 +213,7 @@ function DeliveryRates() {
 
 
 function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof useMyStore>["store"]>; readOnly: boolean }) {
+  const t = useTr();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<CarrierId | null>(null);
   const [form, setForm] = useState<CarrierIntegration>({ connected: false });
@@ -270,11 +274,11 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم حفظ بيانات الربط");
+      toast.success(t("تم حفظ بيانات الربط"));
       qc.invalidateQueries({ queryKey: ["carrier-integrations", store.id] });
       setEditing(null);
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message, t("تعذر الحفظ")))),
   });
 
   return (
@@ -284,8 +288,10 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
           <Truck className="size-5" strokeWidth={1.6} />
         </span>
         <div className="flex-1">
-          <h2 className="font-medium">شركات التوصيل الجزائرية</h2>
-          <p className="text-xs text-muted-foreground">اربط حسابك عند شركتك المفضلة من {DELIVERY_CARRIERS.length} شركة مدعومة.</p>
+          <h2 className="font-medium">{t("شركات التوصيل الجزائرية")}</h2>
+          <p className="text-xs text-muted-foreground">
+            {t("اربط حسابك عند شركتك المفضلة من {n} شركة مدعومة.", { n: DELIVERY_CARRIERS.length })}
+          </p>
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -296,8 +302,8 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
             <div key={carrier.id} className="flex flex-col gap-3 rounded-2xl bg-card p-4 shadow-card">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate font-medium">{carrier.name}</p>
-                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{carrier.note}</p>
+                  <p className="truncate font-medium">{t(carrier.name)}</p>
+                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{t(carrier.note)}</p>
                 </div>
                 <span
                   className={[
@@ -306,13 +312,13 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
                   ].join(" ")}
                 >
                   {linked ? <CheckCircle2 className="size-3" /> : null}
-                  {linked ? "مربوط" : "غير مفعل"}
+                  {linked ? t("مربوط") : t("غير مفعل")}
                 </span>
               </div>
               {carrier.id === "yalidine" ? (
                 <Button asChild variant={linked ? "outline" : "brand"} size="sm" className="mt-auto w-full">
                   <Link to="/dashboard/yalidine">
-                    <PlugZap /> إدارة ربط Yalidine
+                    <PlugZap /> {t("إدارة ربط Yalidine")}
                   </Link>
                 </Button>
               ) : (
@@ -323,7 +329,7 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
                   disabled={readOnly}
                   onClick={() => openLink(carrier)}
                 >
-                  <PlugZap /> {linked ? "تعديل بيانات الربط" : "ربط API"}
+                  <PlugZap /> {linked ? t("تعديل بيانات الربط") : t("ربط API")}
                 </Button>
               )}
             </div>
@@ -334,7 +340,7 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>ربط API — {editingCarrier?.name}</DialogTitle>
+            <DialogTitle>{t("ربط API — {name}", { name: editingCarrier ? t(editingCarrier.name) : "" })}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
@@ -343,7 +349,7 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
                 dir="ltr"
                 value={form.api_key ?? ""}
                 onChange={(e) => setForm((f) => ({ ...f, api_key: e.target.value }))}
-                placeholder="مثال: ak_123456"
+                placeholder={t("مثال: ak_123456")}
               />
             </div>
             <div className="space-y-1.5">
@@ -352,7 +358,7 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
                 dir="ltr"
                 value={form.token ?? ""}
                 onChange={(e) => setForm((f) => ({ ...f, token: e.target.value }))}
-                placeholder="مثال: eyJhbGciOi..."
+                placeholder={t("مثال: eyJhbGciOi...")}
               />
             </div>
             <div className="space-y-1.5">
@@ -361,11 +367,11 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
                 dir="ltr"
                 value={form.account_id ?? ""}
                 onChange={(e) => setForm((f) => ({ ...f, account_id: e.target.value }))}
-                placeholder="رقم حسابك لدى الناقل"
+                placeholder={t("رقم حسابك لدى الناقل")}
               />
             </div>
             <p className="rounded-xl bg-warning-soft px-3 py-2 text-xs leading-5 text-warning">
-              تُحفظ المفاتيح حالياً في إعدادات متجرك، وسيتم تشغيل الإرسال التلقائي لكل شركة تدريجياً.
+              {t("تُحفظ المفاتيح حالياً في إعدادات متجرك، وسيتم تشغيل الإرسال التلقائي لكل شركة تدريجياً.")}
             </p>
             <Button
               variant="brand"
@@ -373,7 +379,7 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
               onClick={() => saveCarrier.mutate()}
               disabled={saveCarrier.isPending}
             >
-              {saveCarrier.isPending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />} حفظ الربط
+              {saveCarrier.isPending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />} {t("حفظ الربط")}
             </Button>
           </div>
         </DialogContent>

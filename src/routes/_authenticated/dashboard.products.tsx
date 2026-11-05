@@ -22,6 +22,7 @@ import {
 import { useMyStore } from "@/hooks/use-my-store";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
 import { formatDZD, friendlyError } from "@/lib/commerce";
+import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/products")({
   validateSearch: z.object({ new: z.boolean().optional() }),
@@ -30,6 +31,8 @@ export const Route = createFileRoute("/_authenticated/dashboard/products")({
 
 function ProductsPage() {
   const { store, readOnly } = useMyStore();
+  const t = useTr();
+  const language = useUiLanguage();
   const { user } = Route.useRouteContext();
   const search = Route.useSearch();
   const navigate = useNavigate();
@@ -40,7 +43,7 @@ function ProductsPage() {
 
   useEffect(() => {
     if (search.new) {
-      if (readOnly) toast.error("حسابك في وضع القراءة فقط. جدّد اشتراكك لإضافة منتجات.");
+      if (readOnly) toast.error(t("حسابك في وضع القراءة فقط. جدّد اشتراكك لإضافة منتجات."));
       else {
         setEditing(null);
         setOpen(true);
@@ -70,10 +73,10 @@ function ProductsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم حذف المنتج");
+      toast.success(t("تم حذف المنتج"));
       qc.invalidateQueries({ queryKey: ["products"] });
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message)),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
   });
 
   const landingUrl = (p: Product) => `${window.location.origin}/m/${store?.slug}/p/${p.slug}`;
@@ -81,8 +84,8 @@ function ProductsPage() {
   return (
     <>
       <PageHeader
-        title="المنتجات"
-        description="لكل منتج صفحة هبوط سريعة جاهزة لإعلانات تيك توك وإنستغرام."
+        title={t("المنتجات")}
+        description={t("لكل منتج صفحة هبوط سريعة جاهزة لإعلانات تيك توك وإنستغرام.")}
         actions={
           <Button
             variant="brand"
@@ -92,7 +95,7 @@ function ProductsPage() {
               setOpen(true);
             }}
           >
-            <Plus /> منتج جديد
+            <Plus /> {t("منتج جديد")}
           </Button>
         }
       />
@@ -102,10 +105,10 @@ function ProductsPage() {
           <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-brand-soft text-brand">
             <Package className="size-7" />
           </div>
-          <h2 className="mt-4 text-lg font-medium">أضف منتجك الأول</h2>
-          <p className="mt-1 text-sm text-muted-foreground">ستحصل فوراً على صفحة هبوط بنموذج طلب الدفع عند الاستلام.</p>
+          <h2 className="mt-4 text-lg font-medium">{t("أضف منتجك الأول")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t("ستحصل فوراً على صفحة هبوط بنموذج طلب الدفع عند الاستلام.")}</p>
           <Button className="mt-5" variant="brand" disabled={readOnly} onClick={() => setOpen(true)}>
-            <Plus /> منتج جديد
+            <Plus /> {t("منتج جديد")}
           </Button>
         </div>
       )}
@@ -122,8 +125,8 @@ function ProductsPage() {
                 </div>
               )}
               <div className="absolute start-3 top-3 flex gap-1.5">
-                {p.is_active ? <Badge variant="success">معروض</Badge> : <Badge variant="neutral">مخفي</Badge>}
-                {p.stock === 0 && <Badge variant="danger">نفدت الكمية</Badge>}
+                {p.is_active ? <Badge variant="success">{t("معروض")}</Badge> : <Badge variant="neutral">{t("مخفي")}</Badge>}
+                {p.stock === 0 && <Badge variant="danger">{t("نفدت الكمية")}</Badge>}
               </div>
             </div>
             <div className="p-4">
@@ -134,7 +137,7 @@ function ProductsPage() {
                   {p.category && p.stock != null && " · "}
                   {p.stock != null && (
                     <>
-                      المتوفر: <span className="num">{p.stock}</span>
+                      {t("المتوفر: {n}", { n: p.stock })}
                     </>
                   )}
                 </p>
@@ -152,13 +155,13 @@ function ProductsPage() {
                   className="flex-1"
                   onClick={() => {
                     navigator.clipboard.writeText(landingUrl(p));
-                    toast.success("تم نسخ رابط صفحة الهبوط");
+                    toast.success(t("تم نسخ رابط صفحة الهبوط"));
                   }}
                 >
-                  <Copy /> نسخ الرابط
+                  <Copy /> {t("نسخ الرابط")}
                 </Button>
                 <Button size="icon" variant="outline" className="size-8" asChild>
-                  <a href={`/m/${store?.slug}/p/${p.slug}`} target="_blank" rel="noreferrer" aria-label="فتح الصفحة">
+                  <a href={`/m/${store?.slug}/p/${p.slug}`} target="_blank" rel="noreferrer" aria-label={t("فتح الصفحة")}>
                     <ExternalLink />
                   </a>
                 </Button>
@@ -167,7 +170,7 @@ function ProductsPage() {
                   variant="outline"
                   className="size-8"
                   disabled={readOnly}
-                  aria-label="تعديل"
+                  aria-label={t("تعديل")}
                   onClick={() => {
                     setEditing(p);
                     setOpen(true);
@@ -180,7 +183,7 @@ function ProductsPage() {
                   variant="outline"
                   className="size-8 text-danger"
                   disabled={readOnly}
-                  aria-label="حذف"
+                  aria-label={t("حذف")}
                   onClick={() => setToDelete(p)}
                 >
                   <Trash2 />
@@ -196,18 +199,18 @@ function ProductsPage() {
       )}
 
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
-        <AlertDialogContent dir="rtl">
+        <AlertDialogContent dir={language === "ar" ? "rtl" : "ltr"}>
           <AlertDialogHeader className="text-start">
-            <AlertDialogTitle>حذف «{toDelete?.name}»؟</AlertDialogTitle>
-            <AlertDialogDescription>ستتوقف صفحة الهبوط الخاصة به. الطلبات السابقة تبقى محفوظة.</AlertDialogDescription>
+            <AlertDialogTitle>{t("حذف «{name}»؟", { name: toDelete?.name ?? "" })}</AlertDialogTitle>
+            <AlertDialogDescription>{t("ستتوقف صفحة الهبوط الخاصة به. الطلبات السابقة تبقى محفوظة.")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogCancel>{t("إلغاء")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => toDelete && remove.mutate(toDelete.id)}
             >
-              حذف
+              {t("حذف")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

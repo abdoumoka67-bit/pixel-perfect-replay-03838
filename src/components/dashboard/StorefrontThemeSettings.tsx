@@ -10,19 +10,23 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { friendlyError } from "@/lib/commerce";
 import {
-  DEFAULT_FAQ,
+  DEFAULT_FAQ_BY_LANGUAGE,
   HERO_PRESETS,
   PRESET_KEYS,
-  TRUST_BADGES,
+  STOREFRONT_DEFAULTS,
+  STOREFRONT_LANGUAGE_DEFAULT,
   TRUST_BADGE_KEYS,
+  TRUST_BADGE_LABELS,
   parseStorefrontConfig,
   presetStyles,
   storefrontConfigSchema,
   type FaqItem,
   type PresetKey,
   type ReviewItem,
+  type StorefrontLanguage,
   type TrustBadgeKey,
 } from "@/lib/storefront-theme";
+import { useTr } from "@/lib/ui-i18n";
 import type { Tables } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 
@@ -35,18 +39,23 @@ export function StorefrontThemeSettings({
   store: Store | null;
   readOnly: boolean;
 }) {
+  const t = useTr();
   const qc = useQueryClient();
+  const language: StorefrontLanguage = store
+    ? parseStorefrontConfig(store.storefront_config, store.name).language
+    : STOREFRONT_LANGUAGE_DEFAULT;
+  const defaults = STOREFRONT_DEFAULTS[language];
 
   const [preset, setPreset] = useState<PresetKey>("noir");
   const [heroTitle, setHeroTitle] = useState("");
-  const [heroSubtitle, setHeroSubtitle] = useState("اطلب الآن والدفع عند الاستلام");
-  const [heroButton, setHeroButton] = useState("تسوق الآن");
+  const [heroSubtitle, setHeroSubtitle] = useState(defaults.heroSubtitle);
+  const [heroButton, setHeroButton] = useState(defaults.heroButton);
   const [barEnabled, setBarEnabled] = useState(true);
-  const [barText, setBarText] = useState("مرحبا بك في متجرنا");
+  const [barText, setBarText] = useState(defaults.barText);
 
   // Sections
   const [faqEnabled, setFaqEnabled] = useState(true);
-  const [faqItems, setFaqItems] = useState<FaqItem[]>(DEFAULT_FAQ);
+  const [faqItems, setFaqItems] = useState<FaqItem[]>(DEFAULT_FAQ_BY_LANGUAGE[language]);
 
   const [reviewsEnabled, setReviewsEnabled] = useState(false);
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
@@ -133,6 +142,7 @@ export function StorefrontThemeSettings({
       if (!store) throw new Error("STORE_NOT_FOUND");
       const payload = {
         preset,
+        language,
         hero_title: heroTitle.trim(),
         hero_subtitle: heroSubtitle.trim(),
         hero_button: heroButton.trim(),
@@ -173,23 +183,24 @@ export function StorefrontThemeSettings({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم حفظ مظهر المتجر بنجاح");
+      toast.success(t("تم حفظ مظهر المتجر بنجاح"));
       qc.invalidateQueries({ queryKey: ["my-store"] });
     },
     onError: (e: Error) => {
-      toast.error(friendlyError(e.message, "تعذر حفظ مظهر المتجر"));
+      toast.error(t(friendlyError(e.message, t("تعذر حفظ مظهر المتجر"))));
     },
   });
 
   const previewStyles = presetStyles(preset);
+  const badgeLabels = TRUST_BADGE_LABELS[language];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold text-foreground">مظهر المتجر</h2>
+          <h2 className="text-xl font-bold text-foreground">{t("مظهر المتجر")}</h2>
           <p className="text-sm text-muted-foreground">
-            تخصيص ألوان الواجهة الرئيسية والتحكم في أقسام صفحة الهبوط.
+            {t("تخصيص ألوان الواجهة الرئيسية والتحكم في أقسام صفحة الهبوط.")}
           </p>
         </div>
       </div>
@@ -199,11 +210,11 @@ export function StorefrontThemeSettings({
         <div className="space-y-6">
           {/* Colors & Hero config card */}
           <div className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card">
-            <h3 className="text-base font-bold text-foreground">الواجهة الرئيسية (Hero)</h3>
+            <h3 className="text-base font-bold text-foreground">{t("الواجهة الرئيسية (Hero)")}</h3>
 
             {/* 6 Round Swatches */}
             <div className="space-y-2.5">
-              <Label className="text-sm font-medium">ألوان الواجهة الرئيسية</Label>
+              <Label className="text-sm font-medium">{t("ألوان الواجهة الرئيسية")}</Label>
               <div className="flex flex-wrap items-center gap-3.5">
                 {PRESET_KEYS.map((key) => {
                   const p = HERO_PRESETS[key];
@@ -213,7 +224,7 @@ export function StorefrontThemeSettings({
                       key={key}
                       type="button"
                       onClick={() => setPreset(key)}
-                      title={p.label}
+                      title={t(p.label)}
                       disabled={readOnly}
                       className={cn(
                         "relative flex size-11 items-center justify-center rounded-full transition-transform hover:scale-105 active:scale-95 disabled:pointer-events-none",
@@ -224,7 +235,7 @@ export function StorefrontThemeSettings({
                       style={{
                         background: `linear-gradient(135deg, ${p.from} 0%, ${p.from} 50%, ${p.to} 50%, ${p.to} 100%)`,
                       }}
-                      aria-label={p.label}
+                      aria-label={t(p.label)}
                     >
                       {isSelected && (
                         <Check
@@ -238,18 +249,18 @@ export function StorefrontThemeSettings({
                 })}
               </div>
               <p className="text-xs text-muted-foreground">
-                النمط المختار:{" "}
-                <span className="font-medium text-foreground">{HERO_PRESETS[preset]?.label}</span>
+                {t("النمط المختار:")}{" "}
+                <span className="font-medium text-foreground">{t(HERO_PRESETS[preset]?.label ?? "")}</span>
               </p>
             </div>
 
             {/* Hero Inputs */}
             <div className="space-y-3.5 pt-2">
               <div className="space-y-1.5">
-                <Label htmlFor="th-title">عنوان الواجهة</Label>
+                <Label htmlFor="th-title">{t("عنوان الواجهة")}</Label>
                 <Input
                   id="th-title"
-                  placeholder={store?.name || "اسم متجرك"}
+                  placeholder={store?.name || t("اسم متجرك")}
                   value={heroTitle}
                   onChange={(e) => setHeroTitle(e.target.value.slice(0, 80))}
                   maxLength={80}
@@ -258,10 +269,10 @@ export function StorefrontThemeSettings({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="th-subtitle">الوصف الترحيبي</Label>
+                <Label htmlFor="th-subtitle">{t("الوصف الترحيبي")}</Label>
                 <Input
                   id="th-subtitle"
-                  placeholder="اطلب الآن والدفع عند الاستلام"
+                  placeholder={defaults.heroSubtitle}
                   value={heroSubtitle}
                   onChange={(e) => setHeroSubtitle(e.target.value.slice(0, 160))}
                   maxLength={160}
@@ -270,10 +281,10 @@ export function StorefrontThemeSettings({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="th-btn">نص الزر</Label>
+                <Label htmlFor="th-btn">{t("نص الزر")}</Label>
                 <Input
                   id="th-btn"
-                  placeholder="تسوق الآن"
+                  placeholder={defaults.heroButton}
                   value={heroButton}
                   onChange={(e) => setHeroButton(e.target.value.slice(0, 30))}
                   maxLength={30}
@@ -287,10 +298,10 @@ export function StorefrontThemeSettings({
               <div className="flex items-center justify-between rounded-xl border border-border p-3.5">
                 <div>
                   <Label htmlFor="sw-bar" className="cursor-pointer text-sm font-medium">
-                    شريط الإعلانات العلوي
+                    {t("شريط الإعلانات العلوي")}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    شريط إشعار أسود أعلى صفحة المتجر قابل للإغلاق.
+                    {t("شريط إشعار أسود أعلى صفحة المتجر قابل للإغلاق.")}
                   </p>
                 </div>
                 <Switch
@@ -303,10 +314,10 @@ export function StorefrontThemeSettings({
 
               {barEnabled && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="th-bar">نص شريط الإعلانات</Label>
+                  <Label htmlFor="th-bar">{t("نص شريط الإعلانات")}</Label>
                   <Input
                     id="th-bar"
-                    placeholder="مرحبا بك في متجرنا"
+                    placeholder={defaults.barText}
                     value={barText}
                     onChange={(e) => setBarText(e.target.value.slice(0, 80))}
                     maxLength={80}
@@ -320,9 +331,9 @@ export function StorefrontThemeSettings({
           {/* Landing Sections Manager */}
           <div className="space-y-4">
             <div>
-              <h3 className="text-base font-bold text-foreground">أقسام صفحة الهبوط</h3>
+              <h3 className="text-base font-bold text-foreground">{t("أقسام صفحة الهبوط")}</h3>
               <p className="text-xs text-muted-foreground">
-                تحكم في الأقسام المعروضة أسفل المنتجات في صفحة متجرك.
+                {t("تحكم في الأقسام المعروضة أسفل المنتجات في صفحة متجرك.")}
               </p>
             </div>
 
@@ -330,8 +341,8 @@ export function StorefrontThemeSettings({
             <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-foreground">الأسئلة الشائعة (FAQ)</p>
-                  <p className="text-xs text-muted-foreground">إجابات مختصرة لطمأنة الزبائن قبل الطلب.</p>
+                  <p className="font-bold text-foreground">{t("الأسئلة الشائعة (FAQ)")}</p>
+                  <p className="text-xs text-muted-foreground">{t("إجابات مختصرة لطمأنة الزبائن قبل الطلب.")}</p>
                 </div>
                 <Switch checked={faqEnabled} onCheckedChange={setFaqEnabled} disabled={readOnly} />
               </div>
@@ -345,7 +356,7 @@ export function StorefrontThemeSettings({
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-muted-foreground">
-                          السؤال #{idx + 1}
+                          {t("السؤال #{n}", { n: idx + 1 })}
                         </span>
                         <Button
                           type="button"
@@ -354,20 +365,20 @@ export function StorefrontThemeSettings({
                           onClick={() => removeFaqItem(idx)}
                           className="size-7 p-0 text-destructive hover:bg-destructive/10"
                           disabled={readOnly}
-                          aria-label="حذف السؤال"
+                          aria-label={t("حذف السؤال")}
                         >
                           <Trash2 className="size-3.5" />
                         </Button>
                       </div>
                       <Input
-                        placeholder="نص السؤال (مثال: شحال ثمن التوصيل؟)"
+                        placeholder={t("نص السؤال (مثال: شحال ثمن التوصيل؟)")}
                         value={item.q}
                         onChange={(e) => updateFaqItem(idx, "q", e.target.value)}
                         maxLength={80}
                         disabled={readOnly}
                       />
                       <Textarea
-                        placeholder="نص الإجابة..."
+                        placeholder={t("نص الإجابة...")}
                         value={item.a}
                         onChange={(e) => updateFaqItem(idx, "a", e.target.value)}
                         maxLength={300}
@@ -386,7 +397,7 @@ export function StorefrontThemeSettings({
                       disabled={readOnly}
                       className="w-full rounded-full"
                     >
-                      <Plus className="size-3.5" /> إضافة سؤال جديد ({faqItems.length}/8)
+                      <Plus className="size-3.5" /> {t("إضافة سؤال جديد ({n}/8)", { n: faqItems.length })}
                     </Button>
                   )}
                 </div>
@@ -397,9 +408,9 @@ export function StorefrontThemeSettings({
             <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-foreground">تقييمات وآراء العملاء</p>
+                  <p className="font-bold text-foreground">{t("تقييمات وآراء العملاء")}</p>
                   <p className="text-xs text-muted-foreground">
-                    تظهر فقط التقييمات التي تقوم بكتابتها بنفسك.
+                    {t("تظهر فقط التقييمات التي تقوم بكتابتها بنفسك.")}
                   </p>
                 </div>
                 <Switch
@@ -413,7 +424,7 @@ export function StorefrontThemeSettings({
                 <div className="space-y-3 pt-2">
                   {reviewItems.length === 0 && (
                     <p className="text-center py-4 text-xs text-muted-foreground">
-                      لم تتم إضافة أي تقييم بعد. انقر أدناه لإضافة أول تقييم لزبائنك.
+                      {t("لم تتم إضافة أي تقييم بعد. انقر أدناه لإضافة أول تقييم لزبائنك.")}
                     </p>
                   )}
 
@@ -431,7 +442,7 @@ export function StorefrontThemeSettings({
                               onClick={() => updateReviewItem(idx, "rating", star)}
                               disabled={readOnly}
                               className="p-0.5 transition-transform hover:scale-110 disabled:pointer-events-none"
-                              aria-label={`${star} نجوم`}
+                              aria-label={t("{n} نجوم", { n: star })}
                             >
                               <Star
                                 className={cn(
@@ -451,14 +462,14 @@ export function StorefrontThemeSettings({
                           onClick={() => removeReviewItem(idx)}
                           className="size-7 p-0 text-destructive hover:bg-destructive/10"
                           disabled={readOnly}
-                          aria-label="حذف التقييم"
+                          aria-label={t("حذف التقييم")}
                         >
                           <Trash2 className="size-3.5" />
                         </Button>
                       </div>
 
                       <Input
-                        placeholder="اسم العميل (مثال: أمين - وهران)"
+                        placeholder={t("اسم العميل (مثال: أمين - وهران)")}
                         value={rev.name}
                         onChange={(e) => updateReviewItem(idx, "name", e.target.value)}
                         maxLength={60}
@@ -466,7 +477,7 @@ export function StorefrontThemeSettings({
                       />
 
                       <Textarea
-                        placeholder="نص التقييم أو تجربة العميل..."
+                        placeholder={t("نص التقييم أو تجربة العميل...")}
                         value={rev.text}
                         onChange={(e) => updateReviewItem(idx, "text", e.target.value)}
                         maxLength={300}
@@ -485,7 +496,7 @@ export function StorefrontThemeSettings({
                       disabled={readOnly}
                       className="w-full rounded-full"
                     >
-                      <Plus className="size-3.5" /> إضافة تقييم جديد ({reviewItems.length}/10)
+                      <Plus className="size-3.5" /> {t("إضافة تقييم جديد ({n}/10)", { n: reviewItems.length })}
                     </Button>
                   )}
                 </div>
@@ -496,9 +507,9 @@ export function StorefrontThemeSettings({
             <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-foreground">روابط التواصل الاجتماعي</p>
+                  <p className="font-bold text-foreground">{t("روابط التواصل الاجتماعي")}</p>
                   <p className="text-xs text-muted-foreground">
-                    أزرار دائرية تظهر أسفل صفحة المتجر للوصول لحساباتك.
+                    {t("أزرار دائرية تظهر أسفل صفحة المتجر للوصول لحساباتك.")}
                   </p>
                 </div>
                 <Switch
@@ -511,7 +522,7 @@ export function StorefrontThemeSettings({
               {socialEnabled && (
                 <div className="grid gap-3 pt-2 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="so-wa">واتساب</Label>
+                    <Label htmlFor="so-wa">{t("واتساب")}</Label>
                     <Input
                       id="so-wa"
                       dir="ltr"
@@ -523,7 +534,7 @@ export function StorefrontThemeSettings({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="so-ig">إنستغرام</Label>
+                    <Label htmlFor="so-ig">{t("إنستغرام")}</Label>
                     <Input
                       id="so-ig"
                       dir="ltr"
@@ -535,7 +546,7 @@ export function StorefrontThemeSettings({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="so-fb">فيسبوك</Label>
+                    <Label htmlFor="so-fb">{t("فيسبوك")}</Label>
                     <Input
                       id="so-fb"
                       dir="ltr"
@@ -547,7 +558,7 @@ export function StorefrontThemeSettings({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="so-tt">تيك توك</Label>
+                    <Label htmlFor="so-tt">{t("تيك توك")}</Label>
                     <Input
                       id="so-tt"
                       dir="ltr"
@@ -565,9 +576,9 @@ export function StorefrontThemeSettings({
             <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-foreground">شارات الثقة والضمان</p>
+                  <p className="font-bold text-foreground">{t("شارات الثقة والضمان")}</p>
                   <p className="text-xs text-muted-foreground">
-                    شارات تطمئن المشتري مثل الدفع عند الاستلام والتوصيل.
+                    {t("شارات تطمئن المشتري مثل الدفع عند الاستلام والتوصيل.")}
                   </p>
                 </div>
                 <Switch
@@ -580,7 +591,7 @@ export function StorefrontThemeSettings({
               {trustEnabled && (
                 <div className="flex flex-wrap gap-2.5 pt-2">
                   {TRUST_BADGE_KEYS.map((key) => {
-                    const badge = TRUST_BADGES[key];
+                    const badge = badgeLabels[key];
                     const active = trustBadges.includes(key);
                     return (
                       <button
@@ -596,7 +607,7 @@ export function StorefrontThemeSettings({
                         )}
                       >
                         {active && <Check className="size-3.5" />}
-                        <span>{badge.label}</span>
+                        <span>{badge}</span>
                       </button>
                     );
                   })}
@@ -611,15 +622,15 @@ export function StorefrontThemeSettings({
           <div className="sticky top-6 space-y-4">
             <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
               <div className="flex items-center justify-between border-b bg-muted/60 px-4 py-2.5 text-xs text-muted-foreground">
-                <span className="font-medium">معاينة مباشرة</span>
+                <span className="font-medium">{t("معاينة مباشرة")}</span>
                 <span className="rounded-full bg-card px-2.5 py-0.5 text-[11px] font-medium border text-foreground">
-                  مباشر
+                  {t("مباشر")}
                 </span>
               </div>
 
               {barEnabled && (
                 <div className="bg-primary px-3 py-2 text-center text-xs text-white">
-                  {barText || "مرحبا بك في متجرنا"}
+                  {barText || defaults.barText}
                 </div>
               )}
 
@@ -628,16 +639,16 @@ export function StorefrontThemeSettings({
                 className="p-6 text-center transition-colors sm:p-8"
               >
                 <p className="text-xl font-normal leading-tight">
-                  {heroTitle || store?.name || "اسم متجرك"}
+                  {heroTitle || store?.name || t("اسم متجرك")}
                 </p>
                 <p className="mx-auto mt-2 max-w-xs text-xs font-light opacity-90 leading-relaxed">
-                  {heroSubtitle || "اطلب الآن والدفع عند الاستلام"}
+                  {heroSubtitle || defaults.heroSubtitle}
                 </p>
                 <div
                   style={previewStyles.button}
                   className="mt-4 inline-flex h-9 items-center justify-center rounded-full px-6 text-xs font-normal shadow-sm"
                 >
-                  {heroButton || "تسوق الآن"}
+                  {heroButton || defaults.heroButton}
                 </div>
               </div>
             </div>
@@ -655,10 +666,10 @@ export function StorefrontThemeSettings({
                 ) : (
                   <Save className="size-4" />
                 )}
-                حفظ التغييرات
+                {t("حفظ التغييرات")}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                تطبق التغييرات فوراً على صفحة متجرك للزبائن.
+                {t("تطبق التغييرات فوراً على صفحة متجرك للزبائن.")}
               </p>
             </div>
           </div>
@@ -667,4 +678,3 @@ export function StorefrontThemeSettings({
     </div>
   );
 }
-

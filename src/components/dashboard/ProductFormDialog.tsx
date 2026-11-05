@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
 import { PRODUCT_BUCKET, fileExt } from "@/lib/images";
 import { friendlyError, slugify } from "@/lib/commerce";
+import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 import type { Tables } from "@/integrations/supabase/types";
 
 export type Product = Tables<"products">;
@@ -36,6 +37,9 @@ export function ProductFormDialog({
   ownerId: string;
 }) {
   const qc = useQueryClient();
+  const t = useTr();
+  const language = useUiLanguage();
+  const listSep = language === "ar" ? "، " : ", ";
   const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -60,8 +64,8 @@ export function ProductFormDialog({
     setPrice(product ? String(product.price) : "");
     setCompare(product?.compare_at_price ? String(product.compare_at_price) : "");
     setFeatures(product?.features.join("\n") ?? "");
-    setSizes(product?.sizes.join("، ") ?? "");
-    setColors(product?.colors.join("، ") ?? "");
+    setSizes(product?.sizes.join(listSep) ?? "");
+    setColors(product?.colors.join(listSep) ?? "");
     setActive(product?.is_active ?? true);
     setStock(product?.stock != null ? String(product.stock) : "");
     setCategory(product?.category ?? "");
@@ -74,12 +78,12 @@ export function ProductFormDialog({
     const added: string[] = [];
     for (const file of Array.from(files).slice(0, 8)) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name}: الحجم الأقصى 5MB`);
+        toast.error(t("{file}: الحجم الأقصى 5MB", { file: file.name }));
         continue;
       }
       const path = `${ownerId}/${crypto.randomUUID()}.${fileExt(file)}`;
       const { error } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, file, { contentType: file.type });
-      if (error) toast.error("تعذر رفع الصورة");
+      if (error) toast.error(t("تعذر رفع الصورة"));
       else added.push(path);
     }
     setImages((prev) => [...prev, ...added]);
@@ -104,28 +108,28 @@ export function ProductFormDialog({
         stock: stock.trim() === "" ? null : Number(stock),
         category: category.trim() || null,
       };
-      if (payload.stock !== null && (!Number.isInteger(payload.stock) || payload.stock < 0)) throw new Error("الكمية غير صحيحة");
-      if (!payload.name) throw new Error("اسم المنتج مطلوب");
-      if (!Number.isFinite(payload.price) || payload.price <= 0) throw new Error("السعر غير صحيح");
+      if (payload.stock !== null && (!Number.isInteger(payload.stock) || payload.stock < 0)) throw new Error(t("الكمية غير صحيحة"));
+      if (!payload.name) throw new Error(t("اسم المنتج مطلوب"));
+      if (!Number.isFinite(payload.price) || payload.price <= 0) throw new Error(t("السعر غير صحيح"));
       const { error } = product
         ? await supabase.from("products").update(payload).eq("id", product.id)
         : await supabase.from("products").insert(payload);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success(product ? "تم حفظ التعديلات" : "تمت إضافة المنتج");
+      toast.success(product ? t("تم حفظ التعديلات") : t("تمت إضافة المنتج"));
       qc.invalidateQueries({ queryKey: ["products"] });
       onOpenChange(false);
     },
     onError: (e: Error) =>
-      toast.error(e.message.length < 40 && !/[a-z_]{6,}/i.test(e.message) ? e.message : friendlyError(e.message)),
+      toast.error(e.message.length < 40 && !/[a-z_]{6,}/i.test(e.message) ? e.message : t(friendlyError(e.message))),
   });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent dir="rtl" className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent dir={language === "ar" ? "rtl" : "ltr"} className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader className="text-start">
-          <DialogTitle>{product ? "تعديل المنتج" : "منتج جديد"}</DialogTitle>
+          <DialogTitle>{product ? t("تعديل المنتج") : t("منتج جديد")}</DialogTitle>
         </DialogHeader>
         <form
           className="space-y-5"
@@ -135,19 +139,19 @@ export function ProductFormDialog({
           }}
         >
           <div className="space-y-2">
-            <Label>الصور</Label>
+            <Label>{t("الصور")}</Label>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
               {images.map((p, i) => (
                 <div key={p} className="group relative aspect-square overflow-hidden rounded-xl bg-muted">
                   {urls[p] && <img src={urls[p]} alt="" className="size-full object-cover" />}
                   {i === 0 && (
-                    <span className="absolute bottom-1 start-1 rounded bg-primary/80 px-1.5 text-[10px] text-primary-foreground">رئيسية</span>
+                    <span className="absolute bottom-1 start-1 rounded bg-primary/80 px-1.5 text-[10px] text-primary-foreground">{t("رئيسية")}</span>
                   )}
                   <button
                     type="button"
                     onClick={() => setImages(images.filter((x) => x !== p))}
                     className="absolute end-1 top-1 rounded-full bg-card/90 p-1 shadow"
-                    aria-label="حذف الصورة"
+                    aria-label={t("حذف الصورة")}
                   >
                     <X className="size-3" />
                   </button>
@@ -159,7 +163,7 @@ export function ProductFormDialog({
                 className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed text-xs text-muted-foreground hover:border-brand hover:text-brand"
               >
                 {uploading ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5" />}
-                إضافة
+                {t("إضافة")}
               </button>
             </div>
             <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => upload(e.target.files)} />
@@ -167,28 +171,28 @@ export function ProductFormDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="pname">اسم المنتج</Label>
+              <Label htmlFor="pname">{t("اسم المنتج")}</Label>
               <Input id="pname" value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="price">السعر (د.ج)</Label>
+              <Label htmlFor="price">{t("السعر (د.ج)")}</Label>
               <Input id="price" type="number" min={1} dir="ltr" value={price} onChange={(e) => setPrice(e.target.value)} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="compare">السعر قبل التخفيض (اختياري)</Label>
+              <Label htmlFor="compare">{t("السعر قبل التخفيض (اختياري)")}</Label>
               <Input id="compare" type="number" min={0} dir="ltr" value={compare} onChange={(e) => setCompare(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="stock">الكمية المتوفرة (اختياري)</Label>
-              <Input id="stock" type="number" min={0} step={1} dir="ltr" value={stock} onChange={(e) => setStock(e.target.value)} placeholder="بدون حد" />
-              <p className="text-xs text-muted-foreground">تنقص تلقائياً مع كل طلب، وتعود عند الإلغاء.</p>
+              <Label htmlFor="stock">{t("الكمية المتوفرة (اختياري)")}</Label>
+              <Input id="stock" type="number" min={0} step={1} dir="ltr" value={stock} onChange={(e) => setStock(e.target.value)} placeholder={t("بدون حد")} />
+              <p className="text-xs text-muted-foreground">{t("تنقص تلقائياً مع كل طلب، وتعود عند الإلغاء.")}</p>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="category">التصنيف (اختياري)</Label>
-              <Input id="category" maxLength={40} value={category} onChange={(e) => setCategory(e.target.value)} placeholder="ملابس، إكسسوارات..." />
+              <Label htmlFor="category">{t("التصنيف (اختياري)")}</Label>
+              <Input id="category" maxLength={40} value={category} onChange={(e) => setCategory(e.target.value)} placeholder={t("ملابس، إكسسوارات...")} />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="pslug">رابط الصفحة</Label>
+              <Label htmlFor="pslug">{t("رابط الصفحة")}</Label>
               <Input
                 id="pslug"
                 dir="ltr"
@@ -196,40 +200,40 @@ export function ProductFormDialog({
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
               />
-              <p className="text-xs text-muted-foreground">حروف لاتينية وأرقام وشرطات. يُولّد تلقائياً إن تركته فارغاً.</p>
+              <p className="text-xs text-muted-foreground">{t("حروف لاتينية وأرقام وشرطات. يُولّد تلقائياً إن تركته فارغاً.")}</p>
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="desc">الوصف</Label>
+              <Label htmlFor="desc">{t("الوصف")}</Label>
               <Textarea id="desc" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="feat">أهم المميزات (ميزة في كل سطر)</Label>
-              <Textarea id="feat" rows={3} value={features} onChange={(e) => setFeatures(e.target.value)} placeholder={"قماش قطني 100%\nضمان الاستبدال"} />
+              <Label htmlFor="feat">{t("أهم المميزات (ميزة في كل سطر)")}</Label>
+              <Textarea id="feat" rows={3} value={features} onChange={(e) => setFeatures(e.target.value)} placeholder={t("قماش قطني 100%\nضمان الاستبدال")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="sizes">المقاسات (افصل بفاصلة)</Label>
-              <Input id="sizes" value={sizes} onChange={(e) => setSizes(e.target.value)} placeholder="S، M، L، XL" />
+              <Label htmlFor="sizes">{t("المقاسات (افصل بفاصلة)")}</Label>
+              <Input id="sizes" value={sizes} onChange={(e) => setSizes(e.target.value)} placeholder={language === "ar" ? "S، M، L، XL" : "S, M, L, XL"} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="colors">الألوان (افصل بفاصلة)</Label>
-              <Input id="colors" value={colors} onChange={(e) => setColors(e.target.value)} placeholder="أسود، أبيض" />
+              <Label htmlFor="colors">{t("الألوان (افصل بفاصلة)")}</Label>
+              <Input id="colors" value={colors} onChange={(e) => setColors(e.target.value)} placeholder={t("أسود، أبيض")} />
             </div>
           </div>
 
           <label className="flex items-center justify-between rounded-xl border p-4">
             <div>
-              <p className="font-medium">المنتج معروض</p>
-              <p className="text-xs text-muted-foreground">عند الإيقاف تختفي صفحة الهبوط عن الزبائن.</p>
+              <p className="font-medium">{t("المنتج معروض")}</p>
+              <p className="text-xs text-muted-foreground">{t("عند الإيقاف تختفي صفحة الهبوط عن الزبائن.")}</p>
             </div>
             <Switch checked={active} onCheckedChange={setActive} />
           </label>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              إلغاء
+              {t("إلغاء")}
             </Button>
             <Button type="submit" variant="brand" disabled={save.isPending || uploading}>
-              {save.isPending && <Loader2 className="animate-spin" />} حفظ المنتج
+              {save.isPending && <Loader2 className="animate-spin" />} {t("حفظ المنتج")}
             </Button>
           </div>
         </form>

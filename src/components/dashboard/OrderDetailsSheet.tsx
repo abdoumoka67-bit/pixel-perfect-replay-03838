@@ -22,6 +22,7 @@ import {
   type CustomerTrust,
   type OrderStatus,
 } from "@/lib/commerce";
+import { useTr, useTranslatedMessage, useUiLanguage } from "@/lib/ui-i18n";
 import { sendOrderToYalidine } from "@/lib/yalidine.functions";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -39,6 +40,8 @@ export function confirmMessage(o: Order, storeName: string) {
 }
 
 export function useOrderActions() {
+  const t = useTr();
+  const msg = useTranslatedMessage();
   const qc = useQueryClient();
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["orders"] });
@@ -51,10 +54,10 @@ export function useOrderActions() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم تحديث حالة الطلب");
+      toast.success(t("تم تحديث حالة الطلب"));
       invalidate();
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message)),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
   });
   const remove = useMutation({
     mutationFn: async (id: string) => {
@@ -62,20 +65,20 @@ export function useOrderActions() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم حذف الطلب");
+      toast.success(t("تم حذف الطلب"));
       invalidate();
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message)),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
   });
   const sendFn = useServerFn(sendOrderToYalidine);
   const sendYalidine = useMutation({
     mutationFn: async (id: string) => sendFn({ data: { orderId: id } }),
     onSuccess: (r) => {
-      if (r.ok) toast.success(`${r.message} رقم التتبع: ${r.tracking}`);
-      else toast.error(r.message);
+      if (r.ok) toast.success(`${msg(r.message)} ${t("رقم التتبع: {tracking}", { tracking: r.tracking })}`);
+      else toast.error(msg(r.message));
       invalidate();
     },
-    onError: () => toast.error("تعذر الإرسال إلى Yalidine."),
+    onError: () => toast.error(t("تعذر الإرسال إلى Yalidine.")),
   });
   return { updateStatus, remove, sendYalidine, invalidate };
 }
@@ -93,6 +96,9 @@ export function OrderDetailsSheet({
   trust?: CustomerTrust | null;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useTr();
+  const language = useUiLanguage();
+  const locale = language === "ar" ? "ar-DZ" : language === "fr" ? "fr-DZ" : "en-GB";
   const qc = useQueryClient();
   const { updateStatus, sendYalidine, invalidate } = useOrderActions();
   const [notes, setNotes] = useState("");
@@ -120,11 +126,11 @@ export function OrderDetailsSheet({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم تسجيل محاولة الاتصال");
+      toast.success(t("تم تسجيل محاولة الاتصال"));
       qc.invalidateQueries({ queryKey: ["call-logs", order?.id] });
       invalidate();
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message)),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
   });
 
   const saveNotes = useMutation({
@@ -133,10 +139,10 @@ export function OrderDetailsSheet({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم حفظ الملاحظة");
+      toast.success(t("تم حفظ الملاحظة"));
       invalidate();
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message)),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
   });
 
   const blocked = useQuery({
@@ -170,11 +176,11 @@ export function OrderDetailsSheet({
       }
     },
     onSuccess: () => {
-      toast.success("تم حظر الرقم ورفض الطلب");
+      toast.success(t("تم حظر الرقم ورفض الطلب"));
       qc.invalidateQueries({ queryKey: ["blocked-phone"] });
       invalidate();
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message)),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
   });
 
   return (
@@ -187,7 +193,7 @@ export function OrderDetailsSheet({
                 <span className="num">ORX-{order.order_number}</span>
                 <StatusBadge status={order.status} />
               </SheetTitle>
-              <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString("ar-DZ")}</p>
+              <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString(locale)}</p>
             </SheetHeader>
 
             <div className="mt-6 space-y-6">
@@ -196,7 +202,7 @@ export function OrderDetailsSheet({
                   <p className="text-lg font-medium">{order.customer_name}</p>
                   <TrustRadarBadge trust={trust} />
                   {blocked.data && (
-                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">محظور</span>
+                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">{t("محظور")}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
@@ -208,7 +214,7 @@ export function OrderDetailsSheet({
                       disabled={blockSpam.isPending}
                       onClick={() => blockSpam.mutate()}
                     >
-                      حظر الرقم
+                      {t("حظر الرقم")}
                     </button>
                   )}
                 </div>
@@ -227,17 +233,17 @@ export function OrderDetailsSheet({
                   {order.address ? ` · ${order.address}` : ""}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {order.delivery_type === "home" ? "توصيل للمنزل" : "توصيل للمكتب (Stopdesk)"}
+                  {order.delivery_type === "home" ? t("توصيل للمنزل") : t("توصيل للمكتب (Stopdesk)")}
                 </p>
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <Button asChild variant="default">
                     <a href={`tel:${order.phone}`}>
-                      <Phone /> اتصال
+                      <Phone /> {t("اتصال")}
                     </a>
                   </Button>
                   <Button asChild variant="success">
                     <a href={whatsappLink(order.phone, confirmMessage(order, storeName))} target="_blank" rel="noreferrer">
-                      <MessageCircle /> واتساب
+                      <MessageCircle /> {t("واتساب")}
                     </a>
                   </Button>
                 </div>
@@ -245,36 +251,36 @@ export function OrderDetailsSheet({
 
               <section className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">المنتج</span>
+                  <span className="text-muted-foreground">{t("المنتج")}</span>
                   <span className="font-medium">
                     {order.product_name} × <span className="num">{order.quantity}</span>
                   </span>
                 </div>
                 {(order.variant_size || order.variant_color) && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">الخيارات</span>
+                    <span className="text-muted-foreground">{t("الخيارات")}</span>
                     <span>{[order.variant_size, order.variant_color].filter(Boolean).join(" · ")}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">سعر المنتجات</span>
+                  <span className="text-muted-foreground">{t("سعر المنتجات")}</span>
                   <span className="num">{formatDZD(order.subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">التوصيل</span>
+                  <span className="text-muted-foreground">{t("التوصيل")}</span>
                   <span className="num">{formatDZD(order.shipping_price)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-2 text-base font-medium">
-                  <span>الإجمالي</span>
+                  <span>{t("الإجمالي")}</span>
                   <span className="num">{formatDZD(order.total)}</span>
                 </div>
               </section>
 
               <section>
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="font-medium">سجل محاولات التأكيد</h3>
+                  <h3 className="font-medium">{t("سجل محاولات التأكيد")}</h3>
                   <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-medium text-brand">
-                    <span className="num">{order.call_attempts}</span> محاولات
+                    <span className="num">{order.call_attempts}</span> {t("محاولات")}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -289,7 +295,7 @@ export function OrderDetailsSheet({
                         disabled={readOnly || logCall.isPending}
                         onClick={() => logCall.mutate(o)}
                       >
-                        <Icon /> {CALL_LABELS[o]}
+                        <Icon /> {t(CALL_LABELS[o])}
                       </Button>
                     );
                   })}
@@ -297,16 +303,16 @@ export function OrderDetailsSheet({
                 <ul className="mt-3 space-y-2">
                   {logs.data?.map((l) => (
                     <li key={l.id} className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
-                      <span>{CALL_LABELS[l.outcome]}</span>
-                      <span className="text-xs text-muted-foreground">{new Date(l.created_at).toLocaleString("ar-DZ")}</span>
+                      <span>{t(CALL_LABELS[l.outcome])}</span>
+                      <span className="text-xs text-muted-foreground">{new Date(l.created_at).toLocaleString(locale)}</span>
                     </li>
                   ))}
-                  {logs.data?.length === 0 && <li className="text-xs text-muted-foreground">لم تُسجَّل أي محاولة بعد.</li>}
+                  {logs.data?.length === 0 && <li className="text-xs text-muted-foreground">{t("لم تُسجَّل أي محاولة بعد.")}</li>}
                 </ul>
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-medium">حالة الطلب</h3>
+                <h3 className="font-medium">{t("حالة الطلب")}</h3>
                 <Select
                   value={order.status}
                   disabled={readOnly}
@@ -318,7 +324,7 @@ export function OrderDetailsSheet({
                   <SelectContent>
                     {ORDER_STATUSES.map((s) => (
                       <SelectItem key={s} value={s}>
-                        {STATUS_LABELS[s]}
+                        {t(STATUS_LABELS[s])}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -329,7 +335,7 @@ export function OrderDetailsSheet({
                 <h3 className="font-medium">Yalidine</h3>
                 {order.tracking_number ? (
                   <p className="rounded-lg bg-success-soft px-3 py-2 text-sm text-success">
-                    رقم التتبع: <span className="font-medium num">{order.tracking_number}</span>
+                    {t("رقم التتبع:")} <span className="font-medium num">{order.tracking_number}</span>
                   </p>
                 ) : (
                   <Button
@@ -338,16 +344,16 @@ export function OrderDetailsSheet({
                     disabled={readOnly || sendYalidine.isPending}
                     onClick={() => sendYalidine.mutate(order.id)}
                   >
-                    {sendYalidine.isPending ? <Loader2 className="animate-spin" /> : <Send />} إرسال إلى Yalidine
+                    {sendYalidine.isPending ? <Loader2 className="animate-spin" /> : <Send />} {t("إرسال إلى Yalidine")}
                   </Button>
                 )}
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-medium">ملاحظات</h3>
+                <h3 className="font-medium">{t("ملاحظات")}</h3>
                 <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} disabled={readOnly} />
                 <Button size="sm" variant="secondary" disabled={readOnly || saveNotes.isPending} onClick={() => saveNotes.mutate()}>
-                  حفظ الملاحظة
+                  {t("حفظ الملاحظة")}
                 </Button>
               </section>
             </div>

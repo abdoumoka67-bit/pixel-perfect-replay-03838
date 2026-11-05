@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useMyStore } from "@/hooks/use-my-store";
 import { formatDZD, type OrderStatus } from "@/lib/commerce";
+import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   component: Overview,
@@ -22,6 +23,9 @@ const CARDS: { status: OrderStatus; label: string; icon: typeof Clock; tone: str
 
 function Overview() {
   const { store, sub } = useMyStore();
+  const t = useTr();
+  const language = useUiLanguage();
+  const dateLocale = language === "ar" ? "ar-DZ" : language === "fr" ? "fr-DZ" : "en-GB";
   const stats = useQuery({
     queryKey: ["order-stats", store?.id],
     enabled: !!store,
@@ -53,18 +57,18 @@ function Overview() {
   return (
     <>
       <PageHeader
-        title={`أهلاً، ${store?.name ?? ""}`}
+        title={t("أهلاً، {store}", { store: store?.name ?? "" })}
         description={
           sub?.isActive
             ? sub.isTrial
-              ? `تجربتك المجانية: ${sub.daysLeft} أيام متبقية`
-              : `اشتراكك فعّال حتى ${sub.endsAt.toLocaleDateString("ar-DZ")}`
-            : "حسابك في وضع القراءة فقط"
+              ? t("تجربتك المجانية: {n} أيام متبقية", { n: sub.daysLeft })
+              : t("اشتراكك فعّال حتى {date}", { date: sub.endsAt.toLocaleDateString(dateLocale) })
+            : t("حسابك في وضع القراءة فقط")
         }
         actions={
           <Button asChild variant="brand">
             <Link to="/dashboard/products" search={{ new: true }}>
-              <Plus /> منتج جديد
+              <Plus /> {t("منتج جديد")}
             </Link>
           </Button>
         }
@@ -78,7 +82,7 @@ function Overview() {
               <div className={`inline-flex size-9 items-center justify-center rounded-xl ${c.tone}`}>
                 <c.icon className="size-[18px]" />
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">{c.label}</p>
+              <p className="mt-3 text-sm text-muted-foreground">{t(c.label)}</p>
               <p className="mt-0.5 font-display text-2xl font-medium num">{Number(row?.orders_count ?? 0)}</p>
               <p className="text-xs text-muted-foreground num">{formatDZD(Number(row?.orders_total ?? 0))}</p>
             </div>
@@ -89,9 +93,9 @@ function Overview() {
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl bg-card p-5 shadow-card lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-medium">آخر الطلبات</h2>
+            <h2 className="text-lg font-medium">{t("آخر الطلبات")}</h2>
             <Link to="/dashboard/orders" className="inline-flex items-center gap-1 text-sm text-brand hover:underline">
-              عرض الكل <ArrowLeft className="size-4" />
+              {t("عرض الكل")} <ArrowLeft className="size-4" />
             </Link>
           </div>
           {recent.data?.length ? (
@@ -111,23 +115,22 @@ function Overview() {
             </ul>
           ) : (
             <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-              لا توجد طلبات بعد. أضف منتجاً وشارك رابط صفحة الهبوط في إعلاناتك.
+              {t("لا توجد طلبات بعد. أضف منتجاً وشارك رابط صفحة الهبوط في إعلاناتك.")}
             </div>
           )}
         </div>
         <div className="rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
-          <p className="text-sm text-sidebar-muted">إجمالي الطلبات</p>
+          <p className="text-sm text-sidebar-muted">{t("إجمالي الطلبات")}</p>
           <p className="mt-1 font-display text-4xl font-medium num">{totalOrders}</p>
           <div className="my-5 h-px bg-sidebar-border" />
-          <p className="text-sm text-sidebar-muted">مداخيل الطلبات المسلّمة</p>
+          <p className="text-sm text-sidebar-muted">{t("مداخيل الطلبات المسلّمة")}</p>
           <p className="mt-1 font-display text-2xl font-medium text-sidebar-primary num">
             {formatDZD(Number(delivered?.orders_total ?? 0))}
           </p>
           <p className="mt-4 text-xs text-sidebar-muted">
-            نسبة التوصيل:{" "}
-            <span className="num">
-              {totalOrders ? Math.round((Number(delivered?.orders_count ?? 0) / totalOrders) * 100) : 0}%
-            </span>
+            {t("نسبة التوصيل: {value}", {
+              value: `${totalOrders ? Math.round((Number(delivered?.orders_count ?? 0) / totalOrders) * 100) : 0}%`,
+            })}
           </p>
         </div>
       </div>
