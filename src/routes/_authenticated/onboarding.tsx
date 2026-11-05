@@ -313,8 +313,8 @@ function Onboarding() {
   const isLast = step === stepCount - 1;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-5 py-8">
-      <div className="w-full max-w-2xl rounded-[32px] border border-border bg-white p-6 shadow-[0_0_0_1px_rgba(17,17,17,0.02),0_18px_50px_-20px_rgba(0,0,0,0.25)] sm:p-9">
+    <div className="flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-background px-4 py-8">
+      <div className="w-full min-w-0 max-w-xl rounded-[28px] border border-border bg-white p-5 shadow-[0_0_0_1px_rgba(17,17,17,0.02),0_18px_50px_-20px_rgba(0,0,0,0.25)] sm:p-9">
         <div className="flex justify-center">
           <Logo />
         </div>
@@ -362,11 +362,11 @@ function Onboarding() {
           </button>
 
           {isLast ? (
-            <Button onClick={submit} disabled={busy || !canContinueFromStep()} variant="brand" size="lg" className="rounded-full">
-              {busy ? <Loader2 className="animate-spin" /> : <ShieldCheck className="size-4" />} {t("onb.finish")} 🚀
+            <Button onClick={submit} disabled={busy || !canContinueFromStep()} variant="brand" className="h-10 shrink-0 rounded-full px-5 text-sm">
+              {busy ? <Loader2 className="animate-spin" /> : <ShieldCheck className="size-4" />} {t("onb.finish")}
             </Button>
           ) : (
-            <Button onClick={nextStep} disabled={!canContinueFromStep()} variant="brand" size="lg" className="rounded-full">
+            <Button onClick={nextStep} disabled={!canContinueFromStep()} variant="brand" className="h-10 shrink-0 rounded-full px-5 text-sm">
               {t(`onb.next.${step}` as TranslationKey)}
               <ArrowRight className="size-4" />
             </Button>
