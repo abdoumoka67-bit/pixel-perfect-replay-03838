@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ChevronLeft, Sparkles, X } from "lucide-react";
 import { useMyStore } from "@/hooks/use-my-store";
+import { useTr } from "@/lib/ui-i18n";
 
 const steps = [
   { id: "tour-products", title: "المنتجات", body: "من هنا تضيف منتجاتك، صورها، وأسعارها وتحصل على روابط مخصصة لنشرها في إعلاناتك." },
@@ -11,6 +12,7 @@ const steps = [
 ] as const;
 
 export function RestartTourButton({ className }: { className?: string }) {
+  const t = useTr();
   return (
     <button
       type="button"
@@ -25,13 +27,14 @@ export function RestartTourButton({ className }: { className?: string }) {
       }
     >
       <Sparkles className="size-3.5 text-brand" />
-      <span>بدء الجولة الإرشادية</span>
+      <span>{t("بدء الجولة الإرشادية")}</span>
     </button>
   );
 }
 
 export function GuidedTour() {
   const { store } = useMyStore();
+  const t = useTr();
   const [stepIndex, setStepIndex] = useState(0);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
@@ -133,22 +136,22 @@ export function GuidedTour() {
       <div className="absolute z-20 w-[min(360px,calc(100vw-32px))] rounded-2xl border border-border bg-white p-4 shadow-float" style={tooltipStyle}>
         <div className="mb-3 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-2 py-1 text-[11px] font-medium text-brand">
-            <Sparkles className="size-3.5" /> {stepIndex + 1} من 5
+            <Sparkles className="size-3.5" /> {t("{n} من 5", { n: stepIndex + 1 })}
           </span>
-          <button type="button" onClick={closeTour} className="rounded-full p-1.5 text-muted-foreground hover:bg-background" aria-label="إغلاق">
+          <button type="button" onClick={closeTour} className="rounded-full p-1.5 text-muted-foreground hover:bg-background" aria-label={t("إغلاق")}>
             <X className="size-4" />
           </button>
         </div>
-        <h3 className="text-xl font-medium text-primary">{step.title}</h3>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.body}</p>
+        <h3 className="text-xl font-medium text-primary">{t(step.title)}</h3>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">{t(step.body)}</p>
         <div className="mt-5 flex items-center justify-between gap-2">
           <button type="button" onClick={goPrev} disabled={stepIndex === 0} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-2 text-sm text-muted-foreground disabled:opacity-40">
-            <ChevronLeft className="size-4" /> السابق
+            <ChevronLeft className="size-4" /> {t("السابق")}
           </button>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={closeTour} className="rounded-full px-3 py-2 text-sm text-muted-foreground">تخطي</button>
+            <button type="button" onClick={closeTour} className="rounded-full px-3 py-2 text-sm text-muted-foreground">{t("تخطي")}</button>
             <button type="button" onClick={goNext} className="inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm text-white">
-              {isLast ? "تم" : "التالي"} <ArrowRight className="size-4" />
+              {isLast ? t("تم") : t("التالي")} <ArrowRight className="size-4" />
             </button>
           </div>
         </div>

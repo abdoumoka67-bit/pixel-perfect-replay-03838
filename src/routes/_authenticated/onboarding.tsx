@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
-import { LanguageSwitcher, useLanguagePreference, useT } from "@/components/LanguageSwitcher";
-import type { TranslationKey } from "@/lib/i18n";
+import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { translate, type TranslationKey } from "@/lib/i18n";
 import {
   DEFAULT_ONBOARDING_INDUSTRIES,
   DEFAULT_PRODUCT_TYPES,
@@ -31,10 +31,10 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   },
   head: () => ({
     meta: [
-      { title: "أنشئ متجرك — oranix" },
-      { name: "description", content: "اختر اسم ورابط متجرك وابدأ تجربتك المجانية لمدة 10 أيام." },
-      { property: "og:title", content: "أنشئ متجرك — oranix" },
-      { property: "og:description", content: "اختر اسم ورابط متجرك وابدأ تجربتك المجانية." },
+      { title: "Create your store — oranix" },
+      { name: "description", content: "Choose your store name and link and start your 10-day free trial." },
+      { property: "og:title", content: "Create your store — oranix" },
+      { property: "og:description", content: "Choose your store name and link and start your free trial." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -47,37 +47,37 @@ const stepCount = 4;
 function storeCreationErrorMessage(error: { code?: string; message: string; details?: string | null }) {
   const diagnostic = `${error.message} ${error.details ?? ""}`.toLowerCase();
 
-  if (diagnostic.includes("invalid_name")) return "اسم المتجر يجب أن يتكون من حرفين على الأقل.";
+  if (diagnostic.includes("invalid_name")) return "The store name must be at least 2 characters.";
   if (diagnostic.includes("invalid_slug")) {
-    return "الرابط يجب أن يحتوي على حروف لاتينية صغيرة وأرقام وشرطات فقط.";
+    return "The link can only contain lowercase Latin letters, numbers and dashes.";
   }
   if (error.code === "23505" && diagnostic.includes("slug")) {
-    return "رابط المتجر مستخدم بالفعل. اختر رابطاً آخر.";
+    return "This store link is already taken. Choose another one.";
   }
   if (error.code === "23505" && diagnostic.includes("owner_id")) {
-    return "يوجد متجر مرتبط بهذا الحساب بالفعل. حدّث الصفحة لفتحه.";
+    return "This account already has a store. Refresh the page to open it.";
   }
   if (
     error.code === "42703" ||
     error.code === "PGRST204" ||
     (diagnostic.includes("column") && diagnostic.includes("does not exist"))
   ) {
-    return "قاعدة البيانات تحتاج تحديثاً: العمود storefront_config غير موجود بعد. على مسؤول المشروع تنفيذ migration 20261102000000_storefront_config.sql من Supabase SQL Editor.";
+    return "The database needs an update: the storefront_config column does not exist yet. The project owner must run migration 20261102000000_storefront_config.sql from the Supabase SQL Editor.";
   }
   if (error.code === "42P01") {
-    return "جدول المتاجر غير موجود في قاعدة البيانات. تحقق من ربط مشروع Supabase الصحيح.";
+    return "The stores table does not exist in the database. Check that the correct Supabase project is connected.";
   }
   if (error.code === "23502") {
-    return `حقل مطلوب في المتجر غير موجود. تفاصيل: ${error.message}`;
+    return `A required store field is missing. Details: ${error.message}`;
   }
   if (error.code === "23503") {
-    return "تعذر ربط المتجر بحسابك: الجلسة غير صالحة. سجّل الخروج ثم الدخول من جديد.";
+    return "Could not link the store to your account: invalid session. Sign out and sign in again.";
   }
   if (error.code === "42501" || diagnostic.includes("row-level security") || diagnostic.includes("permission denied")) {
-    return "رفضت قاعدة البيانات إنشاء المتجر لهذا الحساب. حدّث الصفحة وسجّل الدخول مجدداً؛ وإذا استمرت المشكلة فتحقق من سياسة RLS في Supabase.";
+    return "The database refused to create the store for this account. Refresh the page and sign in again; if the problem persists, check the RLS policy in Supabase.";
   }
 
-  return `تعذر إنشاء المتجر${error.code ? ` (${error.code})` : ""}. سبب الخطأ: ${error.message}`;
+  return `Could not create the store${error.code ? ` (${error.code})` : ""}. Error: ${error.message}`;
 }
 
 function Onboarding() {
@@ -85,8 +85,9 @@ function Onboarding() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [step, setStep] = useState(0);
-  const { language, setLanguage } = useLanguagePreference();
-  const { t } = useT();
+  // Store setup happens before the store exists, so it stays English-only.
+  useDocumentLanguage("en");
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate("en", key, vars);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
@@ -335,10 +336,6 @@ function Onboarding() {
             ))}
           </div>
           <p className="text-center text-xs text-muted-foreground num">{t("onb.step", { n: step + 1, total: stepCount })}</p>
-        </div>
-
-        <div className="mt-6 flex justify-end">
-          <LanguageSwitcher value={language} onChange={setLanguage} />
         </div>
 
         <div className="mt-8 text-center">

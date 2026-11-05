@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  DEFAULT_FAQ,
+  DEFAULT_FAQ_BY_LANGUAGE,
   HERO_PRESETS,
   TRUST_BADGE_KEYS,
   parseStorefrontConfig,
@@ -8,16 +8,17 @@ import {
 } from "./storefront-theme";
 
 describe("storefront theme config", () => {
-  it("empty {} -> full defaults", () => {
+  it("empty {} -> English defaults (default language)", () => {
     const config = parseStorefrontConfig({}, "متجر النخبة");
     expect(config.preset).toBe("noir");
+    expect(config.language).toBe("en");
     expect(config.hero_title).toBe("متجر النخبة");
-    expect(config.hero_subtitle).toBe("اطلب الآن والدفع عند الاستلام");
-    expect(config.hero_button).toBe("تسوق الآن");
+    expect(config.hero_subtitle).toBe("Order now and pay on delivery");
+    expect(config.hero_button).toBe("Shop now");
     expect(config.bar_enabled).toBe(true);
-    expect(config.bar_text).toBe("مرحبا بك في متجرنا");
+    expect(config.bar_text).toBe("Welcome to our store");
     expect(config.sections.faq.enabled).toBe(true);
-    expect(config.sections.faq.items).toEqual(DEFAULT_FAQ);
+    expect(config.sections.faq.items).toEqual(DEFAULT_FAQ_BY_LANGUAGE.en);
     expect(config.sections.reviews.enabled).toBe(false);
     expect(config.sections.reviews.items).toEqual([]);
     expect(config.sections.social.enabled).toBe(true);
@@ -25,9 +26,18 @@ describe("storefront theme config", () => {
     expect(config.sections.trust.badges).toEqual([...TRUST_BADGE_KEYS]);
   });
 
+  it("Arabic language -> Arabic defaults", () => {
+    const config = parseStorefrontConfig({ language: "ar" }, "متجر النخبة");
+    expect(config.language).toBe("ar");
+    expect(config.hero_subtitle).toBe("اطلب الآن والدفع عند الاستلام");
+    expect(config.hero_button).toBe("تسوق الآن");
+    expect(config.bar_text).toBe("مرحبا بك في متجرنا");
+    expect(config.sections.faq.items).toEqual(DEFAULT_FAQ_BY_LANGUAGE.ar);
+  });
+
   it("falls back to default title if no store name provided for empty {}", () => {
     const config = parseStorefrontConfig({});
-    expect(config.hero_title).toBe("مرحباً بك في متجرنا");
+    expect(config.hero_title).toBe("Welcome to our store");
   });
 
   it("invalid preset -> \"noir\"", () => {

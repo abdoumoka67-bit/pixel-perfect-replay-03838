@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { ProLock } from "@/components/dashboard/ProLock";
 import { useMyStore } from "@/hooks/use-my-store";
 import { ORDER_STATUSES, STATUS_LABELS, formatDZD, type OrderStatus } from "@/lib/commerce";
+import { useTr } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/analytics")({
   component: Analytics,
@@ -26,18 +27,19 @@ type AnalyticsData = {
 
 function Analytics() {
   const { isPro } = useMyStore();
+  const t = useTr();
   if (!isPro) {
     return (
       <>
-        <PageHeader title="الإحصائيات" description="أداء متجرك ومبيعاتك." />
+        <PageHeader title={t("الإحصائيات")} description={t("أداء متجرك ومبيعاتك.")} />
         <ProLock
-          title="الإحصائيات المتقدمة في Pro"
-          description="اعرف من أين تأتي طلباتك، وما هي منتجاتك الرابحة، ونسبة التأكيد والتوصيل."
+          title={t("الإحصائيات المتقدمة في Pro")}
+          description={t("اعرف من أين تأتي طلباتك، وما هي منتجاتك الرابحة، ونسبة التأكيد والتوصيل.")}
           points={[
-            "الطلبات والمداخيل يوماً بيوم",
-            "أكثر الولايات طلباً",
-            "نسبة التأكيد والتوصيل والإلغاء",
-            "المنتجات الأكثر ربحاً",
+            t("الطلبات والمداخيل يوماً بيوم"),
+            t("أكثر الولايات طلباً"),
+            t("نسبة التأكيد والتوصيل والإلغاء"),
+            t("المنتجات الأكثر ربحاً"),
           ]}
         />
       </>
@@ -48,6 +50,7 @@ function Analytics() {
 
 function AnalyticsPro() {
   const { store } = useMyStore();
+  const t = useTr();
   const q = useQuery({
     queryKey: ["analytics", store?.id, DAYS],
     enabled: !!store,
@@ -77,15 +80,15 @@ function AnalyticsPro() {
   }, [q.data]);
 
   const kpis = [
-    { label: "طلبات آخر 30 يوماً", value: String(m.total) },
-    { label: "مداخيل مُسلّمة", value: formatDZD(m.revenue) },
-    { label: "نسبة التأكيد", value: `${m.confirmRate}%` },
-    { label: "نسبة التوصيل", value: `${m.deliveryRate}%` },
+    { label: t("طلبات آخر 30 يوماً"), value: String(m.total) },
+    { label: t("مداخيل مُسلّمة"), value: formatDZD(m.revenue) },
+    { label: t("نسبة التأكيد"), value: `${m.confirmRate}%` },
+    { label: t("نسبة التوصيل"), value: `${m.deliveryRate}%` },
   ];
 
   return (
     <>
-      <PageHeader title="الإحصائيات" description="أداء متجرك خلال آخر 30 يوماً." />
+      <PageHeader title={t("الإحصائيات")} description={t("أداء متجرك خلال آخر 30 يوماً.")} />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {kpis.map((k) => (
           <div key={k.label} className="rounded-2xl bg-card p-5 shadow-card">
@@ -96,7 +99,7 @@ function AnalyticsPro() {
       </div>
 
       <div className="mt-6 rounded-2xl bg-card p-5 shadow-card">
-        <h2 className="mb-4 font-medium">الطلبات اليومية</h2>
+        <h2 className="mb-4 font-medium">{t("الطلبات اليومية")}</h2>
         <div className="h-64" dir="ltr">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={m.daily}>
@@ -110,7 +113,7 @@ function AnalyticsPro() {
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} interval={4} />
               <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} width={28} />
               <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }} />
-              <Area type="monotone" dataKey="orders" name="الطلبات" stroke="var(--chart-1)" strokeWidth={2.5} fill="url(#g1)" />
+              <Area type="monotone" dataKey="orders" name={t("الطلبات")} stroke="var(--chart-1)" strokeWidth={2.5} fill="url(#g1)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -118,7 +121,7 @@ function AnalyticsPro() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl bg-card p-5 shadow-card lg:col-span-2">
-          <h2 className="mb-4 font-medium">أكثر الولايات طلباً</h2>
+          <h2 className="mb-4 font-medium">{t("أكثر الولايات طلباً")}</h2>
           <div className="h-64" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={m.wilayas}>
@@ -126,14 +129,14 @@ function AnalyticsPro() {
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} width={28} />
                 <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }} />
-                <Bar dataKey="count" name="الطلبات" fill="var(--chart-2)" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="count" name={t("الطلبات")} fill="var(--chart-2)" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
         <div className="space-y-6">
           <div className="rounded-2xl bg-card p-5 shadow-card">
-            <h2 className="mb-3 font-medium">توزيع الحالات</h2>
+            <h2 className="mb-3 font-medium">{t("توزيع الحالات")}</h2>
             <ul className="space-y-2.5">
               {ORDER_STATUSES.map((s) => {
                 const c = m.st[s] ?? 0;
@@ -141,7 +144,7 @@ function AnalyticsPro() {
                 return (
                   <li key={s}>
                     <div className="flex justify-between text-sm">
-                      <span>{STATUS_LABELS[s]}</span>
+                      <span>{t(STATUS_LABELS[s])}</span>
                       <span className="num">{c}</span>
                     </div>
                     <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
@@ -153,20 +156,20 @@ function AnalyticsPro() {
             </ul>
           </div>
           <div className="rounded-2xl bg-card p-5 shadow-card">
-            <h2 className="mb-3 font-medium">المنتجات الأكثر ربحاً</h2>
+            <h2 className="mb-3 font-medium">{t("المنتجات الأكثر ربحاً")}</h2>
             <ul className="space-y-3 text-sm">
               {m.products.map((p) => (
                 <li key={p.name} className="flex justify-between gap-2">
                   <div className="min-w-0">
                     <p className="truncate">{p.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      <span className="num">{p.orders}</span> طلب · <span className="num">{p.delivered}</span> مُسلّم
+                      {t("{orders} طلب · {delivered} مُسلّم", { orders: p.orders, delivered: p.delivered })}
                     </p>
                   </div>
                   <span className="shrink-0 font-medium num">{formatDZD(p.revenue)}</span>
                 </li>
               ))}
-              {m.products.length === 0 && <li className="text-muted-foreground">لا توجد بيانات بعد.</li>}
+              {m.products.length === 0 && <li className="text-muted-foreground">{t("لا توجد بيانات بعد.")}</li>}
             </ul>
           </div>
         </div>

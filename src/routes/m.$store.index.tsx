@@ -17,8 +17,10 @@ import {
   TRUST_BADGES,
   parseStorefrontConfig,
   presetStyles,
+  trustBadgeLabel,
   type TrustBadgeKey,
 } from "@/lib/storefront-theme";
+import { tr } from "@/lib/ui-i18n";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/m/$store/")({
@@ -28,9 +30,16 @@ export const Route = createFileRoute("/m/$store/")({
     return data;
   },
   head: ({ loaderData }) => {
-    if (!loaderData?.store) return { meta: [{ title: "المتجر غير موجود" }, { name: "robots", content: "noindex" }] };
-    const title = `${loaderData.store.name} — تسوق والدفع عند الاستلام`;
-    const description = `تصفح منتجات ${loaderData.store.name} واطلب مع الدفع عند الاستلام والتوصيل إلى 58 ولاية.`;
+    if (!loaderData?.store) {
+      return { meta: [{ title: tr("en", "المتجر غير موجود") }, { name: "robots", content: "noindex" }] };
+    }
+    const lang = loaderData.store.storefront_config?.language ?? "en";
+    const title = `${loaderData.store.name} — ${tr(lang, "تسوق والدفع عند الاستلام")}`;
+    const description = tr(
+      lang,
+      "تصفح منتجات {store} واطلب مع الدفع عند الاستلام والتوصيل إلى 58 ولاية.",
+      { store: loaderData.store.name },
+    );
     const image = loaderData.products[0]?.images[0];
     return {
       meta: [
@@ -46,8 +55,8 @@ export const Route = createFileRoute("/m/$store/")({
   },
   notFoundComponent: () => (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2 px-6 text-center">
-      <h1 className="text-2xl font-medium">المتجر غير موجود</h1>
-      <p className="text-muted-foreground">تأكد من الرابط وحاول مجدداً.</p>
+      <h1 className="text-2xl font-medium">{tr("en", "المتجر غير موجود")}</h1>
+      <p className="text-muted-foreground">{tr("en", "تأكد من الرابط وحاول مجدداً.")}</p>
     </div>
   ),
   component: Storefront,
@@ -91,6 +100,8 @@ function Storefront() {
   if (!store) return null;
 
   const config = store.storefront_config ?? parseStorefrontConfig({}, store.name);
+  const language = config.language;
+  const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
   const styles = presetStyles(config.preset);
 
   const socialWhatsapp = config.sections.social.whatsapp || store.whatsapp;
@@ -124,13 +135,13 @@ function Storefront() {
       <main id="products" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-14">
         {!store.accepting_orders && (
           <p className="mb-6 rounded-2xl bg-warning-soft p-4 text-center text-sm text-warning">
-            المتجر متوقف مؤقتاً عن استقبال الطلبات.
+            {t("المتجر متوقف مؤقتاً عن استقبال الطلبات.")}
           </p>
         )}
-        <h2 className="mb-6 px-1 text-2xl font-bold sm:text-3xl">منتجاتنا</h2>
+        <h2 className="mb-6 px-1 text-2xl font-bold sm:text-3xl">{t("منتجاتنا")}</h2>
         {products.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground">
-            <Package className="mx-auto mb-3 size-10" strokeWidth={1.4} /> لا توجد منتجات حالياً.
+            <Package className="mx-auto mb-3 size-10" strokeWidth={1.4} /> {t("لا توجد منتجات حالياً.")}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
@@ -184,7 +195,7 @@ function Storefront() {
                     <div className="flex size-12 items-center justify-center rounded-full bg-brand-soft text-brand">
                       <Icon className="size-6" strokeWidth={1.5} />
                     </div>
-                    <span className="text-sm font-medium leading-relaxed">{badge.label}</span>
+                    <span className="text-sm font-medium leading-relaxed">{trustBadgeLabel(badgeKey, language)}</span>
                   </div>
                 );
               })}
@@ -197,7 +208,7 @@ function Storefront() {
       {config.sections.reviews.enabled && config.sections.reviews.items.length > 0 && (
         <section className="border-t bg-background py-14">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="mb-8 text-center text-2xl font-bold sm:text-3xl">آراء عملائنا</h2>
+            <h2 className="mb-8 text-center text-2xl font-bold sm:text-3xl">{t("آراء عملائنا")}</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {config.sections.reviews.items.map((rev, i) => (
                 <div
@@ -240,16 +251,16 @@ function Storefront() {
       {config.sections.social.enabled && hasSocialLinks && (
         <section className="border-t py-12 text-center">
           <div className="mx-auto max-w-xl px-4">
-            <h2 className="mb-2 text-xl font-bold">تابعنا على وسائل التواصل</h2>
-            <p className="mb-6 text-sm text-muted-foreground">تواصل معنا وتابع آخر العروض والتحديثات</p>
+            <h2 className="mb-2 text-xl font-bold">{t("تابعنا على وسائل التواصل")}</h2>
+            <p className="mb-6 text-sm text-muted-foreground">{t("تواصل معنا وتابع آخر العروض والتحديثات")}</p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               {socialWhatsapp && (
                 <a
-                  href={whatsappLink(socialWhatsapp, `السلام عليكم، عندي استفسار عن متجر ${store.name}`)}
+                  href={whatsappLink(socialWhatsapp, t("السلام عليكم، عندي استفسار عن متجر {store}", { store: store.name }))}
                   target="_blank"
                   rel="noreferrer"
                   className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary hover:bg-secondary"
-                  aria-label="واتساب"
+                  aria-label={t("واتساب")}
                 >
                   <MessageCircle className="size-5" strokeWidth={1.5} />
                 </a>
@@ -260,7 +271,7 @@ function Storefront() {
                   target="_blank"
                   rel="noreferrer"
                   className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary hover:bg-secondary"
-                  aria-label="إنستغرام"
+                  aria-label={t("إنستغرام")}
                 >
                   <Instagram className="size-5" strokeWidth={1.5} />
                 </a>
@@ -271,7 +282,7 @@ function Storefront() {
                   target="_blank"
                   rel="noreferrer"
                   className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary hover:bg-secondary"
-                  aria-label="فيسبوك"
+                  aria-label={t("فيسبوك")}
                 >
                   <Facebook className="size-5" strokeWidth={1.5} />
                 </a>
@@ -282,7 +293,7 @@ function Storefront() {
                   target="_blank"
                   rel="noreferrer"
                   className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary hover:bg-secondary"
-                  aria-label="تيك توك"
+                  aria-label={t("تيك توك")}
                 >
                   <TikTokIcon className="size-5" />
                 </a>

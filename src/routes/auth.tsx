@@ -4,12 +4,12 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, MailCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toInternationalDzPhone } from "@/lib/commerce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
-import { LanguageSwitcher, useLanguagePreference, useT } from "@/components/LanguageSwitcher";
+import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { translate, type TranslationKey } from "@/lib/i18n";
 
 const search = z.object({
   redirect: z.string().optional(),
@@ -20,10 +20,10 @@ export const Route = createFileRoute("/auth")({
   validateSearch: search,
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول — oranix" },
-      { name: "description", content: "ادخل إلى لوحة تحكم متجرك على oranix أو أنشئ حساباً جديداً مع تجربة مجانية 7 أيام." },
-      { property: "og:title", content: "تسجيل الدخول — oranix" },
-      { property: "og:description", content: "ادخل إلى لوحة تحكم متجرك على oranix." },
+      { title: "Sign in — oranix" },
+      { name: "description", content: "Sign in to your oranix store dashboard or create a new account with a 7-day free trial." },
+      { property: "og:title", content: "Sign in — oranix" },
+      { property: "og:description", content: "Sign in to your oranix store dashboard." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -40,24 +40,22 @@ const RESEND_SECONDS = 60;
 function AuthPage() {
   const { redirect, mode: initialMode } = Route.useSearch();
   const navigate = useNavigate();
-  const { t } = useT();
-  const { language, setLanguage } = useLanguagePreference();
+  // Sign-in is a public page: always English, no language switcher or saved preference.
+  useDocumentLanguage("en");
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate("en", key, vars);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  // Which code the user is entering: account confirmation, password reset or SMS login.
-  const [step, setStep] = useState<null | "confirm" | "reset" | "phone">(null);
+  // Which code the user is entering: account confirmation or password reset.
+  const [step, setStep] = useState<null | "confirm" | "reset">(null);
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [cooldown, setCooldown] = useState(0);
   const resetting = useRef(false);
 
-  const [googleEnabled, setGoogleEnabled] = useState(true);
-  // Phone (SMS) sign-in is offered only when the Supabase project has a phone provider configured.
-  const [phoneEnabled, setPhoneEnabled] = useState(true);
-  const [usePhone, setUsePhone] = useState(false);
-  const [phone, setPhone] = useState("");
+  // Hide Google until Supabase confirms the provider is enabled for this project.
+  const [googleEnabled, setGoogleEnabled] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -77,13 +75,11 @@ function AuthPage() {
     if (!url || !key) return;
     fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d: { external?: { google?: boolean; phone?: boolean } } | null) => {
+      .then((d: { external?: { google?: boolean } } | null) => {
         setGoogleEnabled(Boolean(d?.external?.google));
-        setPhoneEnabled(Boolean(d?.external?.phone));
       })
       .catch(() => {
         setGoogleEnabled(false);
-        setPhoneEnabled(false);
       });
   }, []);
 
@@ -93,7 +89,7 @@ function AuthPage() {
     return () => clearTimeout(t);
   }, [cooldown]);
 
-  function openCodeStep(kind: "confirm" | "reset" | "phone") {
+  function openCodeStep(kind: "confirm" | "reset") {
     setCode("");
     setNewPassword("");
     setStep(kind);
@@ -115,22 +111,6 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      if (usePhone) {
-        const internationalPhone = toInternationalDzPhone(phone);
-        if (!internationalPhone) {
-          toast.error(t("auth.err.phone"));
-          return;
-        }
-        const { error } = await supabase.auth.signInWithOtp({
-          phone: internationalPhone,
-          options: { shouldCreateUser: mode === "signup" },
-        });
-        if (error) throw error;
-        setPhone(internationalPhone);
-        openCodeStep("phone");
-        toast.success(t("auth.ok.smsSent"));
-        return;
-      }
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
@@ -166,18 +146,13 @@ function AuthPage() {
     e.preventDefault();
     const token = code.replace(/\D/g, "");
     if (token.length < 6) {
-      toast.error(step === "phone" ? t("auth.err.codeSms") : t("auth.err.codeEmail"));
+      toast.error(t("auth.err.codeEmail"));
       return;
     }
     if (step === "reset" && newPassword.length < 8) { toast.error(t("auth.err.password")); return; }
     setBusy(true);
     try {
-      if (step === "phone") {
-        const { error } = await supabase.auth.verifyOtp({ phone, token, type: "sms" });
-        if (error) throw error;
-        toast.success(t("auth.ok.phoneVerified"));
-        navigate({ to: safePath(redirect), replace: true });
-      } else if (step === "confirm") {
+      if (step === "confirm") {
         const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
         if (error) throw error;
         toast.success(t("auth.ok.confirmed"));
@@ -205,11 +180,9 @@ function AuthPage() {
     setBusy(true);
     try {
       const { error } =
-        step === "phone"
-          ? await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: false } })
-          : step === "confirm"
-            ? await supabase.auth.resend({ type: "signup", email })
-            : await supabase.auth.resetPasswordForEmail(email);
+        step === "confirm"
+          ? await supabase.auth.resend({ type: "signup", email })
+          : await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
       toast.success(t("auth.ok.resent"));
       setCooldown(RESEND_SECONDS);
@@ -237,7 +210,6 @@ function AuthPage() {
           <Link to="/">
             <Logo />
           </Link>
-          <LanguageSwitcher value={language} onChange={setLanguage} />
         </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           {step ? (
@@ -246,14 +218,10 @@ function AuthPage() {
                 <MailCheck className="size-7" />
               </div>
               <h1 className="mt-5 text-2xl font-medium">
-                {step === "phone" ? t("auth.code.titlePhone") : step === "confirm" ? t("auth.code.titleConfirm") : t("auth.code.titleReset")}
+                {step === "confirm" ? t("auth.code.titleConfirm") : t("auth.code.titleReset")}
               </h1>
               <p className="mt-2 text-muted-foreground">
-                {step === "phone" ? (
-                  <>{t("auth.code.sentPhone")} <span dir="ltr" className="font-medium text-foreground">{phone}</span>.</>
-                ) : (
-                  <>{t("auth.code.sentEmail")} <span dir="ltr" className="font-medium text-foreground">{email}</span>. {t("auth.code.spam")}</>
-                )}
+                {t("auth.code.sentEmail")} <span dir="ltr" className="font-medium text-foreground">{email}</span>. {t("auth.code.spam")}
               </p>
 
               <form onSubmit={verify} className="mt-8 space-y-4">
@@ -311,26 +279,7 @@ function AuthPage() {
                     : t("auth.sub.forgot")}
               </p>
 
-              {mode !== "forgot" && (
-                <div className="mt-8 grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary p-1 text-sm">
-                  <button
-                    type="button"
-                    onClick={() => setUsePhone(false)}
-                    className={["rounded-full px-3 py-2", !usePhone ? "bg-card font-medium shadow-sm" : "text-muted-foreground"].join(" ")}
-                  >
-                    {t("auth.byEmail")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUsePhone(true)}
-                    className={["rounded-full px-3 py-2", usePhone ? "bg-card font-medium shadow-sm" : "text-muted-foreground"].join(" ")}
-                  >
-                    {t("auth.byPhone")}
-                  </button>
-                </div>
-              )}
-
-              {mode !== "forgot" && (
+              {mode !== "forgot" && googleEnabled && (
                 <>
                   <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
                     <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
@@ -348,42 +297,30 @@ function AuthPage() {
               )}
 
               <form onSubmit={submit} className="mt-6 space-y-4">
-                {usePhone ? (
+                <div className="space-y-1.5">
+                  <Label htmlFor="email">{t("auth.email")}</Label>
+                  <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
+                </div>
+                {mode !== "forgot" && (
                   <div className="space-y-1.5">
-                    <Label htmlFor="phone">{t("auth.phone")}</Label>
-                    <Input id="phone" type="tel" dir="ltr" inputMode="tel" autoComplete="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 12 34 56" className="h-11" />
-                    <p className="text-xs text-muted-foreground">{t("auth.phoneHint")}</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="email">{t("auth.email")}</Label>
-                      <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">{t("auth.password")}</Label>
+                      {mode === "signin" && (
+                        <button type="button" className="text-xs text-brand hover:underline" onClick={() => setMode("forgot")}>
+                          {t("auth.forgotLink")}
+                        </button>
+                      )}
                     </div>
-                    {mode !== "forgot" && (
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="password">{t("auth.password")}</Label>
-                          {mode === "signin" && (
-                            <button type="button" className="text-xs text-brand hover:underline" onClick={() => setMode("forgot")}>
-                              {t("auth.forgotLink")}
-                            </button>
-                          )}
-                        </div>
-                        <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
-                      </div>
-                    )}
-                  </>
+                    <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
+                  </div>
                 )}
                 <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
                   {busy && <Loader2 className="animate-spin" />}
-                  {usePhone
-                    ? t("auth.sendCode")
-                    : mode === "forgot"
-                      ? t("auth.sendResetCode")
-                      : mode === "signin"
-                        ? t("auth.signin")
-                        : t("auth.signup")}
+                  {mode === "forgot"
+                    ? t("auth.sendResetCode")
+                    : mode === "signin"
+                      ? t("auth.signin")
+                      : t("auth.signup")}
                 </Button>
               </form>
 

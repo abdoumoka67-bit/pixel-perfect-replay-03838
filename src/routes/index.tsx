@@ -6,21 +6,26 @@ import { Button } from "@/components/ui/button";
 import { getPublicPlans } from "@/lib/storefront.functions";
 import { PlanCards } from "@/components/PlanCards";
 import { cn } from "@/lib/utils";
+import { translate, type TranslationKey } from "@/lib/i18n";
+import { useDocumentLanguage } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/")({
   loader: () => getPublicPlans(),
   head: () => ({
     meta: [
-      { title: "oranix — صفحة طلب لمنتجك وطلباتك مرتبة في مكان واحد" },
+      { title: "oranix — Build your store, manage your sales, and launch with ease" },
       {
         name: "description",
         content:
-          "للتجار في الجزائر: أنشئ متجرك، أضف منتجك، وانشر الرابط. طلبات الدفع عند الاستلام من 58 ولاية تصلك مباشرة في لوحتك. 7 أيام مجاناً.",
+          "For merchants in Algeria: create your store, add your product, and share the link. Cash-on-delivery orders from all 58 wilayas land straight in your dashboard. 7 days free.",
       },
-      { property: "og:title", content: "oranix — صفحة طلب لمنتجك وطلباتك مرتبة في مكان واحد" },
+      {
+        property: "og:title",
+        content: "oranix — Build your store, manage your sales, and launch with ease",
+      },
       {
         property: "og:description",
-        content: "أنشئ متجرك، أضف منتجك، وانشر الرابط. الطلبات تصلك مباشرة في لوحتك.",
+        content: "Create your store, add your product, and share the link. Orders land straight in your dashboard.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -29,19 +34,24 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const FEATURES = [
-  { title: "صفحة لكل منتج", text: "أضف الاسم والسعر والصور، وتحصل على رابط جاهز للنشر في إنستغرام وتيك توك." },
-  { title: "58 ولاية", text: "فورم طلب بالولاية والبلدية، ومصاريف توصيل تحددها أنت لكل ولاية." },
-  { title: "أرقام صحيحة", text: "نقبل فقط أرقام 05 و06 و07، لتقلّ الطلبات الوهمية." },
-  { title: "سجل التأكيد", text: "سجّل كل محاولة اتصال بالزبون وتابع عدد المحاولات لكل طلب." },
-  { title: "Yalidine", text: "أرسل الطلب المؤكد بنقرة واحدة واحصل على رقم التتبع." },
-  { title: "تصدير Excel", text: "صدّر الطلبات لطباعة البوالص بسهولة." },
+const FEATURES: { title: TranslationKey; text: TranslationKey }[] = [
+  { title: "landing.f1.title", text: "landing.f1.text" },
+  { title: "landing.f2.title", text: "landing.f2.text" },
+  { title: "landing.f3.title", text: "landing.f3.text" },
+  { title: "landing.f4.title", text: "landing.f4.text" },
+  { title: "landing.f5.title", text: "landing.f5.text" },
+  { title: "landing.f6.title", text: "landing.f6.text" },
 ];
+
+/** Public pages always render in English, regardless of the visitor's browser. */
+function t(key: TranslationKey, vars?: Record<string, string | number>) {
+  return translate("en", key, vars);
+}
 
 function FeaturesAccordion() {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-2">
       {FEATURES.map((f, i) => {
         const isOpen = open === i;
         const id = `feature-${i}`;
@@ -58,10 +68,10 @@ function FeaturesAccordion() {
               aria-expanded={isOpen}
               aria-controls={id}
               onClick={() => setOpen(isOpen ? null : i)}
-              className="flex w-full items-center gap-4 px-5 py-5 text-start sm:px-6"
+              className="flex w-full items-center gap-4 px-5 py-2.5 text-start sm:px-6"
             >
               <span className="w-7 shrink-0 text-sm text-muted-foreground num">{String(i + 1).padStart(2, "0")}</span>
-              <span className="flex-1 text-lg font-medium sm:text-xl">{f.title}</span>
+              <span className="min-w-0 flex-1 text-lg font-medium sm:text-xl">{t(f.title)}</span>
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <ChevronDown className={cn("size-4 transition-transform duration-300", isOpen && "rotate-180")} />
               </span>
@@ -74,7 +84,7 @@ function FeaturesAccordion() {
               )}
             >
               <div className="overflow-hidden">
-                <p className="px-5 pb-6 ps-16 text-base leading-8 text-muted-foreground sm:px-6 sm:ps-[4.25rem]">{f.text}</p>
+                <p className="px-5 pb-6 ps-16 text-base leading-8 text-muted-foreground sm:px-6 sm:ps-[4.25rem]">{t(f.text)}</p>
               </div>
             </div>
           </li>
@@ -86,39 +96,43 @@ function FeaturesAccordion() {
 
 function Home() {
   const plans = Route.useLoaderData();
+  // The public site always opens in English and never reads or stores a visitor preference.
+  useDocumentLanguage("en");
+
   return (
-    <div className="min-h-screen bg-card">
-      <header className="mx-auto flex max-w-3xl items-center justify-between px-5 py-5">
-        <Logo />
-        <Button asChild variant="outline">
-          <Link to="/auth">تسجيل الدخول</Link>
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-card">
+      <header className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-5">
+        <Logo className="min-w-0 shrink" />
+        <Button asChild variant="outline" className="shrink-0">
+          <Link to="/auth">{t("landing.login")}</Link>
         </Button>
       </header>
 
-      <section className="mx-auto max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
-        <span className="inline-flex rounded-full border border-brand/40 bg-brand-soft px-4 py-1.5 text-sm font-medium text-brand">
-          الدفع عند الاستلام · كل الولايات
-        </span>
-        <h1 className="mt-7 text-balance text-[1.75rem] font-medium leading-[1.45] sm:text-5xl sm:leading-[1.3]">
-          <span className="text-muted-foreground">صفحة طلب لمنتجك،</span>{" "}
-          <span className="text-foreground">وطلباتك مرتبة في مكان واحد.</span>
+      <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
+        <h1 className="mx-auto mt-7 max-w-full text-balance break-words text-[2rem] font-medium leading-[1.4] text-foreground sm:text-5xl sm:leading-[1.3]">
+          {t("landing.hero.before")}
+          {t("landing.hero.w1")}
+          {t("landing.hero.mid")}
+          {t("landing.hero.w2")}
+          {t("landing.hero.after")}
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-muted-foreground">
-          للتجار في الجزائر، أنشئ متجرك، أضف منتجك، وانشر الرابط. الطلبات تصلك مباشرة في لوحتك.
+          {t("landing.hero.sub")}
         </p>
-        <div className="mx-auto mt-9 flex max-w-md flex-col gap-3">
+        <div className="mx-auto mt-9 flex w-full max-w-md flex-col gap-3">
           <Button asChild size="xl" className="w-full">
-            <Link to="/auth" search={{ mode: "signup" }}>ابدأ التجربة المجانية</Link>
+            <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
           </Button>
-          <p className="rounded-full bg-secondary px-4 py-3 text-muted-foreground">7 أيام مجاناً، بدون بطاقة دفع</p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-5 pb-16">
+      <section className="mx-auto w-full max-w-3xl px-5 pb-16">
         <div className="mb-8 text-center">
-          <span className="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground">المميزات</span>
+          <span className="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground">
+            {t("landing.features.badge")}
+          </span>
           <h2 className="mt-4 text-balance text-2xl font-medium sm:text-3xl">
-            <span className="text-muted-foreground">كل ما تحتاجه</span> لبيع منتجك بالدفع عند الاستلام
+            {t("landing.features.title")}
           </h2>
         </div>
         <FeaturesAccordion />
@@ -126,15 +140,16 @@ function Home() {
 
       {plans.length > 0 && (
         <section className="border-t bg-background">
-          <div className="mx-auto max-w-3xl px-5 py-16">
-            <h2 className="text-center text-3xl font-medium">الأسعار</h2>
-            <p className="mt-2 text-center text-muted-foreground">ابدأ بـ 7 أيام مجاناً، ثم اختر المدة المناسبة لك.</p>
+          <div className="mx-auto w-full max-w-3xl px-5 py-16">
+            <h2 className="text-center text-3xl font-medium">{t("landing.pricing.title")}</h2>
+            <p className="mt-2 text-center text-muted-foreground">{t("landing.pricing.sub")}</p>
             <div className="mt-8">
               <PlanCards
                 plans={plans}
+                language="en"
                 action={(p) => (
                   <Button asChild size="xl" variant={p.tier === "pro" ? "outline" : "default"} className={p.tier === "pro" ? "w-full border-transparent text-foreground" : "w-full"}>
-                    <Link to="/auth" search={{ mode: "signup" }}>ابدأ التجربة المجانية</Link>
+                    <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
                   </Button>
                 )}
               />
@@ -144,7 +159,7 @@ function Home() {
       )}
 
       <footer className="border-t">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-5 py-8 text-sm text-muted-foreground">
+        <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-muted-foreground">
           <Logo />
           <p>© {new Date().getFullYear()} oranix</p>
         </div>

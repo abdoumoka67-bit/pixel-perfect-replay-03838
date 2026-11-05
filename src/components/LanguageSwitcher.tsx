@@ -1,4 +1,4 @@
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import {
   LANGUAGE_DEFAULT,
   LANGUAGE_OPTIONS,
@@ -40,9 +40,10 @@ export function useLanguagePreference() {
   return { language, setLanguage: setStoredLanguage };
 }
 
-/** Translator bound to the current interface language. */
-export function useT() {
-  const { language } = useLanguagePreference();
+/** Translator bound to the current interface language, or to `language` when given. */
+export function useT(languageOverride?: LanguageCode) {
+  const { language: stored } = useLanguagePreference();
+  const language = languageOverride ?? stored;
   const t = useCallback(
     (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars),
     [language],
@@ -50,30 +51,52 @@ export function useT() {
   return { t, language };
 }
 
+/**
+ * Applies `language` to <html lang/dir/font> without persisting it.
+ * Public pages pass "en" so they always open in English; the dashboard and
+ * storefronts pass the store's saved language.
+ */
+export function useDocumentLanguage(language: LanguageCode) {
+  useEffect(() => {
+    applyLanguageToDocument(language);
+  }, [language]);
+}
+
 export function LanguageSwitcher({
   value,
   onChange,
   className,
+  compact = false,
+  disabled = false,
 }: {
   value: LanguageCode;
   onChange: (lang: LanguageCode) => void;
   className?: string;
+  compact?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <div
       dir="ltr"
       role="group"
       aria-label={translate(value, "lang.group")}
-      className={cn("flex rounded-full border border-border bg-background p-1", className)}
+      className={cn(
+        "flex rounded-full border border-border bg-background",
+        compact ? "p-0.5" : "p-1",
+        disabled && "pointer-events-none opacity-60",
+        className,
+      )}
     >
       {LANGUAGE_OPTIONS.map((option) => (
         <button
           key={option.value}
           type="button"
+          disabled={disabled}
           aria-pressed={option.value === value}
           onClick={() => onChange(option.value)}
           className={cn(
-            "rounded-full px-3 py-1.5 text-sm transition-colors",
+            "rounded-full transition-colors",
+            compact ? "px-2 py-1 text-xs" : "px-3 py-1.5 text-sm",
             option.value === value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
           )}
         >

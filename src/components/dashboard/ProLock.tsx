@@ -2,10 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { Check, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMyStore } from "@/hooks/use-my-store";
+import { useTr } from "@/lib/ui-i18n";
 
 /** Shown in place of a Pro-only page when the store is on Start. */
 export function ProLock({ title, description, points }: { title: string; description: string; points: string[] }) {
   const { isOwner } = useMyStore();
+  const t = useTr();
   return (
     <div className="mx-auto max-w-xl rounded-3xl border bg-card p-8 text-center shadow-card">
       <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand">
@@ -24,10 +26,10 @@ export function ProLock({ title, description, points }: { title: string; descrip
       </ul>
       {isOwner ? (
         <Button asChild size="lg" className="mt-7 w-full">
-          <Link to="/dashboard/billing">الترقية إلى Pro</Link>
+          <Link to="/dashboard/billing">{t("الترقية إلى Pro")}</Link>
         </Button>
       ) : (
-        <p className="mt-7 rounded-full bg-secondary px-4 py-3 text-sm text-muted-foreground">اطلب من صاحب المتجر الترقية إلى Pro.</p>
+        <p className="mt-7 rounded-full bg-secondary px-4 py-3 text-sm text-muted-foreground">{t("اطلب من صاحب المتجر الترقية إلى Pro.")}</p>
       )}
     </div>
   );

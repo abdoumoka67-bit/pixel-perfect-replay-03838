@@ -5,7 +5,8 @@ import { verifyCustomDomain } from "@/lib/domain.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Copy, Globe, ImagePlus, Languages, Loader2, Save, Target } from "lucide-react";
-import { LanguageSwitcher, useLanguagePreference, useT } from "@/components/LanguageSwitcher";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { parseStorefrontConfig, type StorefrontLanguage } from "@/lib/storefront-theme";
 import { translate } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { ProLock, ProPill } from "@/components/dashboard/ProLock";
@@ -33,12 +34,16 @@ import {
   isValidTiktokPixelId,
 } from "@/lib/commerce";
 import { RestartTourButton } from "@/components/dashboard/GuidedTour";
+import { tr, useTranslatedMessage, useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/settings")({
   component: SettingsPage,
 });
 
 function SettingsPage() {
+  const t = useTr();
+  const language = useUiLanguage();
+  const dir = language === "ar" ? "rtl" : "ltr";
   const { store, readOnly, isPro } = useMyStore();
   const { user } = Route.useRouteContext();
   const qc = useQueryClient();
@@ -77,17 +82,17 @@ function SettingsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم حفظ البيكسل");
+      toast.success(t("تم حفظ البيكسل"));
       qc.invalidateQueries({ queryKey: ["my-store"] });
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message, t("تعذر الحفظ")))),
   });
 
   async function uploadLogo(f: File | undefined) {
     if (!f) return;
     const path = `${user.id}/logo-${crypto.randomUUID()}.${fileExt(f)}`;
     const { error } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, f, { contentType: f.type });
-    if (error) { toast.error("تعذر رفع الشعار"); return; }
+    if (error) { toast.error(t("تعذر رفع الشعار")); return; }
     setLogo(path);
   }
 
@@ -108,17 +113,21 @@ function SettingsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم حفظ الإعدادات");
+      toast.success(t("تم حفظ الإعدادات"));
       qc.invalidateQueries({ queryKey: ["my-store"] });
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message, t("تعذر الحفظ")))),
   });
 
   const storeUrl = typeof window !== "undefined" && store ? `${window.location.origin}/m/${store.slug}` : "";
 
   return (
     <div className="space-y-10">
-      <PageHeader title="إعدادات المتجر" description="هوية متجرك، معلومات التواصل، ومظهر صفحة الهبوط." actions={<RestartTourButton />} />
+      <PageHeader
+        title={t("إعدادات المتجر")}
+        description={t("هوية متجرك، معلومات التواصل، ومظهر صفحة الهبوط.")}
+        actions={<RestartTourButton />}
+      />
       <form
         className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]"
         onSubmit={(e) => {
@@ -132,58 +141,58 @@ function SettingsPage() {
               type="button"
               onClick={() => fileRef.current?.click()}
               className="flex size-20 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed text-muted-foreground hover:border-brand hover:text-brand"
-              aria-label="رفع الشعار"
+              aria-label={t("رفع الشعار")}
             >
               {logo && urls[logo] ? <img src={urls[logo]} alt="" className="size-full object-cover" /> : <ImagePlus className="size-6" />}
             </button>
             <div>
-              <p className="font-medium">شعار المتجر</p>
-              <p className="text-xs text-muted-foreground">يظهر في صفحات الهبوط. مربع، حتى 5MB.</p>
+              <p className="font-medium">{t("شعار المتجر")}</p>
+              <p className="text-xs text-muted-foreground">{t("يظهر في صفحات الهبوط. مربع، حتى 5MB.")}</p>
             </div>
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => uploadLogo(e.target.files?.[0])} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="sname">اسم المتجر</Label>
+            <Label htmlFor="sname">{t("اسم المتجر")}</Label>
             <Input id="sname" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="sslug">رابط المتجر</Label>
+            <Label htmlFor="sslug">{t("رابط المتجر")}</Label>
             <Input id="sslug" dir="ltr" value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} />
-            <p className="text-xs text-muted-foreground">تغيير الرابط يوقف الروابط القديمة المنشورة في إعلاناتك.</p>
+            <p className="text-xs text-muted-foreground">{t("تغيير الرابط يوقف الروابط القديمة المنشورة في إعلاناتك.")}</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="sphone">رقم الهاتف</Label>
+              <Label htmlFor="sphone">{t("رقم الهاتف")}</Label>
               <Input id="sphone" dir="ltr" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="swa">رقم واتساب</Label>
+              <Label htmlFor="swa">{t("رقم واتساب")}</Label>
               <Input id="swa" dir="ltr" inputMode="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>ولاية الإرسال (لـ Yalidine)</Label>
-            <Select value={origin} onValueChange={setOrigin} dir="rtl">
+            <Label>{t("ولاية الإرسال (لـ Yalidine)")}</Label>
+            <Select value={origin} onValueChange={setOrigin} dir={dir}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="max-h-72">
                 {WILAYAS.map((w) => (
                   <SelectItem key={w.code} value={String(w.code)}>
-                    {w.code} - {w.ar}
+                    {w.code} - {language === "ar" ? w.ar : w.fr}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <Button type="submit" variant="brand" disabled={save.isPending || readOnly}>
-            {save.isPending ? <Loader2 className="animate-spin" /> : <Save />} حفظ الإعدادات
+            {save.isPending ? <Loader2 className="animate-spin" /> : <Save />} {t("حفظ الإعدادات")}
           </Button>
         </div>
         <div className="space-y-6">
           <div className="h-fit rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
-            <h2 className="font-medium">رابط متجرك</h2>
-            <p className="mt-1 text-sm text-sidebar-muted">شاركه في البايو على إنستغرام وتيك توك.</p>
+            <h2 className="font-medium">{t("رابط متجرك")}</h2>
+            <p className="mt-1 text-sm text-sidebar-muted">{t("شاركه في البايو على إنستغرام وتيك توك.")}</p>
             <div className="mt-4 flex min-w-0 items-center gap-2 rounded-xl bg-sidebar-accent px-4 py-3">
               <span className="min-w-0 flex-1 truncate text-sm" dir="ltr">{storeUrl}</span>
               <button
@@ -191,9 +200,9 @@ function SettingsPage() {
                 className="rounded-lg p-1.5 text-sidebar-muted hover:text-sidebar-foreground"
                 onClick={() => {
                   navigator.clipboard.writeText(storeUrl);
-                  toast.success("تم نسخ الرابط");
+                  toast.success(t("تم نسخ الرابط"));
                 }}
-                aria-label="نسخ"
+                aria-label={t("نسخ")}
               >
                 <Copy className="size-4" />
               </button>
@@ -212,7 +221,7 @@ function SettingsPage() {
         </div>
       </form>
 
-      <LanguageCard />
+      {store ? <LanguageCard store={store} readOnly={readOnly} /> : null}
 
       <div className="border-t border-border pt-8">
         <StorefrontThemeSettings store={store} readOnly={readOnly} />
@@ -227,9 +236,37 @@ function SettingsPage() {
   );
 }
 
-function LanguageCard() {
-  const { language, setLanguage } = useLanguagePreference();
-  const { t } = useT();
+function LanguageCard({
+  store,
+  readOnly,
+}: {
+  store: NonNullable<ReturnType<typeof useMyStore>["store"]>;
+  readOnly: boolean;
+}) {
+  const qc = useQueryClient();
+  // The store's saved language drives its dashboard and storefront (English by default).
+  const language = parseStorefrontConfig(store.storefront_config, store.name).language;
+
+  const saveLanguage = useMutation({
+    mutationFn: async (next: StorefrontLanguage) => {
+      const base =
+        store.storefront_config && typeof store.storefront_config === "object"
+          ? (store.storefront_config as Record<string, unknown>)
+          : {};
+      const { error } = await supabase
+        .from("stores")
+        .update({ storefront_config: { ...base, language: next } })
+        .eq("id", store.id);
+      if (error) throw error;
+      return next;
+    },
+    onSuccess: (next) => {
+      toast.success(translate(next, "lang.saved"));
+      qc.invalidateQueries({ queryKey: ["my-store"] });
+    },
+    onError: (e: Error) => toast.error(tr(language, friendlyError(e.message, tr(language, "تعذر حفظ اللغة")))),
+  });
+
   return (
     <div className="flex flex-col gap-4 rounded-2xl bg-card p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-3">
@@ -237,16 +274,14 @@ function LanguageCard() {
           <Languages className="size-5" strokeWidth={1.6} />
         </span>
         <div className="min-w-0">
-          <h2 className="font-medium">{t("lang.title")}</h2>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">{t("lang.description")}</p>
+          <h2 className="font-medium">{translate(language, "lang.title")}</h2>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{translate(language, "lang.description")}</p>
         </div>
       </div>
       <LanguageSwitcher
         value={language}
-        onChange={(l) => {
-          setLanguage(l);
-          toast.success(translate(l, "lang.saved"));
-        }}
+        onChange={(next) => saveLanguage.mutate(next)}
+        disabled={readOnly || saveLanguage.isPending}
         className="self-start sm:self-auto"
       />
     </div>
@@ -263,6 +298,7 @@ function PixelCard(props: {
   saving: boolean;
   onSave: () => void;
 }) {
+  const t = useTr();
   const locked = !props.isPro;
   return (
     <div className="space-y-4 rounded-2xl bg-card p-6 shadow-card">
@@ -272,16 +308,16 @@ function PixelCard(props: {
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="font-medium">البيكسل (تتبع الإعلانات)</h2>
+            <h2 className="font-medium">{t("البيكسل (تتبع الإعلانات)")}</h2>
             {locked && <ProPill />}
           </div>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            نسجل تلقائياً: مشاهدة الصفحة، مشاهدة المنتج، بدء ملء الفورم، وإتمام الطلب.
+            {t("نسجل تلقائياً: مشاهدة الصفحة، مشاهدة المنتج، بدء ملء الفورم، وإتمام الطلب.")}
           </p>
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="meta-pixel">Meta Pixel ID (فيسبوك وإنستغرام)</Label>
+        <Label htmlFor="meta-pixel">{t("Meta Pixel ID (فيسبوك وإنستغرام)")}</Label>
         <Input
           id="meta-pixel"
           dir="ltr"
@@ -305,11 +341,11 @@ function PixelCard(props: {
       </div>
       {locked ? (
         <Button asChild variant="outline" className="w-full">
-          <Link to="/dashboard/billing">الترقية إلى Pro لتفعيل البيكسل</Link>
+          <Link to="/dashboard/billing">{t("الترقية إلى Pro لتفعيل البيكسل")}</Link>
         </Button>
       ) : (
         <Button type="button" className="w-full" disabled={props.saving || props.disabled} onClick={props.onSave}>
-          {props.saving ? <Loader2 className="animate-spin" /> : <Save />} حفظ البيكسل
+          {props.saving ? <Loader2 className="animate-spin" /> : <Save />} {t("حفظ البيكسل")}
         </Button>
       )}
     </div>
@@ -333,6 +369,8 @@ function CustomDomainSection({
   readOnly: boolean;
   isPro: boolean;
 }) {
+  const t = useTr();
+  const msg = useTranslatedMessage();
   const qc = useQueryClient();
   const saved = useMemo(() => readCustomDomain(store.storefront_config), [store.storefront_config]);
   const [domain, setDomain] = useState(saved.domain ?? "");
@@ -352,34 +390,34 @@ function CustomDomainSection({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم تسجيل الدومين. تابع تعليمات DNS ثم تنتقل الحالة إلى نشط بعد التحقق.");
+      toast.success(t("تم تسجيل الدومين. تابع تعليمات DNS ثم تنتقل الحالة إلى نشط بعد التحقق."));
       qc.invalidateQueries({ queryKey: ["my-store"] });
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذر الحفظ")),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message, t("تعذر الحفظ")))),
   });
 
   const verifyFn = useServerFn(verifyCustomDomain);
   const verify = useMutation({
     mutationFn: () => verifyFn({ data: { storeId: store.id } }),
     onSuccess: (r) => {
-      if (r.ok) toast.success(r.message);
-      else toast.error(r.message);
+      if (r.ok) toast.success(msg(r.message));
+      else toast.error(msg(r.message));
       qc.invalidateQueries({ queryKey: ["my-store"] });
     },
-    onError: () => toast.error("تعذر التحقق حالياً"),
+    onError: () => toast.error(t("تعذر التحقق حالياً")),
   });
 
   if (!isPro) {
     return (
       <div>
-        <h2 className="mb-4 font-medium">الدومين المخصص (Custom Domain)</h2>
+        <h2 className="mb-4 font-medium">{t("الدومين المخصص (Custom Domain)")}</h2>
         <ProLock
-          title="الدومين المخصص حصري لباقة Pro"
-          description="اربط متجرك بدومينك الخاص مثل storename.com مباشرة بدل الرابط الفرعي — متاح لمشتركي باقة Pro."
+          title={t("الدومين المخصص حصري لباقة Pro")}
+          description={t("اربط متجرك بدومينك الخاص مثل storename.com مباشرة بدل الرابط الفرعي — متاح لمشتركي باقة Pro.")}
           points={[
-            "دومينك الخاص بالكامل: storename.com",
-            "شهادة SSL تلقائية عند التحقق",
-            "توجيه DNS عبر CNAME في دقيقتين",
+            t("دومينك الخاص بالكامل: storename.com"),
+            t("شهادة SSL تلقائية عند التحقق"),
+            t("توجيه DNS عبر CNAME في دقيقتين"),
           ]}
         />
       </div>
@@ -393,19 +431,19 @@ function CustomDomainSection({
           <Globe className="size-5" strokeWidth={1.6} />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="font-medium">الدومين المخصص (Custom Domain)</h2>
+          <h2 className="font-medium">{t("الدومين المخصص (Custom Domain)")}</h2>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            اربط متجرك بدومينك الخاص. أضف سجل CNAME لدى مزوّد الدومين ثم انتظر التحقق.
+            {t("اربط متجرك بدومينك الخاص. أضف سجل CNAME لدى مزوّد الدومين ثم انتظر التحقق.")}
           </p>
         </div>
         {saved.domain && (
           <div className="flex flex-col items-end gap-2">
             <Badge variant={saved.status === "active" ? "success" : "warning"}>
-              {saved.status === "active" ? "نشط (Active)" : "قيد التحقق (Pending)"}
+              {saved.status === "active" ? t("نشط (Active)") : t("قيد التحقق (Pending)")}
             </Badge>
             {saved.status !== "active" && (
               <Button size="sm" variant="outline" disabled={verify.isPending} onClick={() => verify.mutate()}>
-                {verify.isPending ? <Loader2 className="animate-spin" /> : null} تحقق الآن
+                {verify.isPending ? <Loader2 className="animate-spin" /> : null} {t("تحقق الآن")}
               </Button>
             )}
           </div>
@@ -413,7 +451,7 @@ function CustomDomainSection({
       </div>
 
       <div className="mt-5 space-y-1.5">
-        <Label htmlFor="custom-domain">دومينك (مثال: storename.com)</Label>
+        <Label htmlFor="custom-domain">{t("دومينك (مثال: storename.com)")}</Label>
         <Input
           id="custom-domain"
           dir="ltr"
@@ -423,18 +461,18 @@ function CustomDomainSection({
           aria-invalid={Boolean(domain) && !domainValid}
         />
         {domain && !domainValid && (
-          <p className="text-xs text-destructive">دومين غير صالح: مثال صحيح storename.com (بدون https أو مسارات).</p>
+          <p className="text-xs text-destructive">{t("دومين غير صالح: مثال صحيح storename.com (بدون https أو مسارات).")}</p>
         )}
       </div>
 
       <div className="mt-4 rounded-2xl border border-border bg-background p-4 text-sm leading-7">
-        <p className="font-medium">تعليمات DNS</p>
-        <p>1. افتح لوحة مزوّد الدومين لديك (مثال: Namecheap أو OVH).</p>
+        <p className="font-medium">{t("تعليمات DNS")}</p>
+        <p>{t("1. افتح لوحة مزوّد الدومين لديك (مثال: Namecheap أو OVH).")}</p>
         <p>
-          2. أضف سجل <b>CNAME</b> بالقيم التالية:
+          {t("2. أضف سجل")} <b>CNAME</b> {t("بالقيم التالية:")}
           <span dir="ltr" className="num">Type: CNAME · Host: @ / www · Value: {CUSTOM_DOMAIN_CNAME_TARGET}</span>
         </p>
-        <p>3. انتظر انتشار سجل DNS (من دقائق إلى 24 ساعة) ثم تتحول الحالة إلى نشط (Active).</p>
+        <p>{t("3. انتظر انتشار سجل DNS (من دقائق إلى 24 ساعة) ثم تتحول الحالة إلى نشط (Active).")}</p>
       </div>
 
       <Button
@@ -443,7 +481,7 @@ function CustomDomainSection({
         disabled={readOnly || !domainValid || saveDomain.isPending}
         onClick={() => saveDomain.mutate()}
       >
-        {saveDomain.isPending ? <Loader2 className="animate-spin" /> : <Save />} حفظ الدومين
+        {saveDomain.isPending ? <Loader2 className="animate-spin" /> : <Save />} {t("حفظ الدومين")}
       </Button>
     </div>
   );

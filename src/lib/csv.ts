@@ -1,4 +1,5 @@
-import { STATUS_LABELS, type OrderStatus } from "./commerce";
+import { STATUS_LABELS, type LanguageCode, type OrderStatus } from "./commerce";
+import { tr } from "./ui-i18n";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Order = Tables<"orders">;
@@ -8,8 +9,8 @@ function cell(v: unknown): string {
   return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-/** CSV with a UTF-8 BOM so Excel opens Arabic text correctly. */
-export function ordersToCsv(orders: Order[]): string {
+/** CSV with a UTF-8 BOM so Excel opens the exported text correctly. */
+export function ordersToCsv(orders: Order[], language: LanguageCode = "ar"): string {
   const header = [
     "رقم الطلب",
     "التاريخ",
@@ -29,7 +30,7 @@ export function ordersToCsv(orders: Order[]): string {
     "الحالة",
     "محاولات الاتصال",
     "رقم التتبع",
-  ];
+  ].map((label) => tr(language, label));
   const rows = orders.map((o) => [
     `ORX-${o.order_number}`,
     new Date(o.created_at).toLocaleString("fr-DZ"),
@@ -38,7 +39,7 @@ export function ordersToCsv(orders: Order[]): string {
     `${o.wilaya_code} - ${o.wilaya_name}`,
     o.commune,
     o.address ?? "",
-    o.delivery_type === "home" ? "للمنزل" : "للمكتب",
+    o.delivery_type === "home" ? tr(language, "للمنزل") : tr(language, "للمكتب"),
     o.product_name,
     o.variant_size ?? "",
     o.variant_color ?? "",
@@ -46,7 +47,7 @@ export function ordersToCsv(orders: Order[]): string {
     o.unit_price,
     o.shipping_price,
     o.total,
-    STATUS_LABELS[o.status as OrderStatus],
+    tr(language, STATUS_LABELS[o.status as OrderStatus]),
     o.call_attempts,
     o.tracking_number ?? "",
   ]);

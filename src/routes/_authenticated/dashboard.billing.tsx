@@ -13,12 +13,14 @@ import { useMyStore } from "@/hooks/use-my-store";
 import { RECEIPT_BUCKET, fileExt } from "@/lib/images";
 import { calculateSubscriptionPrice, formatDZD, SUBSCRIPTION_MAX_MONTHS } from "@/lib/commerce";
 import { PlanCards } from "@/components/PlanCards";
+import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/billing")({
   component: Billing,
 });
 
 function CopyRow({ label, value }: { label: string; value: string }) {
+  const t = useTr();
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl bg-sidebar-accent px-4 py-3">
       <div className="min-w-0">
@@ -28,10 +30,10 @@ function CopyRow({ label, value }: { label: string; value: string }) {
       <button
         onClick={() => {
           navigator.clipboard.writeText(value);
-          toast.success("تم النسخ");
+          toast.success(t("تم النسخ"));
         }}
         className="rounded-lg p-2 text-sidebar-muted hover:bg-sidebar hover:text-sidebar-foreground"
-        aria-label={`نسخ ${label}`}
+        aria-label={t("نسخ {label}", { label })}
       >
         <Copy className="size-4" />
       </button>
@@ -40,6 +42,9 @@ function CopyRow({ label, value }: { label: string; value: string }) {
 }
 
 function Billing() {
+  const t = useTr();
+  const language = useUiLanguage();
+  const locale = language === "ar" ? "ar-DZ" : language === "fr" ? "fr-DZ" : "en-GB";
   const { store, sub, tier } = useMyStore();
   const { user } = Route.useRouteContext();
   const qc = useQueryClient();
@@ -80,19 +85,19 @@ function Billing() {
   });
 
   useEffect(() => {
-    if (plans.error) toast.error("تعذر تحميل الخطط والأسعار.");
-    if (settings.error) toast.error("تعذر تحميل معلومات الدفع.");
-    if (receipts.error) toast.error("تعذر تحميل إيصالات الدفع.");
-  }, [plans.error, settings.error, receipts.error]);
+    if (plans.error) toast.error(t("تعذر تحميل الخطط والأسعار."));
+    if (settings.error) toast.error(t("تعذر تحميل معلومات الدفع."));
+    if (receipts.error) toast.error(t("تعذر تحميل إيصالات الدفع."));
+  }, [plans.error, settings.error, receipts.error, t]);
 
   const submit = useMutation({
     mutationFn: async () => {
-      if (!planId) throw new Error("اختر الخطة");
-      if (!file) throw new Error("ارفع صورة الوصل");
-      if (file.size > 5 * 1024 * 1024) throw new Error("الحجم الأقصى 5MB");
+      if (!planId) throw new Error(t("اختر الخطة"));
+      if (!file) throw new Error(t("ارفع صورة الوصل"));
+      if (file.size > 5 * 1024 * 1024) throw new Error(t("الحجم الأقصى 5MB"));
       const path = `${user.id}/${crypto.randomUUID()}.${fileExt(file)}`;
       const up = await supabase.storage.from(RECEIPT_BUCKET).upload(path, file, { contentType: file.type });
-      if (up.error) throw new Error("تعذر رفع الصورة");
+      if (up.error) throw new Error(t("تعذر رفع الصورة"));
       const { error } = await supabase
         .from("payment_receipts")
         .insert({
@@ -103,15 +108,15 @@ function Billing() {
           transaction_ref: ref.trim() || "غير محدد",
           receipt_path: path,
         });
-      if (error) throw new Error("تعذر إرسال الإيصال");
+      if (error) throw new Error(t("تعذر إرسال الإيصال"));
     },
     onSuccess: () => {
-      toast.success("تم إرسال الإيصال. سيتم تفعيل اشتراكك بعد المراجعة.");
+      toast.success(t("تم إرسال الإيصال. سيتم تفعيل اشتراكك بعد المراجعة."));
       setRef("");
       setFile(null);
       qc.invalidateQueries({ queryKey: ["receipts"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(t(e.message)),
   });
 
   const pending = receipts.data?.some((r) => r.status === "pending");
@@ -124,29 +129,38 @@ function Billing() {
 
   return (
     <>
-      <PageHeader title="الدفع والاشتراك" description="ادفع عبر CCP أو BaridiMob وارفع الوصل لتفعيل اشتراكك." />
+      <PageHeader
+        title={t("الدفع والاشتراك")}
+        description={t("ادفع عبر CCP أو BaridiMob وارفع الوصل لتفعيل اشتراكك.")}
+      />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-card p-5 shadow-card">
         <div>
-          <p className="text-sm text-muted-foreground">حالة الحساب</p>
+          <p className="text-sm text-muted-foreground">{t("حالة الحساب")}</p>
           <p className="mt-1 text-lg font-medium">
-            {sub?.isActive ? (sub.isTrial ? "تجربة مجانية (كل ميزات Pro)" : `اشتراك ${tier === "pro" ? "Pro" : "Start"} فعّال`) : "وضع القراءة فقط"}
+            {sub?.isActive
+              ? sub.isTrial
+                ? t("تجربة مجانية (كل ميزات Pro)")
+                : t("اشتراك {tier} فعّال", { tier: tier === "pro" ? "Pro" : "Start" })
+              : t("وضع القراءة فقط")}
           </p>
           {sub && (
             <p className="text-sm text-muted-foreground">
-              {sub.isActive ? `ينتهي في ${sub.endsAt.toLocaleDateString("ar-DZ")} · ${sub.daysLeft} أيام متبقية` : `انتهى في ${sub.endsAt.toLocaleDateString("ar-DZ")}`}
+              {sub.isActive
+                ? t("ينتهي في {date} · {days} أيام متبقية", { date: sub.endsAt.toLocaleDateString(locale), days: sub.daysLeft })
+                : t("انتهى في {date}", { date: sub.endsAt.toLocaleDateString(locale) })}
             </p>
           )}
         </div>
-        {sub?.isActive ? <Badge variant="success">فعّال</Badge> : <Badge variant="danger">منتهي</Badge>}
+        {sub?.isActive ? <Badge variant="success">{t("فعّال")}</Badge> : <Badge variant="danger">{t("منتهي")}</Badge>}
       </div>
 
-      <h2 className="mb-3 font-medium">اختر الخطة</h2>
-      <PlanCards plans={plans.data ?? []} selectedId={planId} onSelect={setPlanId} />
+      <h2 className="mb-3 font-medium">{t("اختر الخطة")}</h2>
+      <PlanCards plans={plans.data ?? []} selectedId={planId} onSelect={setPlanId} language={language} />
 
       <div className="mt-4 rounded-2xl bg-card p-5 shadow-card">
-        <h2 className="font-medium">مدة الاشتراك</h2>
-        <p className="mt-1 text-xs text-muted-foreground">اختر عدد الأشهر التي تريد تفعيلها.</p>
+        <h2 className="font-medium">{t("مدة الاشتراك")}</h2>
+        <p className="mt-1 text-xs text-muted-foreground">{t("اختر عدد الأشهر التي تريد تفعيلها.")}</p>
         <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
           {Array.from({ length: SUBSCRIPTION_MAX_MONTHS }, (_, i) => i + 1).map((m) => (
             <button
@@ -161,10 +175,10 @@ function Billing() {
               ].join(" ")}
             >
               <span className="font-medium num">{m}</span>
-              <span className="text-[11px]">{m === 1 ? "شهر" : "أشهر"}</span>
+              <span className="text-[11px]">{m === 1 ? t("شهر") : t("أشهر")}</span>
               {m === 6 && (
                 <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-brand px-2 py-0.5 text-[9px] text-white">
-                  شهر مجاني
+                  {t("شهر مجاني")}
                 </span>
               )}
             </button>
@@ -172,30 +186,32 @@ function Billing() {
         </div>
         {months === 6 && (
           <p className="mt-3 rounded-xl bg-warning-soft px-3 py-2 text-sm leading-6 text-warning">
-            🎁 عرض خاص: ادفع 5 أشهر واحصل على شهر مجاناً — توفير {formatDZD(selectedTier === "pro" ? 3400 : 1700)}.
+            {t("🎁 عرض خاص: ادفع 5 أشهر واحصل على شهر مجاناً — توفير {amount}.", {
+              amount: formatDZD(selectedTier === "pro" ? 3400 : 1700),
+            })}
           </p>
         )}
         <p className="mt-4 flex items-baseline gap-2">
-          <span className="text-sm text-muted-foreground">المبلغ المطلوب تحويله:</span>
+          <span className="text-sm text-muted-foreground">{t("المبلغ المطلوب تحويله:")}</span>
           <span className="text-xl font-medium num">{formatDZD(amountDue)}</span>
         </p>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
-          <h2 className="font-medium">معلومات الدفع</h2>
+          <h2 className="font-medium">{t("معلومات الدفع")}</h2>
           <p className="mt-1 text-sm text-sidebar-muted">
-            حوّل مبلغ الخطة المختارة ({formatDZD(amountDue)}) إلى أحد الحسابين:
+            {t("حوّل مبلغ الخطة المختارة ({amount}) إلى أحد الحسابين:", { amount: formatDZD(amountDue) })}
           </p>
           <div className="mt-5 space-y-3">
-            <p className="text-xs font-medium text-sidebar-primary">بريد الجزائر — CCP</p>
-            <CopyRow label="رقم الحساب" value={settings.data?.ccp_number ?? "…"} />
+            <p className="text-xs font-medium text-sidebar-primary">{t("بريد الجزائر — CCP")}</p>
+            <CopyRow label={t("رقم الحساب")} value={settings.data?.ccp_number ?? "…"} />
             <div className="grid grid-cols-2 gap-3">
-              <CopyRow label="المفتاح (Clé)" value={settings.data?.ccp_key ?? "…"} />
-              <CopyRow label="الاسم" value={settings.data?.ccp_holder ?? "…"} />
+              <CopyRow label={t("المفتاح (Clé)")} value={settings.data?.ccp_key ?? "…"} />
+              <CopyRow label={t("الاسم")} value={settings.data?.ccp_holder ?? "…"} />
             </div>
             <p className="pt-2 text-xs font-medium text-sidebar-primary">BaridiMob — RIP</p>
-            <CopyRow label="رقم RIP" value={settings.data?.rip ?? "…"} />
+            <CopyRow label={t("رقم RIP")} value={settings.data?.rip ?? "…"} />
           </div>
         </div>
 
@@ -206,34 +222,36 @@ function Billing() {
             submit.mutate();
           }}
         >
-          <h2 className="font-medium">ارفع وصل الدفع</h2>
+          <h2 className="font-medium">{t("ارفع وصل الدفع")}</h2>
           {pending && (
-            <p className="rounded-xl bg-warning-soft px-3 py-2 text-sm text-warning">لديك إيصال قيد المراجعة. سنفعّل اشتراكك فور التحقق.</p>
+            <p className="rounded-xl bg-warning-soft px-3 py-2 text-sm text-warning">
+              {t("لديك إيصال قيد المراجعة. سنفعّل اشتراكك فور التحقق.")}
+            </p>
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="ref">رقم المعاملة أو الحوالة (اختياري)</Label>
-            <Input id="ref" dir="ltr" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="مثال: 123456789 — اتركه فارغاً إن لم يتوفر" />
+            <Label htmlFor="ref">{t("رقم المعاملة أو الحوالة (اختياري)")}</Label>
+            <Input id="ref" dir="ltr" value={ref} onChange={(e) => setRef(e.target.value)} placeholder={t("مثال: 123456789 — اتركه فارغاً إن لم يتوفر")} />
           </div>
           <div className="space-y-1.5">
-            <Label>صورة الوصل</Label>
+            <Label>{t("صورة الوصل")}</Label>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               className="flex w-full items-center gap-3 rounded-xl border-2 border-dashed p-4 text-start text-sm text-muted-foreground hover:border-brand hover:text-brand"
             >
               {file ? <FileImage className="size-5 text-brand" /> : <Upload className="size-5" />}
-              <span className="truncate">{file ? file.name : "اضغط لاختيار صورة (حتى 5MB)"}</span>
+              <span className="truncate">{file ? file.name : t("اضغط لاختيار صورة (حتى 5MB)")}</span>
             </button>
             <input ref={fileRef} type="file" accept="image/*,application/pdf" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </div>
           <Button type="submit" variant="brand" className="w-full" size="lg" disabled={submit.isPending}>
-            {submit.isPending && <Loader2 className="animate-spin" />} إرسال للمراجعة
+            {submit.isPending && <Loader2 className="animate-spin" />} {t("إرسال للمراجعة")}
           </Button>
         </form>
       </div>
 
       <div className="mt-6 rounded-2xl bg-card p-5 shadow-card">
-        <h2 className="mb-3 font-medium">سجل الدفع</h2>
+        <h2 className="mb-3 font-medium">{t("سجل الدفع")}</h2>
         {receipts.data?.length ? (
           <ul className="divide-y">
             {receipts.data.map((r) => (
@@ -243,22 +261,24 @@ function Billing() {
                     {(r.plans as { name: string } | null)?.name} · <span className="num">{formatDZD(r.amount)}</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(r.created_at).toLocaleDateString("ar-DZ")} · رقم المعاملة <span className="num">{r.transaction_ref}</span>
+                    {new Date(r.created_at).toLocaleDateString(locale)} · {t("رقم المعاملة")} <span className="num">{r.transaction_ref}</span>
                   </p>
-                  {r.status === "rejected" && r.reject_reason && <p className="mt-1 text-xs text-danger">سبب الرفض: {r.reject_reason}</p>}
+                  {r.status === "rejected" && r.reject_reason && (
+                    <p className="mt-1 text-xs text-danger">{t("سبب الرفض: {reason}", { reason: r.reject_reason })}</p>
+                  )}
                 </div>
                 {r.status === "approved" ? (
-                  <Badge variant="success">مقبول</Badge>
+                  <Badge variant="success">{t("مقبول")}</Badge>
                 ) : r.status === "rejected" ? (
-                  <Badge variant="danger">مرفوض</Badge>
+                  <Badge variant="danger">{t("مرفوض")}</Badge>
                 ) : (
-                  <Badge variant="warning">قيد المراجعة</Badge>
+                  <Badge variant="warning">{t("قيد المراجعة")}</Badge>
                 )}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">لا توجد عمليات دفع بعد.</p>
+          <p className="text-sm text-muted-foreground">{t("لا توجد عمليات دفع بعد.")}</p>
         )}
       </div>
     </>

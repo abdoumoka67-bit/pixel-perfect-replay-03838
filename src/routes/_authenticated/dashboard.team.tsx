@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMyStore } from "@/hooks/use-my-store";
 import { MAX_TEAM_MEMBERS, MAX_TEAM_USERS, MEMBER_ROLE_LABELS, friendlyError } from "@/lib/commerce";
+import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/team")({
   component: TeamPage,
@@ -22,18 +23,19 @@ type Role = "manager" | "agent";
 const teamQueryKey = (storeId: string | undefined) => ["team", storeId] as const;
 
 function TeamPage() {
+  const t = useTr();
   const { isPro } = useMyStore();
   if (!isPro) {
     return (
       <>
-        <PageHeader title="فريق العمل" description="أضف من يساعدك في تأكيد الطلبات." />
+        <PageHeader title={t("فريق العمل")} description={t("أضف من يساعدك في تأكيد الطلبات.")} />
         <ProLock
-          title="فريق العمل في Pro"
-          description={`اعمل مع فريقك على نفس المتجر: حتى ${MAX_TEAM_USERS} مستخدمين معك.`}
+          title={t("فريق العمل في Pro")}
+          description={t("اعمل مع فريقك على نفس المتجر: حتى {n} مستخدمين معك.", { n: MAX_TEAM_USERS })}
           points={[
-            "مدير: يرى كل الطلبات والمنتجات والإحصائيات",
-            "عون تأكيد: يرى فقط الطلبات المسندة إليه",
-            "سجل أنشطة يوضح من فعل ماذا ومتى",
+            t("مدير: يرى كل الطلبات والمنتجات والإحصائيات"),
+            t("عون تأكيد: يرى فقط الطلبات المسندة إليه"),
+            t("سجل أنشطة يوضح من فعل ماذا ومتى"),
           ]}
         />
       </>
@@ -43,6 +45,10 @@ function TeamPage() {
 }
 
 function TeamPro() {
+  const t = useTr();
+  const language = useUiLanguage();
+  const dir = language === "ar" ? "rtl" : "ltr";
+  const locale = language === "ar" ? "ar-DZ" : language === "fr" ? "fr-DZ" : "en-GB";
   const { store, readOnly } = useMyStore();
   const qc = useQueryClient();
   const [email, setEmail] = useState("");
@@ -73,11 +79,11 @@ function TeamPro() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تمت إضافة العضو");
+      toast.success(t("تمت إضافة العضو"));
       setEmail("");
       refresh();
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message, "تعذرت الإضافة")),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message, t("تعذرت الإضافة")))),
   });
 
   const changeRole = useMutation({
@@ -86,10 +92,10 @@ function TeamPro() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم تغيير الدور");
+      toast.success(t("تم تغيير الدور"));
       refresh();
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message)),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
   });
 
   const remove = useMutation({
@@ -98,17 +104,17 @@ function TeamPro() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تمت إزالة العضو");
+      toast.success(t("تمت إزالة العضو"));
       refresh();
     },
-    onError: (e: Error) => toast.error(friendlyError(e.message)),
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
   });
 
   return (
     <>
       <PageHeader
-        title="فريق العمل"
-        description={`${count + 1} من ${MAX_TEAM_USERS} مستخدمين (أنت + ${count})`}
+        title={t("فريق العمل")}
+        description={t("{used} من {max} مستخدمين (أنت + {count})", { used: count + 1, max: MAX_TEAM_USERS, count })}
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <form
@@ -118,29 +124,33 @@ function TeamPro() {
             add.mutate();
           }}
         >
-          <h2 className="font-medium">إضافة عضو</h2>
+          <h2 className="font-medium">{t("إضافة عضو")}</h2>
           <div className="space-y-1.5">
-            <Label htmlFor="memail">البريد الإلكتروني للعضو</Label>
+            <Label htmlFor="memail">{t("البريد الإلكتروني للعضو")}</Label>
             <Input id="memail" type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@gmail.com" />
           </div>
           <div className="space-y-1.5">
-            <Label>الدور</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as Role)} dir="rtl">
+            <Label>{t("الدور")}</Label>
+            <Select value={role} onValueChange={(v) => setRole(v as Role)} dir={dir}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="manager">{MEMBER_ROLE_LABELS.manager} — كل الطلبات والمنتجات</SelectItem>
-                <SelectItem value="agent">{MEMBER_ROLE_LABELS.agent} — الطلبات المسندة إليه فقط</SelectItem>
+                <SelectItem value="manager">{t(MEMBER_ROLE_LABELS.manager)} — {t("كل الطلبات والمنتجات")}</SelectItem>
+                <SelectItem value="agent">{t(MEMBER_ROLE_LABELS.agent)} — {t("الطلبات المسندة إليه فقط")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <Button type="submit" className="w-full" disabled={add.isPending || full || readOnly}>
-            {add.isPending ? <Loader2 className="animate-spin" /> : <UserPlus />} إضافة
+            {add.isPending ? <Loader2 className="animate-spin" /> : <UserPlus />} {t("إضافة")}
           </Button>
-          {full && <p className="text-center text-xs text-muted-foreground">وصلت إلى الحد الأقصى: {MAX_TEAM_USERS} مستخدمين معك.</p>}
+          {full && (
+            <p className="text-center text-xs text-muted-foreground">
+              {t("وصلت إلى الحد الأقصى: {n} مستخدمين معك.", { n: MAX_TEAM_USERS })}
+            </p>
+          )}
           <p className="rounded-xl bg-secondary px-4 py-3 text-xs leading-6 text-muted-foreground">
-            يسجّل العضو في oranix بنفس هذا البريد ويؤكده، ثم يدخل مباشرة إلى متجرك بالصلاحيات التي اخترتها.
+            {t("يسجّل العضو في oranix بنفس هذا البريد ويؤكده، ثم يدخل مباشرة إلى متجرك بالصلاحيات التي اخترتها.")}
           </p>
         </form>
 
@@ -152,7 +162,7 @@ function TeamPro() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium" dir="ltr">{store?.owner_email}</p>
-                <p className="text-xs text-muted-foreground">صاحب المتجر</p>
+                <p className="text-xs text-muted-foreground">{t("صاحب المتجر")}</p>
               </div>
             </li>
             {members.data?.map((m) => (
@@ -162,30 +172,32 @@ function TeamPro() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium" dir="ltr">{m.email}</p>
-                  <p className="text-xs text-muted-foreground">أضيف في {new Date(m.created_at).toLocaleDateString("ar-DZ")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("أضيف في {date}", { date: new Date(m.created_at).toLocaleDateString(locale) })}
+                  </p>
                 </div>
                 <Select
                   value={m.role}
                   onValueChange={(v) => changeRole.mutate({ id: m.id, role: v as Role })}
                   disabled={readOnly}
-                  dir="rtl"
+                  dir={dir}
                 >
                   <SelectTrigger className="h-9 w-32">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="manager">{MEMBER_ROLE_LABELS.manager}</SelectItem>
-                    <SelectItem value="agent">{MEMBER_ROLE_LABELS.agent}</SelectItem>
+                    <SelectItem value="manager">{t(MEMBER_ROLE_LABELS.manager)}</SelectItem>
+                    <SelectItem value="agent">{t(MEMBER_ROLE_LABELS.agent)}</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="ghost" size="icon" className="text-danger" aria-label="إزالة" onClick={() => remove.mutate(m.id)}>
+                <Button variant="ghost" size="icon" className="text-danger" aria-label={t("إزالة")} onClick={() => remove.mutate(m.id)}>
                   <Trash2 />
                 </Button>
               </li>
             ))}
           </ul>
           {count === 0 && !members.isLoading && (
-            <p className="p-6 text-center text-sm text-muted-foreground">لم تضف أي عضو بعد.</p>
+            <p className="p-6 text-center text-sm text-muted-foreground">{t("لم تضف أي عضو بعد.")}</p>
           )}
         </div>
       </div>

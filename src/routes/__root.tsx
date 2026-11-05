@@ -12,7 +12,6 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { applyLanguageToDocument, normalizeLanguage } from "@/lib/commerce";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,14 +20,14 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="font-display text-7xl font-medium text-brand">404</h1>
-        <h2 className="mt-4 text-xl font-medium text-foreground">الصفحة غير موجودة</h2>
-        <p className="mt-2 text-sm text-muted-foreground">الرابط الذي فتحته غير صحيح أو تم حذفه.</p>
+        <h2 className="mt-4 text-xl font-medium text-foreground">Page not found</h2>
+        <p className="mt-2 text-sm text-muted-foreground">The link you opened is invalid or has been removed.</p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            العودة للرئيسية
+            Back to home
           </Link>
         </div>
       </div>
@@ -46,8 +45,8 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-medium tracking-tight text-foreground">تعذر تحميل الصفحة</h1>
-        <p className="mt-2 text-sm text-muted-foreground">حدث خطأ غير متوقع. حاول مجدداً أو عد للرئيسية.</p>
+        <h1 className="text-xl font-medium tracking-tight text-foreground">Couldn't load the page</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Something unexpected happened. Try again or go back home.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -56,13 +55,13 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
             }}
             className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            إعادة المحاولة
+            Try again
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-lg border border-input bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
           >
-            الرئيسية
+            Home
           </a>
         </div>
       </div>
@@ -87,7 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="en" dir="ltr">
       <head>
         <HeadContent />
       </head>
@@ -104,8 +103,8 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    // Mirror the stored language (oranix_lang) onto <html lang/dir/font>.
-    applyLanguageToDocument(normalizeLanguage(window.localStorage.getItem("oranix_lang")));
+    // The document starts in English/LTR. Public pages keep it that way, while
+    // the dashboard and storefronts apply the store's saved language themselves.
     document.documentElement.classList.remove("dark");
     document.documentElement.style.colorScheme = "light";
     window.localStorage.removeItem("oranix-theme");
@@ -124,7 +123,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
-      <Toaster position="top-center" dir="rtl" richColors />
+      <Toaster position="top-center" dir="auto" richColors />
     </QueryClientProvider>
   );
 }
