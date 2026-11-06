@@ -65,9 +65,8 @@ function AuthPage() {
       sessionStorage.removeItem("oranix:after-login");
       navigate({ to: target, replace: true });
     };
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user && !resetting.current) go();
-    });
+    // Do not enter the dashboard just because a session already exists;
+    // only navigate after an explicit sign-in (password, code, or Google).
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       // During password reset the code signs the user in before the new password is saved.
       if (event === "SIGNED_IN" && session && !resetting.current) go();
@@ -301,7 +300,24 @@ function AuthPage() {
                     : t("auth.sub.forgot")}
               </p>
 
-              <form onSubmit={submit} className="mt-8 space-y-4">
+              {mode !== "forgot" && googleEnabled && (
+                <>
+                  <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
+                    <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
+                      <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.6c2-1.9 3.2-4.7 3.2-8z" />
+                      <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8C3.9 20.6 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.8 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.7-2.8z" />
+                      <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2C17.5 2.1 15 1 12 1 7.7 1 3.9 3.4 2.1 7l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z" />
+                    </svg>
+                    {t("auth.google")}
+                  </Button>
+                  <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="h-px flex-1 bg-border" /> {t("auth.or")} <span className="h-px flex-1 bg-border" />
+                  </div>
+                </>
+              )}
+
+              <form onSubmit={submit} className={mode !== "forgot" && googleEnabled ? "mt-6 space-y-4" : "mt-8 space-y-4"}>
                 <div className="space-y-1.5">
                   <Label htmlFor="email">{t("auth.email")}</Label>
                   <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
@@ -328,23 +344,6 @@ function AuthPage() {
                       : t("auth.signup")}
                 </Button>
               </form>
-
-              {mode !== "forgot" && googleEnabled && (
-                <>
-                  <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="h-px flex-1 bg-border" /> {t("auth.or")} <span className="h-px flex-1 bg-border" />
-                  </div>
-                  <Button type="button" variant="outline" size="lg" className="w-full" onClick={google}>
-                    <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
-                      <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.6c2-1.9 3.2-4.7 3.2-8z" />
-                      <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8C3.9 20.6 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.8 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.7-2.8z" />
-                      <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2C17.5 2.1 15 1 12 1 7.7 1 3.9 3.4 2.1 7l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z" />
-                    </svg>
-                    {t("auth.google")}
-                  </Button>
-                </>
-              )}
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
                 {mode === "signin" ? (
