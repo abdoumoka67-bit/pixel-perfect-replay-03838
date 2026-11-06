@@ -54,18 +54,52 @@ function AuthPage() {
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [cooldown, setCooldown] = useState(0);
+  const [googleEnabled, setGoogleEnabled] = useState(false);
   const resetting = useRef(false);
 
   useEffect(() => {
+    // Land on the page the visitor originally wanted, otherwise the dashboard.
+    const stored = sessionStorage.getItem("oranix:after-login") ?? undefined;
+    const target = safePath(redirect || stored || undefined);
+    const go = () => {
+      sessionStorage.removeItem("oranix:after-login");
+      navigate({ to: target, replace: true });
+    };
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user && !resetting.current) navigate({ to: safePath(redirect), replace: true });
+      if (data.user && !resetting.current) go();
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       // During password reset the code signs the user in before the new password is saved.
-      if (event === "SIGNED_IN" && session && !resetting.current) navigate({ to: safePath(redirect), replace: true });
+      if (event === "SIGNED_IN" && session && !resetting.current) go();
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate, redirect]);
+
+  // Only offer Google when it is switched on for this project.
+  useEffect(() => {
+    const url = import.meta.env["VITE_SUPABASE_URL"];
+    const key = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+    if (!url || !key) return;
+    fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { external?: { google?: boolean } } | null) => {
+        setGoogleEnabled(Boolean(d?.external?.google));
+      })
+      .catch(() => {
+        setGoogleEnabled(false);
+      });
+  }, []);
+
+  // Show provider errors that Supabase passes back in the URL after the Google redirect.
+  useEffect(() => {
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const query = new URLSearchParams(window.location.search);
+    const error = hash.get("error") || query.get("error");
+    if (!error) return;
+    const description = hash.get("error_description") || query.get("error_description");
+    toast.error(description?.replace(/\+/g, " ") || translate(language, "auth.err.google"));
+    window.history.replaceState({}, "", window.location.pathname);
+  }, [language]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -126,20 +160,6 @@ function AuthPage() {
     }
   }
 
-  async function googleSignIn() {
-    setBusy(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: `${window.location.origin}/auth` },
-      });
-      if (error) throw error;
-    } catch (err) {
-      showError(err);
-      setBusy(false);
-    }
-  }
-
   async function verify(e: React.FormEvent) {
     e.preventDefault();
     const token = code.replace(/\D/g, "");
@@ -189,6 +209,19 @@ function AuthPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function google() {
+    sessionStorage.setItem("oranix:after-login", safePath(redirect));
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth`,
+        // Always let the visitor pick which Google account to use.
+        queryParams: { prompt: "select_account" },
+      },
+    });
+    if (error) toast.error(t("auth.err.google"));
   }
 
   return (
@@ -296,22 +329,20 @@ function AuthPage() {
                 </Button>
               </form>
 
-              {mode !== "forgot" && (
+              {mode !== "forgot" && googleEnabled && (
                 <>
                   <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="h-px flex-1 bg-border" />
-                    {language === "ar" ? "أو" : language === "fr" ? "ou" : "or"}
-                    <span className="h-px flex-1 bg-border" />
+                    <span className="h-px flex-1 bg-border" /> {t("auth.or")} <span className="h-px flex-1 bg-border" />
                   </div>
-                  <button
-                    type="button"
-                    onClick={googleSignIn}
-                    disabled={busy}
-                    className="flex h-11 w-full items-center justify-center gap-2.5 rounded-full border border-[#747775] bg-[#FFFFFF] px-3 text-sm font-medium text-[#1F1F1F] transition-opacity hover:opacity-90 disabled:opacity-50"
-                  >
-                    <svg aria-hidden="true" width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.730-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.820z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.310 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.950 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/></svg>
-                    {language === "ar" ? "المتابعة باستخدام Google" : language === "fr" ? "Continuer avec Google" : "Continue with Google"}
-                  </button>
+                  <Button type="button" variant="outline" size="lg" className="w-full" onClick={google}>
+                    <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
+                      <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.6c2-1.9 3.2-4.7 3.2-8z" />
+                      <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8C3.9 20.6 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.8 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.7-2.8z" />
+                      <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2C17.5 2.1 15 1 12 1 7.7 1 3.9 3.4 2.1 7l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z" />
+                    </svg>
+                    {t("auth.google")}
+                  </Button>
                 </>
               )}
 
