@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, MailCheck } from "lucide-react";
+import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -245,9 +245,18 @@ function AuthPage() {
     <div className="grid min-h-screen lg:grid-cols-2" dir={isRtl ? "rtl" : "ltr"}>
       <div className="flex flex-col px-6 py-8 sm:px-12">
         <div className="flex items-center justify-between gap-3">
-          <Link to="/">
-            <Logo />
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="size-4 rtl:rotate-180" />
+              {t("common.back")}
+            </Link>
+            <Link to="/">
+              <Logo />
+            </Link>
+          </div>
           <LanguageMenu compact value={language} onChange={setLanguage} />
         </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
