@@ -69,7 +69,10 @@ function AuthPage() {
       sessionStorage.removeItem("oranix:after-login-at");
     };
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event !== "SIGNED_IN" || !session || resetting.current) return;
+      // INITIAL_SESSION matters here: after the Google redirect the client can
+      // report the restored session before this page subscribes, so the sign-in
+      // arrives as the initial session instead of a fresh SIGNED_IN event.
+      if ((event !== "SIGNED_IN" && event !== "INITIAL_SESSION") || !session || resetting.current) return;
       if (!stored || !justStarted) return;
       clearMarker();
       navigate({ to: target, replace: true });
@@ -99,6 +102,9 @@ function AuthPage() {
     const error = hash.get("error") || query.get("error");
     if (!error) return;
     const description = hash.get("error_description") || query.get("error_description");
+    // A cancelled/failed Google attempt must not leave a pending sign-in marker.
+    sessionStorage.removeItem("oranix:after-login");
+    sessionStorage.removeItem("oranix:after-login-at");
     toast.error(description?.replace(/\+/g, " ") || translate(language, "auth.err.google"));
     window.history.replaceState({}, "", window.location.pathname);
   }, [language]);
