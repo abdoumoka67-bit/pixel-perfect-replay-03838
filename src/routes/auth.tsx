@@ -58,18 +58,21 @@ function AuthPage() {
   const resetting = useRef(false);
 
   useEffect(() => {
-    // Land on the page the visitor originally wanted, otherwise the dashboard.
+    // Never enter the dashboard just because a session is already stored.
+    // Resume only when this tab started a Google sign-in and the provider sent us back.
     const stored = sessionStorage.getItem("oranix:after-login") ?? undefined;
+    const startedAt = Number(sessionStorage.getItem("oranix:after-login-at") ?? 0);
+    const justStarted = startedAt > 0 && Date.now() - startedAt < 10 * 60 * 1000;
     const target = safePath(redirect || stored || undefined);
-    const go = () => {
+    const clearMarker = () => {
       sessionStorage.removeItem("oranix:after-login");
-      navigate({ to: target, replace: true });
+      sessionStorage.removeItem("oranix:after-login-at");
     };
-    // Do not enter the dashboard just because a session already exists;
-    // only navigate after an explicit sign-in (password, code, or Google).
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      // During password reset the code signs the user in before the new password is saved.
-      if (event === "SIGNED_IN" && session && !resetting.current) go();
+      if (event !== "SIGNED_IN" || !session || resetting.current) return;
+      if (!stored || !justStarted) return;
+      clearMarker();
+      navigate({ to: target, replace: true });
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate, redirect]);
@@ -212,6 +215,7 @@ function AuthPage() {
 
   async function google() {
     sessionStorage.setItem("oranix:after-login", safePath(redirect));
+    sessionStorage.setItem("oranix:after-login-at", String(Date.now()));
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -220,7 +224,11 @@ function AuthPage() {
         queryParams: { prompt: "select_account" },
       },
     });
-    if (error) toast.error(t("auth.err.google"));
+    if (error) {
+      sessionStorage.removeItem("oranix:after-login");
+      sessionStorage.removeItem("oranix:after-login-at");
+      toast.error(t("auth.err.google"));
+    }
   }
 
   return (
