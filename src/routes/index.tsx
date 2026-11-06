@@ -8,7 +8,7 @@ import { PlanCards } from "@/components/PlanCards";
 import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
-import { UiLanguageProvider, useTr } from "@/lib/ui-i18n";
+import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/")({
   loader: () => getPublicPlans(),
@@ -45,7 +45,8 @@ const FEATURES: { title: TranslationKey; text: TranslationKey }[] = [
 ];
 
 function FeaturesAccordion() {
-  const t = useTr();
+  const language = useUiLanguage();
+  const t = (key: TranslationKey) => translate(language, key);
   const [open, setOpen] = useState<number | null>(0);
   return (
     <ul className="space-y-2">
