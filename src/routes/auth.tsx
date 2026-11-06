@@ -54,7 +54,9 @@ function AuthPage() {
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [cooldown, setCooldown] = useState(0);
-  const [googleEnabled, setGoogleEnabled] = useState(false);
+  // Render the Google button with the page from the first paint so the form
+  // never shifts, then hide it only if Supabase explicitly reports Google is off.
+  const [googleEnabled, setGoogleEnabled] = useState(true);
   const resetting = useRef(false);
 
   useEffect(() => {
@@ -88,10 +90,12 @@ function AuthPage() {
     fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
       .then((r) => (r.ok ? r.json() : null))
       .then((d: { external?: { google?: boolean } } | null) => {
-        setGoogleEnabled(Boolean(d?.external?.google));
+        // Only hide on a definitive "disabled" answer, so a slow network never
+        // makes the button pop in late.
+        if (d) setGoogleEnabled(d.external?.google === true);
       })
       .catch(() => {
-        setGoogleEnabled(false);
+        // Keep the button visible; the sign-in flow itself reports any real error.
       });
   }, []);
 
