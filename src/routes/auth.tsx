@@ -129,7 +129,6 @@ function AuthPage() {
   async function googleSignIn() {
     setBusy(true);
     try {
-      sessionStorage.setItem("oranix-after-login", safePath(redirect));
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: `${window.location.origin}/auth` },
