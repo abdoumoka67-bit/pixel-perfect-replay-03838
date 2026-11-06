@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
 import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
+import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
 
 export const Route = createFileRoute("/")({
   loader: () => getPublicPlans(),
@@ -130,6 +131,8 @@ function Home() {
             </Button>
           </div>
         </section>
+
+        <DeliveryLogosMarquee />
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16">
           <div className="mb-8 text-center">

@@ -4,6 +4,40 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@keyframes delivery-logos-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.delivery-logos-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.delivery-logos-track {
+  animation: delivery-logos-scroll 28s linear infinite;
+}
+
+.delivery-logos-set {
+  padding-inline-end: 1rem;
+}
+
+.delivery-logos-mask:hover .delivery-logos-track,
+.delivery-logos-mask:focus-within .delivery-logos-track,
+.delivery-logos-mask:active .delivery-logos-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .delivery-logos-track {
+    animation: none;
+  }
+}
+
 /*
  * oranix design system — warm sand background, charcoal structure,
  * calm terracotta accents. All colors in oklch.
