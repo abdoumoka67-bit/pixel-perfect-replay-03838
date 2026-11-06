@@ -5,6 +5,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { getPublicPlans } from "@/lib/storefront.functions";
 import { PlanCards } from "@/components/PlanCards";
+import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
 import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { useDocumentLanguage } from "@/components/LanguageSwitcher";
@@ -125,6 +126,8 @@ function Home() {
           </Button>
         </div>
       </section>
+
+      <DeliveryLogosMarquee />
 
       <section className="mx-auto w-full max-w-3xl px-5 pb-16">
         <div className="mb-8 text-center">

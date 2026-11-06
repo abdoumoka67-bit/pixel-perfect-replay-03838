@@ -332,3 +332,25 @@ html[lang="en"] {
     page-break-after: always;
   }
 }
+
+/* ---------- Delivery Logos Infinite Marquee ---------- */
+
+@keyframes delivery-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-delivery-marquee {
+  animation: delivery-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-delivery-marquee {
+    animation: none !important;
+  }
+}
