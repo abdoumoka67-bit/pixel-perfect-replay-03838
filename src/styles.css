@@ -14,22 +14,24 @@
 }
 
 .delivery-logos-mask {
-  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 64px, black calc(100% - 64px), transparent);
+  mask-image: linear-gradient(to right, transparent, black 64px, black calc(100% - 64px), transparent);
 }
 
 .delivery-logos-track {
   animation: delivery-logos-scroll 28s linear infinite;
+  touch-action: pan-y;
 }
 
 .delivery-logos-set {
   padding-inline-end: 1rem;
 }
 
-.delivery-logos-mask:hover .delivery-logos-track,
-.delivery-logos-mask:focus-within .delivery-logos-track,
-.delivery-logos-mask:active .delivery-logos-track {
-  animation-play-state: paused;
+@media (hover: hover) and (pointer: fine) {
+  .delivery-logos-mask:hover .delivery-logos-track,
+  .delivery-logos-mask:focus-within .delivery-logos-track {
+    animation-play-state: paused;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

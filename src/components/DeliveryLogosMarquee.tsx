@@ -16,8 +16,8 @@ export function DeliveryLogosMarquee() {
   const language = useUiLanguage();
 
   return (
-    <section className="mx-auto w-full max-w-3xl px-5 pb-16">
-      <div className="mb-8 text-center">
+    <section className="mx-auto w-full max-w-3xl pb-16">
+      <div className="mb-8 px-5 text-center">
         <span className="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground">
           {translate(language, "landing.delivery.badge")}
         </span>
@@ -26,20 +26,24 @@ export function DeliveryLogosMarquee() {
         </h2>
       </div>
       {DELIVERY_LOGOS.length > 0 && (
-        <div className="delivery-logos-mask relative left-1/2 w-screen -translate-x-1/2 overflow-hidden">
-          <div className="delivery-logos-track flex w-max py-1">
+        <div
+          className="delivery-logos-mask relative left-1/2 w-screen -translate-x-1/2 overflow-hidden"
+          dir="ltr"
+        >
+          <div className="delivery-logos-track flex w-max py-1" dir="ltr">
             {[0, 1].map((setIndex) => (
               <div
                 key={setIndex}
                 className="delivery-logos-set flex shrink-0 gap-4"
                 aria-hidden="true"
+                dir="ltr"
               >
                 {DELIVERY_LOGOS.map((src, index) => (
                   <div
                     key={`${src}-${index}`}
                     className="flex h-[88px] w-[120px] shrink-0 items-center justify-center rounded-2xl border border-border bg-card p-4"
                   >
-                    <img src={src} alt="" className="h-11 w-full object-contain" />
+                    <img src={src} alt="" className="h-12 w-full object-contain" />
                   </div>
                 ))}
               </div>
