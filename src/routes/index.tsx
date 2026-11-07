@@ -169,6 +169,14 @@ function Home() {
         <footer className="border-t">
           <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-muted-foreground">
             <Logo />
+            <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <Link to="/privacy" className="transition-colors hover:text-foreground">
+                {t("legal.privacy.title")}
+              </Link>
+              <Link to="/terms" className="transition-colors hover:text-foreground">
+                {t("legal.terms.title")}
+              </Link>
+            </nav>
             <p>© {new Date().getFullYear()} oranix</p>
           </div>
         </footer>
