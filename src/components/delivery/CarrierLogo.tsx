@@ -17,7 +17,7 @@ import tslLogo from "@/assets/carriers/tsl.png";
 import wecanLogo from "@/assets/carriers/wecan.svg";
 import yalidineLogo from "@/assets/carriers/yalidine.png";
 import zimouLogo from "@/assets/carriers/zimou.png";
-import zrExpressLogo from "@/assets/carriers/zr-express.svg";
+import zrExpressLogo from "@/assets/carriers/zr-express.png";
 
 /**
  * Official brand marks for the 19 supported Algerian delivery companies.
