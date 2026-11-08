@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { CheckCircle2, Loader2, PlugZap, Save, Search, Wand2, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
+import { CarrierLogo } from "@/components/delivery/CarrierLogo";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -301,9 +302,12 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
           return (
             <div key={carrier.id} className="flex flex-col gap-3 rounded-2xl bg-card p-4 shadow-card">
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{t(carrier.name)}</p>
-                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{t(carrier.note)}</p>
+                <div className="flex min-w-0 items-center gap-3">
+                  <CarrierLogo id={carrier.id} />
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{t(carrier.name)}</p>
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{t(carrier.note)}</p>
+                  </div>
                 </div>
                 <span
                   className={[
@@ -340,7 +344,17 @@ function CarrierHub({ store, readOnly }: { store: NonNullable<ReturnType<typeof 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("ربط API — {name}", { name: editingCarrier ? t(editingCarrier.name) : "" })}</DialogTitle>
+            <div className="flex items-center gap-3 text-start">
+              {editingCarrier ? <CarrierLogo id={editingCarrier.id} className="size-11" /> : null}
+              <div className="min-w-0">
+                <DialogTitle>
+                  {t("ربط API — {name}", { name: editingCarrier ? t(editingCarrier.name) : "" })}
+                </DialogTitle>
+                {editingCarrier ? (
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{t(editingCarrier.note)}</p>
+                ) : null}
+              </div>
+            </div>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">

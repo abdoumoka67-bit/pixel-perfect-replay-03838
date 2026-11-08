@@ -5,8 +5,6 @@ const DELIVERY_LOGOS = [
   "/logos/delivery-01.png",
   "/logos/delivery-02.png",
   "/logos/delivery-03.png",
-  "/logos/delivery-04.png",
-  "/logos/delivery-05.png",
   "/logos/delivery-06.png",
   "/logos/delivery-07.png",
   "/logos/delivery-08.png",
