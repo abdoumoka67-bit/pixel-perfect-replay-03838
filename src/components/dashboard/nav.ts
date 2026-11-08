@@ -7,7 +7,6 @@ import {
   Settings,
   ShoppingBag,
   Truck,
-  Plug,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -23,7 +22,6 @@ export type NavItem = {
     | "/dashboard/team"
     | "/dashboard/billing"
     | "/dashboard/delivery"
-    | "/dashboard/yalidine"
     | "/dashboard/settings";
   label: string;
   icon: LucideIcon;
@@ -42,6 +40,5 @@ export const SETTINGS_NAV: NavItem[] = [
   { to: "/dashboard/team", label: "فريق العمل", icon: Users, area: "team" },
   { to: "/dashboard/billing", label: "الدفع والاشتراك", icon: CreditCard, area: "billing" },
   { to: "/dashboard/delivery", label: "أسعار التوصيل", icon: Truck, area: "delivery" },
-  { to: "/dashboard/yalidine", label: "ربط Yalidine", icon: Plug, area: "yalidine" },
   { to: "/dashboard/settings", label: "إعدادات المتجر", icon: Settings, area: "settings" },
 ];

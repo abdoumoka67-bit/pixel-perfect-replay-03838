@@ -2,12 +2,27 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MessageCircle, Phone, PhoneCall, PhoneMissed, PhoneOff, CheckCircle2, Send, Loader2 } from "lucide-react";
+import {
+  MessageCircle,
+  Phone,
+  PhoneCall,
+  PhoneMissed,
+  PhoneOff,
+  CheckCircle2,
+  Send,
+  Loader2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StatusBadge } from "./StatusBadge";
 import { SpamShredderAlert, TrustRadarBadge, TrustStatsLine } from "./TrustRadarBadge";
 import {
@@ -24,6 +39,7 @@ import {
 } from "@/lib/commerce";
 import { useTr, useTranslatedMessage, useUiLanguage } from "@/lib/ui-i18n";
 import { sendOrderToYalidine } from "@/lib/yalidine.functions";
+import { carrierById } from "@/lib/delivery-carriers";
 import type { Tables } from "@/integrations/supabase/types";
 
 export type Order = Tables<"orders">;
@@ -74,7 +90,8 @@ export function useOrderActions() {
   const sendYalidine = useMutation({
     mutationFn: async (id: string) => sendFn({ data: { orderId: id } }),
     onSuccess: (r) => {
-      if (r.ok) toast.success(`${msg(r.message)} ${t("رقم التتبع: {tracking}", { tracking: r.tracking })}`);
+      if (r.ok)
+        toast.success(`${msg(r.message)} ${t("رقم التتبع: {tracking}", { tracking: r.tracking })}`);
       else toast.error(msg(r.message));
       invalidate();
     },
@@ -160,18 +177,61 @@ export function OrderDetailsSheet({
     },
   });
 
+  const connectedCarriers = useQuery({
+    queryKey: ["connected-carriers", order?.store_id],
+    enabled: !!order,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("carrier_integrations")
+        .select("carrier_id, token, api_key, account_id, updated_at")
+        .eq("store_id", order!.store_id)
+        .eq("connected", true)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const yalidineLinked = useQuery({
+    queryKey: ["yalidine-linked", order?.store_id],
+    enabled: !!order,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("yalidine_credentials")
+        .select("store_id")
+        .eq("store_id", order!.store_id)
+        .maybeSingle();
+      if (error) throw error;
+      return Boolean(data);
+    },
+  });
+
+  const configuredCarrierIds =
+    connectedCarriers.data
+      ?.filter((row) => Boolean(row.token || row.api_key || row.account_id))
+      .map((row) => row.carrier_id) ?? [];
+  const shippingCarrierId = yalidineLinked.data
+    ? "yalidine"
+    : (configuredCarrierIds.find((id) => id !== "yalidine") ?? null);
+  const shippingCarrier = shippingCarrierId ? carrierById(shippingCarrierId) : undefined;
+
   const blockSpam = useMutation({
     mutationFn: async () => {
       if (!order) return;
-      const { error } = await supabase
-        .from("block_phones")
-        .upsert(
-          { store_id: order.store_id, phone: order.phone, reason: `رادار الثقة — طلب ORX-${order.order_number}` },
-          { onConflict: "store_id,phone", ignoreDuplicates: true },
-        );
+      const { error } = await supabase.from("block_phones").upsert(
+        {
+          store_id: order.store_id,
+          phone: order.phone,
+          reason: `رادار الثقة — طلب ORX-${order.order_number}`,
+        },
+        { onConflict: "store_id,phone", ignoreDuplicates: true },
+      );
       if (error) throw error;
       if (order.status !== "cancelled") {
-        const { error: e2 } = await supabase.from("orders").update({ status: "cancelled" as OrderStatus }).eq("id", order.id);
+        const { error: e2 } = await supabase
+          .from("orders")
+          .update({ status: "cancelled" as OrderStatus })
+          .eq("id", order.id);
         if (e2) throw e2;
       }
     },
@@ -193,7 +253,9 @@ export function OrderDetailsSheet({
                 <span className="num">ORX-{order.order_number}</span>
                 <StatusBadge status={order.status} />
               </SheetTitle>
-              <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString(locale)}</p>
+              <p className="text-xs text-muted-foreground">
+                {new Date(order.created_at).toLocaleString(locale)}
+              </p>
             </SheetHeader>
 
             <div className="mt-6 space-y-6">
@@ -202,7 +264,9 @@ export function OrderDetailsSheet({
                   <p className="text-lg font-medium">{order.customer_name}</p>
                   <TrustRadarBadge trust={trust} />
                   {blocked.data && (
-                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">{t("محظور")}</span>
+                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                      {t("محظور")}
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
@@ -233,7 +297,9 @@ export function OrderDetailsSheet({
                   {order.address ? ` · ${order.address}` : ""}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {order.delivery_type === "home" ? t("توصيل للمنزل") : t("توصيل للمكتب (Stopdesk)")}
+                  {order.delivery_type === "home"
+                    ? t("توصيل للمنزل")
+                    : t("توصيل للمكتب (Stopdesk)")}
                 </p>
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <Button asChild variant="default">
@@ -242,7 +308,11 @@ export function OrderDetailsSheet({
                     </a>
                   </Button>
                   <Button asChild variant="success">
-                    <a href={whatsappLink(order.phone, confirmMessage(order, storeName))} target="_blank" rel="noreferrer">
+                    <a
+                      href={whatsappLink(order.phone, confirmMessage(order, storeName))}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       <MessageCircle /> {t("واتساب")}
                     </a>
                   </Button>
@@ -259,7 +329,9 @@ export function OrderDetailsSheet({
                 {(order.variant_size || order.variant_color) && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t("الخيارات")}</span>
-                    <span>{[order.variant_size, order.variant_color].filter(Boolean).join(" · ")}</span>
+                    <span>
+                      {[order.variant_size, order.variant_color].filter(Boolean).join(" · ")}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between">
@@ -302,12 +374,21 @@ export function OrderDetailsSheet({
                 </div>
                 <ul className="mt-3 space-y-2">
                   {logs.data?.map((l) => (
-                    <li key={l.id} className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
+                    <li
+                      key={l.id}
+                      className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                    >
                       <span>{t(CALL_LABELS[l.outcome])}</span>
-                      <span className="text-xs text-muted-foreground">{new Date(l.created_at).toLocaleString(locale)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(l.created_at).toLocaleString(locale)}
+                      </span>
                     </li>
                   ))}
-                  {logs.data?.length === 0 && <li className="text-xs text-muted-foreground">{t("لم تُسجَّل أي محاولة بعد.")}</li>}
+                  {logs.data?.length === 0 && (
+                    <li className="text-xs text-muted-foreground">
+                      {t("لم تُسجَّل أي محاولة بعد.")}
+                    </li>
+                  )}
                 </ul>
               </section>
 
@@ -316,7 +397,9 @@ export function OrderDetailsSheet({
                 <Select
                   value={order.status}
                   disabled={readOnly}
-                  onValueChange={(v) => updateStatus.mutate({ id: order.id, status: v as OrderStatus })}
+                  onValueChange={(v) =>
+                    updateStatus.mutate({ id: order.id, status: v as OrderStatus })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -332,27 +415,57 @@ export function OrderDetailsSheet({
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-medium">Yalidine</h3>
+                <h3 className="font-medium">{t("الشحن إلى شركة التوصيل")}</h3>
                 {order.tracking_number ? (
                   <p className="rounded-lg bg-success-soft px-3 py-2 text-sm text-success">
-                    {t("رقم التتبع:")} <span className="font-medium num">{order.tracking_number}</span>
+                    {t("رقم التتبع:")}{" "}
+                    <span className="font-medium num">{order.tracking_number}</span>
                   </p>
+                ) : shippingCarrier ? (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      {t("الشركة المتصلة: {name}", { name: t(shippingCarrier.name) })}
+                    </p>
+                    {shippingCarrier.id === "yalidine" ? (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        disabled={readOnly || sendYalidine.isPending}
+                        onClick={() => sendYalidine.mutate(order.id)}
+                      >
+                        {sendYalidine.isPending ? <Loader2 className="animate-spin" /> : <Send />}{" "}
+                        {t("إرسال إلى Yalidine")}
+                      </Button>
+                    ) : (
+                      <p className="rounded-lg bg-warning-soft px-3 py-2 text-xs leading-5 text-warning">
+                        {t(
+                          "الشحن التلقائي عبر {name} قيد التجهيز. يمكنك تأكيد الطلب وطباعة قائمة التوصيل يدوياً.",
+                          { name: t(shippingCarrier.name) },
+                        )}
+                      </p>
+                    )}
+                  </>
                 ) : (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    disabled={readOnly || sendYalidine.isPending}
-                    onClick={() => sendYalidine.mutate(order.id)}
-                  >
-                    {sendYalidine.isPending ? <Loader2 className="animate-spin" /> : <Send />} {t("إرسال إلى Yalidine")}
-                  </Button>
+                  <p className="rounded-lg bg-muted px-3 py-2 text-xs leading-5 text-muted-foreground">
+                    {t("اربط شركة توصيل أولاً من صفحة أسعار التوصيل لتفعيل الشحن التلقائي.")}
+                  </p>
                 )}
               </section>
 
               <section className="space-y-2">
                 <h3 className="font-medium">{t("ملاحظات")}</h3>
-                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} disabled={readOnly} />
-                <Button size="sm" variant="secondary" disabled={readOnly || saveNotes.isPending} onClick={() => saveNotes.mutate()}>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  disabled={readOnly}
+                />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={readOnly || saveNotes.isPending}
+                  onClick={() => saveNotes.mutate()}
+                >
                   {t("حفظ الملاحظة")}
                 </Button>
               </section>
