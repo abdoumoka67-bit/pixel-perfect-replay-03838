@@ -1,10 +1,22 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type ReactNode } from "react";
-import { AlertTriangle, LogOut, Menu, ShieldCheck, ExternalLink, Lock } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  LogOut,
+  Menu,
+  ShieldCheck,
+  ExternalLink,
+  Lock,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/Logo";
-import { useDocumentLanguage, LanguageMenu, useDashboardLanguage } from "@/components/LanguageSwitcher";
+import {
+  useDocumentLanguage,
+  LanguageMenu,
+  useDashboardLanguage,
+} from "@/components/LanguageSwitcher";
 import { parseStorefrontConfig } from "@/lib/storefront-theme";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -320,6 +332,11 @@ function SubscriptionBanner() {
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const router = useRouter();
+  const path = useRouterState({ select: (state) => state.location.pathname });
+  const lastPath = useRef(path);
+  const [hasPreviousDashboardPage, setHasPreviousDashboardPage] = useState(false);
   const { store, sub } = useMyStore();
   // The dashboard has its own language choice; the store language is only the initial default.
   const storeLanguage = parseStorefrontConfig(store?.storefront_config, store?.name ?? "").language;
@@ -332,6 +349,26 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       ? t("تجربة Pro مجانية · بقي {n} أيام", { n: sub.daysLeft })
       : t("تجربة Pro مجانية"),
   [sub, language]);
+
+  useEffect(() => {
+    if (lastPath.current === path) return;
+    setHasPreviousDashboardPage(
+      lastPath.current === "/dashboard" || lastPath.current.startsWith("/dashboard/"),
+    );
+    lastPath.current = path;
+  }, [path]);
+
+  const goBack = () => {
+    if (hasPreviousDashboardPage && router.history.canGoBack()) {
+      router.history.back();
+      return;
+    }
+    if (path === "/dashboard" || path === "/dashboard/") {
+      navigate({ to: "/" });
+      return;
+    }
+    navigate({ to: "/dashboard" });
+  };
 
   return (
     <UiLanguageProvider language={language}>
@@ -387,7 +424,15 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         )}
 
         <SubscriptionBanner />
-        <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pt-8 lg:pb-12">{children}</main>
+        <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pt-8 lg:pb-12">
+          <div className="mb-4">
+            <Button type="button" variant="ghost" size="sm" onClick={goBack}>
+              <ArrowLeft className="size-4 rtl:rotate-180" />
+              {t("السابق")}
+            </Button>
+          </div>
+          {children}
+        </main>
       </div>
       <BottomNav />
     </div>

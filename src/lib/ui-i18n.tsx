@@ -714,6 +714,65 @@ const en: Record<string, string> = {
   "رفضت Yalidine إنشاء الطرد. تحقق من بيانات الطلب.": "Yalidine refused to create the parcel. Check the order details.",
   "أنشأت Yalidine الطرد برقم التتبع {tracking}، لكن تعذر حفظه في الطلب. لا تعِد الإرسال.": "Yalidine created the parcel with tracking number {tracking}, but it could not be saved to the order. Do not resend.",
   "تم إنشاء الطرد بنجاح.": "Parcel created successfully.",
+
+  // Delivery carriers hub
+  "إرسال تلقائي للطلبات عبر API Yalidine": "Automatically send orders via the Yalidine API",
+  "API ID": "API ID",
+  "API Token": "API Token",
+  "API Token / Clé API": "API Token / API key",
+  "مثال: 12345": "Example: 12345",
+  "مثال: 0550123456": "Example: 0550123456",
+  "اسم الساعي (Courier Name)": "Courier name",
+  "اسم السائق أو شركة التوصيل": "Driver or delivery company name",
+  "رقم الهاتف (Phone Number)": "Phone number",
+  "فحص الاتصال الفوري": "Test connection now",
+  "دليل الربط خطوة بخطوة": "Step-by-step connection guide",
+  "يرجى ملء كل الحقول المطلوبة.": "Please fill in all required fields.",
+  "حفظ وتفعيل": "Save & activate",
+  "تعديل الربط": "Edit connection",
+  "إلغاء الربط": "Disconnect",
+  "إضافة الساعي": "Add courier",
+  "متصل": "Connected",
+  "بيانات الساعي — {name}": "Courier details — {name}",
+  "تم تفعيل الربط بنجاح": "Connection activated successfully",
+  "تم إلغاء الربط": "Connection removed",
+  "تعذر إلغاء الربط": "Could not disconnect the carrier",
+  "سيتم حذف مفاتيح الربط مع {name}. يمكنك إعادة الربط في أي وقت.":
+    "The connection keys for {name} will be deleted. You can reconnect at any time.",
+  "تأكيد إلغاء الربط": "Confirm disconnect",
+  "الشحن إلى شركة التوصيل": "Shipping to the carrier",
+  "الشركة المتصلة: {name}": "Connected carrier: {name}",
+  "اربط شركة توصيل أولاً من صفحة أسعار التوصيل لتفعيل الشحن التلقائي.":
+    "Connect a delivery company first from the delivery rates page to enable automatic shipping.",
+  "الشحن التلقائي عبر {name} قيد التجهيز. يمكنك تأكيد الطلب وطباعة قائمة التوصيل يدوياً.":
+    "Automatic shipping via {name} is being prepared. You can confirm the order and print the delivery list manually.",
+  "افتح حسابك في منصة التجار: pro.yalidine.app.": "Open your merchant account at pro.yalidine.app.",
+  "من القائمة الجانبية، ادخل إلى الربط البرمجي (Paramètres ⬅️ Développeur / API).":
+    "From the sidebar, open the developer/API section (Paramètres ⬅️ Développeur / API).",
+  "ستجد خانتي API ID و API Token، انسخهما والصقهما هنا.":
+    "You will find the API ID and API Token fields; copy them and paste them here.",
+  "ادخل إلى لوحة تحكم حسابك لدى الشركة.": "Sign in to your account dashboard at the carrier.",
+  "توجه إلى الإعدادات (Paramètres) ثم الربط البرمجي (API / Clés API).":
+    "Go to Settings (Paramètres) then the API section (API / Clés API).",
+  "اضغط على زر توليد رمز جديد (Générer un Token).": "Click the generate a new token button (Générer un Token).",
+  "اضغط نسخ (Copier) والصقه في الخانة أعلاه.": "Click copy (Copier) and paste it in the field above.",
+  "ادخل إلى بوابة التجار في موقع ZR Express (Espace Client).":
+    "Sign in to the merchant portal of ZR Express (Espace Client).",
+  "من القائمة أو خيارات الحساب الشخصي (Profil)، اختر Clé API.":
+    "From the menu or profile options (Profil), choose Clé API.",
+  "انسخ رمز الـ Token السري الخاص بك وضعه هنا.": "Copy your secret Token and paste it here.",
+  "سجّل الدخول إلى لوحة تحكم Ecom Delivery.": "Sign in to the Ecom Delivery dashboard.",
+  "من القائمة الجانبية ادخل إلى Mon Profil ⬅️ Intégration API.":
+    "From the sidebar open Mon Profil ⬅️ Intégration API.",
+  "انسخ رمز الـ Jeton API (Token) والصقه هنا لتفعيل المزامنة التلقائية.":
+    "Copy the API token (Jeton API) and paste it here to enable automatic sync.",
+  "افتح لوحة التحكم الخاصة بك في Maystro Delivery.": "Open your Maystro Delivery dashboard.",
+  "ادخل إلى Paramètres du compte ⬅️ Clés API.": "Open Paramètres du compte ⬅️ Clés API.",
+  "انسخ الـ Token والصقه هنا واضغط حفظ.": "Copy the Token, paste it here and press save.",
+  "انسخ رمز الربط (Token / Clé API) من إعدادات حسابك في لوحة تحكم الشركة والصقه هنا.":
+    "Copy the connection token (Token / Clé API) from your account settings in the carrier dashboard and paste it here.",
+  "لا يحتاج إلى API أو إنترنت. أدخل اسم السائق ورقم هاتفه لتتمكن من إسناد الشحنات إليه مباشرة وطباعة قائمة التوصيل اليدوية.":
+    "No API or internet connection is needed. Enter the driver's name and phone number so you can assign parcels to them directly and print the manual delivery list.",
 };
 
 const fr: Record<string, string> = {
@@ -1413,6 +1472,66 @@ const fr: Record<string, string> = {
   "رفضت Yalidine إنشاء الطرد. تحقق من بيانات الطلب.": "Yalidine a refusé de créer le colis. Vérifiez les détails de la commande.",
   "أنشأت Yalidine الطرد برقم التتبع {tracking}، لكن تعذر حفظه في الطلب. لا تعِد الإرسال.": "Yalidine a créé le colis avec le numéro de suivi {tracking}, mais il n'a pas pu être enregistré dans la commande. Ne renvoyez pas.",
   "تم إنشاء الطرد بنجاح.": "Colis créé avec succès.",
+
+  // Delivery carriers hub
+  "إرسال تلقائي للطلبات عبر API Yalidine": "Envoi automatique des commandes via l'API Yalidine",
+  "API ID": "API ID",
+  "API Token": "API Token",
+  "API Token / Clé API": "API Token / Clé API",
+  "مثال: 12345": "Exemple : 12345",
+  "مثال: 0550123456": "Exemple : 0550123456",
+  "اسم الساعي (Courier Name)": "Nom du coursier",
+  "اسم السائق أو شركة التوصيل": "Nom du chauffeur ou de la société de livraison",
+  "رقم الهاتف (Phone Number)": "Numéro de téléphone",
+  "فحص الاتصال الفوري": "Tester la connexion maintenant",
+  "دليل الربط خطوة بخطوة": "Guide de connexion étape par étape",
+  "يرجى ملء كل الحقول المطلوبة.": "Veuillez remplir tous les champs obligatoires.",
+  "حفظ وتفعيل": "Enregistrer et activer",
+  "تعديل الربط": "Modifier la connexion",
+  "إلغاء الربط": "Déconnecter",
+  "إضافة الساعي": "Ajouter le coursier",
+  "متصل": "Connecté",
+  "بيانات الساعي — {name}": "Coordonnées du coursier — {name}",
+  "تم تفعيل الربط بنجاح": "Connexion activée avec succès",
+  "تم إلغاء الربط": "Connexion supprimée",
+  "تعذر إلغاء الربط": "Impossible de déconnecter le transporteur",
+  "سيتم حذف مفاتيح الربط مع {name}. يمكنك إعادة الربط في أي وقت.":
+    "Les clés de connexion avec {name} seront supprimées. Vous pourrez vous reconnecter à tout moment.",
+  "تأكيد إلغاء الربط": "Confirmer la déconnexion",
+  "الشحن إلى شركة التوصيل": "Expédition vers le transporteur",
+  "الشركة المتصلة: {name}": "Transporteur connecté : {name}",
+  "اربط شركة توصيل أولاً من صفحة أسعار التوصيل لتفعيل الشحن التلقائي.":
+    "Connectez d'abord une société de livraison depuis la page des tarifs de livraison pour activer l'expédition automatique.",
+  "الشحن التلقائي عبر {name} قيد التجهيز. يمكنك تأكيد الطلب وطباعة قائمة التوصيل يدوياً.":
+    "L'expédition automatique via {name} est en préparation. Vous pouvez confirmer la commande et imprimer la liste de livraison manuellement.",
+  "افتح حسابك في منصة التجار: pro.yalidine.app.": "Ouvrez votre compte marchand sur pro.yalidine.app.",
+  "من القائمة الجانبية، ادخل إلى الربط البرمجي (Paramètres ⬅️ Développeur / API).":
+    "Dans le menu latéral, ouvrez la section développeur/API (Paramètres ⬅️ Développeur / API).",
+  "ستجد خانتي API ID و API Token، انسخهما والصقهما هنا.":
+    "Vous trouverez les champs API ID et API Token ; copiez-les et collez-les ici.",
+  "ادخل إلى لوحة تحكم حسابك لدى الشركة.": "Connectez-vous au tableau de bord de votre compte chez le transporteur.",
+  "توجه إلى الإعدادات (Paramètres) ثم الربط البرمجي (API / Clés API).":
+    "Allez dans les paramètres (Paramètres) puis la section API (API / Clés API).",
+  "اضغط على زر توليد رمز جديد (Générer un Token).":
+    "Cliquez sur le bouton de génération d'un nouveau jeton (Générer un Token).",
+  "اضغط نسخ (Copier) والصقه في الخانة أعلاه.": "Cliquez sur copier (Copier) et collez-le dans le champ ci-dessus.",
+  "ادخل إلى بوابة التجار في موقع ZR Express (Espace Client).":
+    "Connectez-vous au portail marchand de ZR Express (Espace Client).",
+  "من القائمة أو خيارات الحساب الشخصي (Profil)، اختر Clé API.":
+    "Dans le menu ou les options du profil (Profil), choisissez Clé API.",
+  "انسخ رمز الـ Token السري الخاص بك وضعه هنا.": "Copiez votre Token secret et placez-le ici.",
+  "سجّل الدخول إلى لوحة تحكم Ecom Delivery.": "Connectez-vous au tableau de bord Ecom Delivery.",
+  "من القائمة الجانبية ادخل إلى Mon Profil ⬅️ Intégration API.":
+    "Dans le menu latéral, ouvrez Mon Profil ⬅️ Intégration API.",
+  "انسخ رمز الـ Jeton API (Token) والصقه هنا لتفعيل المزامنة التلقائية.":
+    "Copiez le jeton API (Token) et collez-le ici pour activer la synchronisation automatique.",
+  "افتح لوحة التحكم الخاصة بك في Maystro Delivery.": "Ouvrez votre tableau de bord Maystro Delivery.",
+  "ادخل إلى Paramètres du compte ⬅️ Clés API.": "Ouvrez Paramètres du compte ⬅️ Clés API.",
+  "انسخ الـ Token والصقه هنا واضغط حفظ.": "Copiez le Token, collez-le ici et appuyez sur enregistrer.",
+  "انسخ رمز الربط (Token / Clé API) من إعدادات حسابك في لوحة تحكم الشركة والصقه هنا.":
+    "Copiez le jeton de connexion (Token / Clé API) depuis les paramètres de votre compte dans le tableau de bord du transporteur et collez-le ici.",
+  "لا يحتاج إلى API أو إنترنت. أدخل اسم السائق ورقم هاتفه لتتمكن من إسناد الشحنات إليه مباشرة وطباعة قائمة التوصيل اليدوية.":
+    "Aucune API ni connexion internet n'est nécessaire. Saisissez le nom et le numéro de téléphone du chauffeur pour lui attribuer directement les colis et imprimer la liste de livraison manuelle.",
 };
 
 /** Translates an Arabic UI string into `language`, falling back to Arabic. */

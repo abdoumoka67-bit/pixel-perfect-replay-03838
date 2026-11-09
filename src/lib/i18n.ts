@@ -157,14 +157,13 @@ const ar = {
   // Landing page
   "landing.login": "تسجيل الدخول",
   "landing.cta": "ابدأ التجربة المجانية",
-  "landing.hero.before": "ابنِ ",
-  "landing.hero.w1": "متجرك",
-  "landing.hero.mid": "، وأدِر ",
-  "landing.hero.w2": "مبيعاتك",
-  "landing.hero.after": "، وانطلق بسهولة",
-  "landing.hero.sub": "للتجار في الجزائر، أنشئ متجرك، أضف منتجك، وانشر الرابط. الطلبات تصلك مباشرة في لوحتك.",
+  "landing.hero.title": "متجرك الإلكتروني في دقائق",
+  "landing.hero.email": "أدخل بريدك الإلكتروني",
+  "landing.hero.emailCta": "ابدأ",
   "landing.features.badge": "المميزات",
   "landing.features.title": "كل ما تحتاجه لبيع منتجك",
+  "landing.delivery.badge": "شركات التوصيل",
+  "landing.delivery.title": "نتكامل مع شركات التوصيل الموثوقة في الجزائر",
   "landing.pricing.title": "الأسعار",
   "landing.pricing.sub": "ابدأ بـ 7 أيام مجاناً، ثم اختر المدة المناسبة لك.",
   "landing.f1.title": "صفحة لكل منتج",
@@ -179,6 +178,53 @@ const ar = {
   "landing.f5.text": "أرسل الطلب المؤكد بنقرة واحدة واحصل على رقم التتبع.",
   "landing.f6.title": "تصدير Excel",
   "landing.f6.text": "صدّر الطلبات لطباعة البوالص بسهولة.",
+
+  // Legal pages
+  "legal.home": "الرئيسية",
+  "legal.backHome": "العودة إلى الرئيسية",
+  "legal.updated": "آخر تحديث: 7 نوفمبر 2026",
+  "legal.privacy.title": "سياسة الخصوصية",
+  "legal.privacy.intro":
+    "توضح سياسة الخصوصية هذه البيانات الشخصية التي تجمعها Oranix، وسبب جمعها، والخيارات المتاحة لك.",
+  "legal.privacy.s1.title": "البيانات التي نجمعها",
+  "legal.privacy.s1.body":
+    "نجمع فقط البيانات الشخصية التالية: الاسم، اللقب، رقم الهاتف، والبريد الإلكتروني.",
+  "legal.privacy.s2.title": "كيف نستخدم بياناتك",
+  "legal.privacy.s2.body":
+    "نستخدم هذه البيانات فقط لإنشاء حسابات المستخدمين وإدارتها، ومعالجة طلبات المتجر، والتواصل معك بخصوص طلباتك.",
+  "legal.privacy.s3.title": "المدفوعات",
+  "legal.privacy.s3.body":
+    "تتم المدفوعات عبر Baridi Mob أو CCP (بريد الجزائر). نحن لا نجمع أو نخزن أو نعالج أرقام البطاقات البنكية أو كلمات مرور حسابات الدفع. نسجل فقط المعلومات اللازمة لتأكيد الطلبات وتتبعها، مثل طريقة الدفع ومرجع الدفع الذي يقدمه الزبون.",
+  "legal.privacy.s4.title": "مشاركة البيانات",
+  "legal.privacy.s4.body":
+    "نحن لا نبيع البيانات الشخصية أو نشاركها مع المعلنين أو أطراف ثالثة، باستثناء مزودي الخدمات اللازمين لتشغيل المتجر (الاستضافة والتوصيل).",
+  "legal.privacy.s5.title": "الأمان وحقوقك",
+  "legal.privacy.s5.body":
+    "تُخزَّن البيانات بشكل آمن. يمكنك طلب الوصول إلى بياناتك أو تصحيحها أو حذفها بمراسلتنا على abdoumoka67@gmail.com.",
+  "legal.terms.title": "شروط الخدمة",
+  "legal.terms.intro":
+    "تنظّم شروط الخدمة هذه استخدامك لمنصة Oranix والمتاجر المستضافة عليها.",
+  "legal.terms.s1.title": "استخدام الحساب",
+  "legal.terms.s1.body":
+    "يجب تقديم معلومات صحيحة عند إنشاء الحساب والحفاظ على سرية بيانات الدخول. أنت مسؤول عن كل نشاط يتم من خلال حسابك.",
+  "legal.terms.s2.title": "الطلبات والمدفوعات",
+  "legal.terms.s2.body":
+    "تُقدَّم طلبات المتجر عبر صفحات المتجر. تتم المدفوعات عبر Baridi Mob أو CCP (بريد الجزائر). لا تعالج Oranix مدفوعات البطاقات البنكية ولا تخزن أرقام البطاقات أو كلمات مرور حسابات الدفع؛ بل تسجل فقط طريقة الدفع والمرجع الذي يقدمه الزبون لتأكيد الطلب وتتبعه.",
+  "legal.terms.s3.title": "مسؤوليات التاجر",
+  "legal.terms.s3.body":
+    "التاجر مسؤول عن المنتجات والخدمات التي يبيعها، وعن دقة بياناتها وأسعارها، وعن تأكيد الطلبات وترتيبات التوصيل، وعن الامتثال للقوانين المطبقة على نشاطه.",
+  "legal.terms.s4.title": "المبالغ المستردة",
+  "legal.terms.s4.body":
+    "يتولى التاجر معالجة طلبات الاسترداد والإرجاع والاستبدال وفق سياسته الخاصة والقانون الجزائري المعمول به. توفر Oranix المنصة ولا تبيع المنتجات بنفسها.",
+  "legal.terms.s5.title": "الاستخدام المحظور",
+  "legal.terms.s5.body":
+    "لا يجوز استخدام Oranix في أنشطة غير قانونية أو احتيالية أو مضللة، أو لبيع منتجات محظورة أو مقلدة، أو انتهاك حقوق الآخرين، أو تعطيل المنصة أو أمنها.",
+  "legal.terms.s6.title": "حدود المسؤولية",
+  "legal.terms.s6.body":
+    "تُقدَّم منصة Oranix كما هي. وإلى الحد الذي يسمح به القانون، لا تتحمل Oranix المسؤولية عن الأضرار غير المباشرة أو التبعية، أو عن أفعال أو إهمال التجار أو الزبائن أو شركات التوصيل.",
+  "legal.terms.s7.title": "القانون الواجب التطبيق",
+  "legal.terms.s7.body":
+    "تخضع هذه الشروط لقوانين الجزائر، بما في ذلك القانون رقم 18-07 المتعلق بحماية الأشخاص الطبيعيين في مجال معالجة المعطيات ذات الطابع الشخصي.",
 } as const;
 
 export type TranslationKey = keyof typeof ar;
@@ -326,14 +372,13 @@ const fr: Dictionary = {
   // Landing page
   "landing.login": "Se connecter",
   "landing.cta": "Commencer l'essai gratuit",
-  "landing.hero.before": "Créez votre ",
-  "landing.hero.w1": "boutique",
-  "landing.hero.mid": ", gérez vos ",
-  "landing.hero.w2": "ventes",
-  "landing.hero.after": ", et lancez-vous facilement",
-  "landing.hero.sub": "Pour les commerçants en Algérie : créez votre boutique, ajoutez votre produit et partagez le lien. Les commandes en paiement à la livraison arrivent directement dans votre tableau de bord.",
+  "landing.hero.title": "Votre boutique en ligne en quelques minutes",
+  "landing.hero.email": "Entrez votre e-mail",
+  "landing.hero.emailCta": "Continuer",
   "landing.features.badge": "Fonctionnalités",
   "landing.features.title": "Tout ce qu'il vous faut pour vendre votre produit",
+  "landing.delivery.badge": "Sociétés de livraison",
+  "landing.delivery.title": "Nous intégrons les sociétés de livraison de confiance en Algérie",
   "landing.pricing.title": "Tarifs",
   "landing.pricing.sub": "Commencez par 7 jours gratuits, puis choisissez la durée qui vous convient.",
   "landing.f1.title": "Une page par produit",
@@ -348,6 +393,53 @@ const fr: Dictionary = {
   "landing.f5.text": "Envoyez une commande confirmée en un clic et obtenez le numéro de suivi.",
   "landing.f6.title": "Export Excel",
   "landing.f6.text": "Exportez les commandes pour imprimer les bordereaux facilement.",
+
+  // Legal pages
+  "legal.home": "Accueil",
+  "legal.backHome": "Retour à l'accueil",
+  "legal.updated": "Dernière mise à jour : 7 novembre 2026",
+  "legal.privacy.title": "Politique de confidentialité",
+  "legal.privacy.intro":
+    "La présente politique de confidentialité explique quelles données personnelles Oranix collecte, pourquoi elle les collecte et quelles sont vos options.",
+  "legal.privacy.s1.title": "Données collectées",
+  "legal.privacy.s1.body":
+    "Nous collectons uniquement les données personnelles suivantes : prénom, nom, numéro de téléphone et adresse e-mail.",
+  "legal.privacy.s2.title": "Utilisation de vos données",
+  "legal.privacy.s2.body":
+    "Nous utilisons ces données uniquement pour créer et gérer les comptes utilisateurs, traiter les commandes de la boutique et vous contacter au sujet de vos commandes.",
+  "legal.privacy.s3.title": "Paiements",
+  "legal.privacy.s3.body":
+    "Les paiements sont effectués via Baridi Mob ou CCP (Algérie Poste). Nous ne collectons, ne stockons et ne traitons pas les numéros de cartes bancaires ni les mots de passe des comptes de paiement. Nous enregistrons uniquement les informations nécessaires à la confirmation et au suivi des commandes, comme le moyen de paiement et la référence de paiement fournie par le client.",
+  "legal.privacy.s4.title": "Partage des données",
+  "legal.privacy.s4.body":
+    "Nous ne vendons ni ne partageons les données personnelles avec des annonceurs ou des tiers, à l'exception des prestataires nécessaires au fonctionnement de la boutique (hébergement et livraison).",
+  "legal.privacy.s5.title": "Sécurité et vos droits",
+  "legal.privacy.s5.body":
+    "Les données sont stockées de manière sécurisée. Vous pouvez demander l'accès, la correction ou la suppression de vos données en écrivant à abdoumoka67@gmail.com.",
+  "legal.terms.title": "Conditions d'utilisation",
+  "legal.terms.intro":
+    "Les présentes conditions d'utilisation régissent votre utilisation d'Oranix et des boutiques hébergées sur la plateforme.",
+  "legal.terms.s1.title": "Utilisation du compte",
+  "legal.terms.s1.body":
+    "Vous devez fournir des informations exactes lors de la création du compte et garder vos identifiants confidentiels. Vous êtes responsable de toute activité effectuée depuis votre compte.",
+  "legal.terms.s2.title": "Commandes et paiements",
+  "legal.terms.s2.body":
+    "Les commandes sont passées via les pages des boutiques. Les paiements sont effectués via Baridi Mob ou CCP (Algérie Poste). Oranix ne traite pas les paiements par carte bancaire et ne stocke ni les numéros de carte ni les mots de passe des comptes de paiement ; la plateforme enregistre uniquement le moyen de paiement et la référence fournie par le client pour confirmer et suivre la commande.",
+  "legal.terms.s3.title": "Responsabilités du marchand",
+  "legal.terms.s3.body":
+    "Le marchand est responsable des produits et services qu'il vend, de l'exactitude de ses annonces et de ses prix, de la confirmation des commandes, de l'organisation de la livraison et du respect des lois applicables à son activité.",
+  "legal.terms.s4.title": "Remboursements",
+  "legal.terms.s4.body":
+    "Les demandes de remboursement, de retour et d'échange sont traitées par le marchand selon sa propre politique et le droit algérien applicable. Oranix fournit la plateforme et ne vend pas elle-même les produits.",
+  "legal.terms.s5.title": "Utilisation interdite",
+  "legal.terms.s5.body":
+    "Il est interdit d'utiliser Oranix pour des activités illégales, frauduleuses ou trompeuses, pour vendre des produits interdits ou contrefaits, pour porter atteinte aux droits d'autrui, ou pour perturber la plateforme ou sa sécurité.",
+  "legal.terms.s6.title": "Limitation de responsabilité",
+  "legal.terms.s6.body":
+    "Oranix est fourni en l'état. Dans les limites permises par la loi, Oranix n'est pas responsable des dommages indirects ou consécutifs, ni des actes ou omissions des marchands, des clients ou des sociétés de livraison.",
+  "legal.terms.s7.title": "Droit applicable",
+  "legal.terms.s7.body":
+    "Les présentes conditions sont régies par le droit algérien, notamment la loi n° 18-07 relative à la protection des personnes physiques dans le traitement des données à caractère personnel.",
 };
 
 const en: Dictionary = {
@@ -492,14 +584,13 @@ const en: Dictionary = {
   // Landing page
   "landing.login": "Sign in",
   "landing.cta": "Start free trial",
-  "landing.hero.before": "Build your ",
-  "landing.hero.w1": "store",
-  "landing.hero.mid": ", manage your ",
-  "landing.hero.w2": "sales",
-  "landing.hero.after": ", and launch with ease",
-  "landing.hero.sub": "For merchants in Algeria: create your store, add your product, and share the link. Cash-on-delivery orders from all wilayas land straight in your dashboard.",
+  "landing.hero.title": "Your online store in minutes",
+  "landing.hero.email": "Enter your email",
+  "landing.hero.emailCta": "Enter",
   "landing.features.badge": "Features",
   "landing.features.title": "Everything you need to sell your product",
+  "landing.delivery.badge": "Delivery companies",
+  "landing.delivery.title": "We integrate with trusted delivery companies in Algeria",
   "landing.pricing.title": "Pricing",
   "landing.pricing.sub": "Start with 7 days free, then pick the duration that suits you.",
   "landing.f1.title": "A page per product",
@@ -514,6 +605,53 @@ const en: Dictionary = {
   "landing.f5.text": "Send a confirmed order in one click and get the tracking number.",
   "landing.f6.title": "Excel export",
   "landing.f6.text": "Export orders to print shipping labels easily.",
+
+  // Legal pages
+  "legal.home": "Home",
+  "legal.backHome": "Back to home",
+  "legal.updated": "Last updated: November 7, 2026",
+  "legal.privacy.title": "Privacy Policy",
+  "legal.privacy.intro":
+    "This Privacy Policy explains what personal data Oranix collects, why we collect it, and the choices you have.",
+  "legal.privacy.s1.title": "Data we collect",
+  "legal.privacy.s1.body":
+    "We collect only the following personal data: first name, last name, phone number, and email address.",
+  "legal.privacy.s2.title": "How we use your data",
+  "legal.privacy.s2.body":
+    "We use this data only to create and manage user accounts, process store orders, and contact you about your orders.",
+  "legal.privacy.s3.title": "Payments",
+  "legal.privacy.s3.body":
+    "Payments are made through Baridi Mob or CCP (Algérie Poste). We do not collect, store, or process bank card numbers or payment account passwords. We only record the information needed to confirm and track orders, such as the payment method and the payment reference provided by the customer.",
+  "legal.privacy.s4.title": "Sharing your data",
+  "legal.privacy.s4.body":
+    "We do not sell or share personal data with advertisers or third parties, except service providers needed to run the store (hosting and delivery).",
+  "legal.privacy.s5.title": "Security and your rights",
+  "legal.privacy.s5.body":
+    "Data is stored securely. You can request access, correction, or deletion of your data by contacting abdoumoka67@gmail.com.",
+  "legal.terms.title": "Terms of Service",
+  "legal.terms.intro":
+    "These Terms of Service govern your use of Oranix and the stores hosted on it.",
+  "legal.terms.s1.title": "Account use",
+  "legal.terms.s1.body":
+    "You must provide accurate information when creating an account and keep your login credentials secure. You are responsible for all activity that happens under your account.",
+  "legal.terms.s2.title": "Orders and payments",
+  "legal.terms.s2.body":
+    "Store orders are placed through the store pages. Payments are made through Baridi Mob or CCP (Algérie Poste). Oranix does not process bank card payments and does not store card numbers or payment account passwords; it only records the payment method and the reference provided by the customer to confirm and track the order.",
+  "legal.terms.s3.title": "Merchant responsibilities",
+  "legal.terms.s3.body":
+    "Merchants are responsible for the products and services they sell, the accuracy of their listings and prices, order confirmation, delivery arrangements, and compliance with the laws that apply to their business.",
+  "legal.terms.s4.title": "Refunds",
+  "legal.terms.s4.body":
+    "Refund, return and exchange requests are handled by the merchant according to the merchant's own policy and applicable Algerian law. Oranix provides the platform and does not itself sell the products.",
+  "legal.terms.s5.title": "Prohibited use",
+  "legal.terms.s5.body":
+    "You may not use Oranix for illegal, fraudulent or misleading activity, to sell prohibited or counterfeit products, to infringe the rights of others, or to disrupt the platform or its security.",
+  "legal.terms.s6.title": "Limitation of liability",
+  "legal.terms.s6.body":
+    "Oranix is provided as is. To the extent permitted by law, Oranix is not liable for indirect or consequential damages, or for the acts and omissions of merchants, customers or delivery companies.",
+  "legal.terms.s7.title": "Governing law",
+  "legal.terms.s7.body":
+    "These terms are governed by the laws of Algeria, including Law No. 18-07 on the protection of individuals in the processing of personal data.",
 };
 
 const DICTIONARIES: Record<LanguageCode, Dictionary> = { ar, fr, en };

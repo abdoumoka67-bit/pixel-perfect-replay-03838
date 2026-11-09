@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
 import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
+import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
 
 export const Route = createFileRoute("/")({
   loader: () => getPublicPlans(),
@@ -95,11 +96,20 @@ function FeaturesAccordion() {
 
 function Home() {
   const plans = Route.useLoaderData();
+  const navigate = useNavigate();
   // The public site opens in English by default; the visitor can switch language.
   const { language, setLanguage } = usePublicLanguage("en");
   const isRtl = language === "ar";
   useDocumentLanguage(language);
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
+  const [email, setEmail] = useState("");
+
+  function startWithEmail(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const value = email.trim();
+    if (!value) return;
+    navigate({ to: "/auth", search: { mode: "signup", email: value } });
+  }
 
   return (
     <UiLanguageProvider language={language}>
@@ -115,24 +125,36 @@ function Home() {
         </header>
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
-          <h1 className="mx-auto mt-7 max-w-full text-balance break-words text-[2rem] font-medium leading-[1.4] text-foreground sm:text-5xl sm:leading-[1.3]">
-            {t("landing.hero.before")}
-            {t("landing.hero.w1")}
-            {t("landing.hero.mid")}
-            {t("landing.hero.w2")}
-            {t("landing.hero.after")}
+          <h1 className="mx-auto max-w-full text-balance break-words text-[2rem] font-medium leading-[1.3] text-foreground sm:text-5xl sm:leading-[1.2]">
+            {t("landing.hero.title")}
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-muted-foreground">
-            {t("landing.hero.sub")}
-          </p>
-          <div className="mx-auto mt-9 flex w-full max-w-md flex-col gap-3">
-            <Button asChild size="xl" className="w-full">
-              <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
+          <form
+            onSubmit={startWithEmail}
+            className="mx-auto mt-9 flex w-full max-w-md items-center gap-1.5 rounded-full border border-border bg-white p-1.5 shadow-sm"
+          >
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("landing.hero.email")}
+              aria-label={t("landing.hero.email")}
+              autoComplete="email"
+              dir={isRtl ? "rtl" : "ltr"}
+              className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            />
+            <Button
+              type="submit"
+              className="h-10 shrink-0 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all px-5 text-sm font-medium"
+            >
+              {t("landing.hero.emailCta")}
             </Button>
-          </div>
+          </form>
         </section>
 
         <ScrollStorySection />
+
+        <DeliveryLogosMarquee />
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16">
           <div className="mb-8 text-center">
@@ -169,6 +191,14 @@ function Home() {
         <footer className="border-t">
           <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-muted-foreground">
             <Logo />
+            <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <Link to="/privacy" className="transition-colors hover:text-foreground">
+                {t("legal.privacy.title")}
+              </Link>
+              <Link to="/terms" className="transition-colors hover:text-foreground">
+                {t("legal.terms.title")}
+              </Link>
+            </nav>
             <p>© {new Date().getFullYear()} oranix</p>
           </div>
         </footer>

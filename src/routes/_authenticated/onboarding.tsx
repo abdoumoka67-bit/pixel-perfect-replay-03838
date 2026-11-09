@@ -321,20 +321,24 @@ function Onboarding() {
         </div>
 
         <div className="mt-6 space-y-2.5">
-          <div className="flex items-center gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={stepCount} aria-valuenow={step + 1}>
+          <nav className="flex items-center gap-1.5" aria-label="Store setup progress">
             {Array.from({ length: stepCount }).map((_, idx) => (
-              <span
+              <button
+                type="button"
                 key={idx}
+                onClick={() => idx < step && setStep(idx)}
+                disabled={idx >= step || busy}
+                aria-current={idx === step ? "step" : undefined}
+                aria-label={t(`onb.title.${idx}` as TranslationKey)}
                 className={[
-                  "h-1.5 flex-1 rounded-full",
+                  "h-1.5 flex-1 rounded-full transition-colors disabled:cursor-default",
                   idx <= step
                     ? "bg-primary"
                     : "bg-[repeating-linear-gradient(90deg,#EEEEEE_0_6px,transparent_6px_10px)]",
                 ].join(" ")}
-                aria-hidden="true"
               />
             ))}
-          </div>
+          </nav>
           <p className="text-center text-xs text-muted-foreground num">{t("onb.step", { n: step + 1, total: stepCount })}</p>
         </div>
 
@@ -351,8 +355,8 @@ function Onboarding() {
         <div className="mt-8 flex items-center justify-between gap-3">
           <button
             type="button"
-            onClick={prevStep}
-            disabled={step === 0}
+            onClick={() => (step === 0 ? navigate({ to: "/" }) : prevStep())}
+            disabled={busy}
             className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ArrowLeft className="size-4" /> {t("common.back")}

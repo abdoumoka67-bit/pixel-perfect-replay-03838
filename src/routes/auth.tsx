@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, MailCheck } from "lucide-react";
+import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { translate, type TranslationKey } from "@/lib/i18n";
 const search = z.object({
   redirect: z.string().optional(),
   mode: z.enum(["signin", "signup"]).optional(),
+  email: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -38,7 +39,7 @@ function safePath(p?: string) {
 const RESEND_SECONDS = 60;
 
 function AuthPage() {
-  const { redirect, mode: initialMode } = Route.useSearch();
+  const { redirect, mode: initialMode, email: initialEmail } = Route.useSearch();
   const navigate = useNavigate();
   // Public pages open in English by default; the visitor can switch language.
   const { language, setLanguage } = usePublicLanguage("en");
@@ -46,7 +47,7 @@ function AuthPage() {
   useDocumentLanguage(language);
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode ?? "signin");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail ?? "");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   // Which code the user is entering: account confirmation or password reset.
@@ -245,9 +246,18 @@ function AuthPage() {
     <div className="grid min-h-screen lg:grid-cols-2" dir={isRtl ? "rtl" : "ltr"}>
       <div className="flex flex-col px-6 py-8 sm:px-12">
         <div className="flex items-center justify-between gap-3">
-          <Link to="/">
-            <Logo />
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="size-4 rtl:rotate-180" />
+              {t("common.back")}
+            </Link>
+            <Link to="/">
+              <Logo />
+            </Link>
+          </div>
           <LanguageMenu compact value={language} onChange={setLanguage} />
         </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
@@ -350,7 +360,7 @@ function AuthPage() {
                         </button>
                       )}
                     </div>
-                    <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
+                    <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} autoFocus={Boolean(initialEmail)} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
                   </div>
                 )}
                 <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
