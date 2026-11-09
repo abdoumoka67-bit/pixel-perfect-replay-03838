@@ -111,8 +111,43 @@ function Home() {
   const isRtl = language === "ar";
   useDocumentLanguage(language);
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
-  const [heroLine1, heroLine2] = t("landing.hero.title").split("\n");
+  const [heroLine1 = "", heroLine2] = t("landing.hero.title").split("\n");
   const [email, setEmail] = useState("");
+
+  function renderHeroLine1() {
+    let part1 = "متجرك";
+    if (language === "fr") part1 = "Votre Boutique";
+    else if (language === "en") part1 = "Your Store";
+    // Keep the translated remainder (and its capitalization) after the pill.
+    const part2 = heroLine1.startsWith(part1) ? heroLine1.slice(part1.length).trimStart() : "";
+
+    return (
+      <span className="inline-flex flex-wrap items-center justify-center gap-y-1">
+        <span>{part1}</span>{" "}
+        <span className="inline-flex items-center justify-center align-middle mx-1.5 sm:mx-2 p-1.5 sm:p-2 rounded-xl bg-neutral-100/90 border border-neutral-200/70 shadow-xs">
+          <svg className="size-5 sm:size-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            {/* Blue Bag behind */}
+            <rect x="7" y="5" width="13" height="15" rx="2" fill="#3B82F6" />
+            <path
+              d="M11 5V3.5C11 2.67 11.67 2 12.5 2H14.5C15.33 2 16 2.67 16 3.5V5"
+              stroke="#1D4ED8"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            {/* Yellow Bag in front */}
+            <rect x="4" y="8" width="13" height="14" rx="2" fill="#FACC15" />
+            <path
+              d="M8 8V6.5C8 5.67 8.67 5 9.5 5H11.5C12.33 5 13 5.67 13 6.5V8"
+              stroke="#CA8A04"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </span>{" "}
+        {part2 && <span>{part2}</span>}
+      </span>
+    );
+  }
 
   function startWithEmail(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -135,8 +170,14 @@ function Home() {
         </header>
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
-          <h1 className="mx-auto max-w-3xl text-balance break-words text-center text-3xl font-medium leading-tight text-[#1D1D20] sm:text-4xl md:text-5xl lg:text-6xl flex flex-col items-center gap-2.5 sm:gap-3.5">
-            <span>{heroLine1}</span>
+          <h1
+            className={cn(
+              "mx-auto max-w-3xl text-balance break-words text-center leading-tight text-[#1D1D20]",
+              "text-3xl sm:text-4xl md:text-5xl lg:text-6xl flex flex-col items-center gap-2.5 sm:gap-3.5",
+              isRtl ? "font-normal md:font-light" : "font-medium sm:font-semibold tracking-tight",
+            )}
+          >
+            {renderHeroLine1()}
             {heroLine2 && (
               <span className="inline-flex items-center px-4 py-1 sm:px-5 sm:py-1.5 rounded-full bg-neutral-100/80 border border-neutral-200/70 text-[#1D1D20] text-[0.8em] font-normal tracking-tight shadow-xs">
                 {heroLine2}
