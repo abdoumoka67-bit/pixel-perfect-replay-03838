@@ -127,26 +127,6 @@ function Home() {
     return (
       <span className="inline-flex flex-wrap items-center justify-center gap-y-1 lg:flex-nowrap lg:whitespace-nowrap">
         <span>{part1}</span>{" "}
-        <span className="inline-flex items-center justify-center align-middle mx-1.5 sm:mx-2 p-1.5 sm:p-2 rounded-xl bg-neutral-100/90 border border-neutral-200/70 shadow-xs">
-          <svg className="size-5 sm:size-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-            {/* Blue Bag behind */}
-            <rect x="7" y="5" width="13" height="15" rx="2" fill="#3B82F6" />
-            <path
-              d="M11 5V3.5C11 2.67 11.67 2 12.5 2H14.5C15.33 2 16 2.67 16 3.5V5"
-              stroke="#1D4ED8"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            {/* Yellow Bag in front */}
-            <rect x="4" y="8" width="13" height="14" rx="2" fill="#FACC15" />
-            <path
-              d="M8 8V6.5C8 5.67 8.67 5 9.5 5H11.5C12.33 5 13 5.67 13 6.5V8"
-              stroke="#CA8A04"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </span>{" "}
         {part2 && <span>{part2}</span>}
       </span>
     );

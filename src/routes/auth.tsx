@@ -138,31 +138,52 @@ function AuthPage() {
     else toast.error(msg || t("auth.err.generic"));
   }
 
+  async function signInWithEmail() {
+    const normalizedEmail = email.trim();
+    setEmail(normalizedEmail);
+    const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+    if (error) {
+      if (/email not confirmed/i.test(error.message)) {
+        const { error: resendError } = await supabase.auth.resend({ type: "signup", email: normalizedEmail });
+        if (resendError) throw resendError;
+        toast.info(t("auth.ok.unconfirmed"));
+        openCodeStep("confirm");
+        return;
+      }
+      throw error;
+    }
+    navigate({ to: safePath(redirect), replace: true });
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
       if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        await signInWithEmail();
+      } else if (mode === "signup") {
+        if (password.length < 8) throw new Error(t("auth.err.password"));
+        const normalizedEmail = email.trim();
+        setEmail(normalizedEmail);
+        const { data, error } = await supabase.auth.signUp({ email: normalizedEmail, password });
         if (error) {
-          if (error.message.includes("Email not confirmed")) {
-            const { error: resendError } = await supabase.auth.resend({ type: "signup", email });
-            if (resendError) throw resendError;
-            toast.info(t("auth.ok.unconfirmed"));
-            openCodeStep("confirm");
+          if (/already registered/i.test(error.message)) {
+            setMode("signin");
+            await signInWithEmail();
             return;
           }
           throw error;
         }
-        navigate({ to: safePath(redirect), replace: true });
-      } else if (mode === "signup") {
-        if (password.length < 8) throw new Error(t("auth.err.password"));
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
         if (data.session) navigate({ to: "/dashboard", replace: true });
-        else openCodeStep("confirm");
+        else if (data.user?.identities?.length === 0) {
+          setMode("signin");
+          await signInWithEmail();
+        } else if (data.user) openCodeStep("confirm");
+        else throw new Error("Sign-up did not return a user.");
       } else {
-        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        const normalizedEmail = email.trim();
+        setEmail(normalizedEmail);
+        const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail);
         if (error) throw error;
         openCodeStep("reset");
       }
