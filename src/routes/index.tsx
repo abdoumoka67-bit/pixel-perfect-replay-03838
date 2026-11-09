@@ -107,8 +107,8 @@ function FeaturesAccordion() {
 function Home() {
   const plans = Route.useLoaderData();
   const navigate = useNavigate();
-  // The public site opens in English by default; the visitor can switch language.
-  const { language, setLanguage } = usePublicLanguage("en");
+  // The public site opens in French by default; the visitor can switch language.
+  const { language, setLanguage } = usePublicLanguage("fr");
   const isRtl = language === "ar";
   useDocumentLanguage(language);
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);

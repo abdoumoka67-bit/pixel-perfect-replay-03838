@@ -68,8 +68,8 @@ export function useStorefrontLanguage(fallback: LanguageCode = LANGUAGE_DEFAULT)
   return useLanguagePreference(fallback, STOREFRONT_LANGUAGE_STORAGE_KEY);
 }
 
-/** Landing and auth pages: English by default, remembered once the visitor picks another language. */
-export function usePublicLanguage(fallback: LanguageCode = "en") {
+/** Landing and auth pages: French by default, remembered once the visitor picks another language. */
+export function usePublicLanguage(fallback: LanguageCode = "fr") {
   return useLanguagePreference(fallback, PUBLIC_LANGUAGE_STORAGE_KEY);
 }
 
@@ -86,7 +86,7 @@ export function useT(languageOverride?: LanguageCode) {
 
 /**
  * Applies `language` to <html lang/dir/font> without persisting it.
- * Public pages pass "en" so they always open in English; the dashboard and
+ * Public pages default to French; the dashboard and
  * storefronts pass the store's saved language.
  */
 export function useDocumentLanguage(language: LanguageCode) {

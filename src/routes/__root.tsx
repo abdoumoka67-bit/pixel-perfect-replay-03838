@@ -86,7 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" dir="ltr">
+    <html lang="fr" dir="ltr">
       <head>
         <HeadContent />
       </head>
@@ -103,7 +103,7 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    // The document starts in English/LTR. Public pages keep it that way, while
+    // The document starts in French/LTR. Public pages keep it that way, while
     // the dashboard and storefronts apply the store's saved language themselves.
     document.documentElement.classList.remove("dark");
     document.documentElement.style.colorScheme = "light";

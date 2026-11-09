@@ -41,8 +41,8 @@ const RESEND_SECONDS = 60;
 function AuthPage() {
   const { redirect, mode: initialMode, email: initialEmail } = Route.useSearch();
   const navigate = useNavigate();
-  // Public pages open in English by default; the visitor can switch language.
-  const { language, setLanguage } = usePublicLanguage("en");
+  // Public pages open in French by default; the visitor can switch language.
+  const { language, setLanguage } = usePublicLanguage("fr");
   const isRtl = language === "ar";
   useDocumentLanguage(language);
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
@@ -248,10 +248,10 @@ function AuthPage() {
         <div className="flex items-center gap-4">
           <Link
             to="/"
+            aria-label={t("common.back")}
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            <ArrowLeft className="size-4 rtl:rotate-180" />
-            {t("common.back")}
+            <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
           </Link>
           <Link to="/">
             <Logo />

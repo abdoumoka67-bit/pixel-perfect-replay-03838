@@ -357,9 +357,10 @@ function Onboarding() {
             type="button"
             onClick={() => (step === 0 ? navigate({ to: "/" }) : prevStep())}
             disabled={busy}
+            aria-label={t("common.back")}
             className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <ArrowLeft className="size-4" /> {t("common.back")}
+            <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
           </button>
 
           {isLast ? (

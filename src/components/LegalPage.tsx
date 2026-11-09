@@ -23,7 +23,7 @@ export function LegalPage({
   introKey: TranslationKey;
   sections: readonly LegalSection[];
 }) {
-  const { language, setLanguage } = usePublicLanguage("en");
+  const { language, setLanguage } = usePublicLanguage("fr");
   const isRtl = language === "ar";
   useDocumentLanguage(language);
   const t = (key: TranslationKey) => translate(language, key);

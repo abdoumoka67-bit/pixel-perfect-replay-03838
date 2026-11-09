@@ -426,9 +426,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         <SubscriptionBanner />
         <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pt-8 lg:pb-12">
           <div className="mb-4">
-            <Button type="button" variant="ghost" size="sm" onClick={goBack}>
-              <ArrowLeft className="size-4 rtl:rotate-180" />
-              {t("السابق")}
+            <Button type="button" variant="ghost" size="sm" onClick={goBack} aria-label={t("السابق")}>
+              <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
             </Button>
           </div>
           {children}
