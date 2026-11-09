@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
-import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
 import { translate, type TranslationKey } from "@/lib/i18n";
 
 const search = z.object({
@@ -40,9 +40,11 @@ const RESEND_SECONDS = 60;
 function AuthPage() {
   const { redirect, mode: initialMode } = Route.useSearch();
   const navigate = useNavigate();
-  // Sign-in is a public page: always English, no language switcher or saved preference.
-  useDocumentLanguage("en");
-  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate("en", key, vars);
+  // Public pages open in English by default; the visitor can switch language.
+  const { language, setLanguage } = usePublicLanguage("en");
+  const isRtl = language === "ar";
+  useDocumentLanguage(language);
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,36 +54,64 @@ function AuthPage() {
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [cooldown, setCooldown] = useState(0);
+  // Render the Google button with the page from the first paint so the form
+  // never shifts, then hide it only if Supabase explicitly reports Google is off.
+  const [googleEnabled, setGoogleEnabled] = useState(true);
   const resetting = useRef(false);
 
-  // Hide Google until Supabase confirms the provider is enabled for this project.
-  const [googleEnabled, setGoogleEnabled] = useState(false);
-
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user && !resetting.current) navigate({ to: safePath(redirect), replace: true });
-    });
+    // Never enter the dashboard just because a session is already stored.
+    // Resume only when this tab started a Google sign-in and the provider sent us back.
+    const stored = sessionStorage.getItem("oranix:after-login") ?? undefined;
+    const startedAt = Number(sessionStorage.getItem("oranix:after-login-at") ?? 0);
+    const justStarted = startedAt > 0 && Date.now() - startedAt < 10 * 60 * 1000;
+    const target = safePath(redirect || stored || undefined);
+    const clearMarker = () => {
+      sessionStorage.removeItem("oranix:after-login");
+      sessionStorage.removeItem("oranix:after-login-at");
+    };
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      // During password reset the code signs the user in before the new password is saved.
-      if (event === "SIGNED_IN" && session && !resetting.current) navigate({ to: safePath(redirect), replace: true });
+      // INITIAL_SESSION matters here: after the Google redirect the client can
+      // report the restored session before this page subscribes, so the sign-in
+      // arrives as the initial session instead of a fresh SIGNED_IN event.
+      if ((event !== "SIGNED_IN" && event !== "INITIAL_SESSION") || !session || resetting.current) return;
+      if (!stored || !justStarted) return;
+      clearMarker();
+      navigate({ to: target, replace: true });
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate, redirect]);
 
+  // Only offer Google when it is switched on for this project.
   useEffect(() => {
-    // Only offer Google when it is switched on for this project.
     const url = import.meta.env["VITE_SUPABASE_URL"];
     const key = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
     if (!url || !key) return;
     fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
       .then((r) => (r.ok ? r.json() : null))
       .then((d: { external?: { google?: boolean } } | null) => {
-        setGoogleEnabled(Boolean(d?.external?.google));
+        // Only hide on a definitive "disabled" answer, so a slow network never
+        // makes the button pop in late.
+        if (d) setGoogleEnabled(d.external?.google === true);
       })
       .catch(() => {
-        setGoogleEnabled(false);
+        // Keep the button visible; the sign-in flow itself reports any real error.
       });
   }, []);
+
+  // Show provider errors that Supabase passes back in the URL after the Google redirect.
+  useEffect(() => {
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const query = new URLSearchParams(window.location.search);
+    const error = hash.get("error") || query.get("error");
+    if (!error) return;
+    const description = hash.get("error_description") || query.get("error_description");
+    // A cancelled/failed Google attempt must not leave a pending sign-in marker.
+    sessionStorage.removeItem("oranix:after-login");
+    sessionStorage.removeItem("oranix:after-login-at");
+    toast.error(description?.replace(/\+/g, " ") || translate(language, "auth.err.google"));
+    window.history.replaceState({}, "", window.location.pathname);
+  }, [language]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -194,22 +224,31 @@ function AuthPage() {
   }
 
   async function google() {
-    const target = safePath(redirect);
-    sessionStorage.setItem("oranix:after-login", target);
+    sessionStorage.setItem("oranix:after-login", safePath(redirect));
+    sessionStorage.setItem("oranix:after-login-at", String(Date.now()));
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth` },
+      options: {
+        redirectTo: `${window.location.origin}/auth`,
+        // Always let the visitor pick which Google account to use.
+        queryParams: { prompt: "select_account" },
+      },
     });
-    if (error) toast.error(t("auth.err.google"));
+    if (error) {
+      sessionStorage.removeItem("oranix:after-login");
+      sessionStorage.removeItem("oranix:after-login-at");
+      toast.error(t("auth.err.google"));
+    }
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="grid min-h-screen lg:grid-cols-2" dir={isRtl ? "rtl" : "ltr"}>
       <div className="flex flex-col px-6 py-8 sm:px-12">
         <div className="flex items-center justify-between gap-3">
           <Link to="/">
             <Logo />
           </Link>
+          <LanguageMenu compact value={language} onChange={setLanguage} />
         </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           {step ? (
@@ -291,12 +330,12 @@ function AuthPage() {
                     {t("auth.google")}
                   </Button>
                   <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="h-px flex-1 bg-border" /> {t("auth.orEmail")} <span className="h-px flex-1 bg-border" />
+                    <span className="h-px flex-1 bg-border" /> {t("auth.or")} <span className="h-px flex-1 bg-border" />
                   </div>
                 </>
               )}
 
-              <form onSubmit={submit} className="mt-6 space-y-4">
+              <form onSubmit={submit} className={mode !== "forgot" && googleEnabled ? "mt-6 space-y-4" : "mt-8 space-y-4"}>
                 <div className="space-y-1.5">
                   <Label htmlFor="email">{t("auth.email")}</Label>
                   <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />

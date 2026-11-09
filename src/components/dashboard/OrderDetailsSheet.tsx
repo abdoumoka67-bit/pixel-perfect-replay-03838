@@ -264,15 +264,15 @@ export function OrderDetailsSheet({
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("سعر المنتجات")}</span>
-                  <span className="num">{formatDZD(order.subtotal)}</span>
+                  <span className="num">{formatDZD(order.subtotal, language)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("التوصيل")}</span>
-                  <span className="num">{formatDZD(order.shipping_price)}</span>
+                  <span className="num">{formatDZD(order.shipping_price, language)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-2 text-base font-medium">
                   <span>{t("الإجمالي")}</span>
-                  <span className="num">{formatDZD(order.total)}</span>
+                  <span className="num">{formatDZD(order.total, language)}</span>
                 </div>
               </section>
 

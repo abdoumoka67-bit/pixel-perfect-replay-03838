@@ -64,7 +64,7 @@ function ThankYou() {
             {t ? (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{s("المبلغ عند الاستلام")}</span>
-                <span className="font-medium text-brand num">{formatDZD(t)}</span>
+                <span className="font-medium text-brand num">{formatDZD(t, language)}</span>
               </div>
             ) : null}
           </div>

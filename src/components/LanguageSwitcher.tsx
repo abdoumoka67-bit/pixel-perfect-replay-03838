@@ -1,14 +1,23 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
+import { Check, Languages } from "lucide-react";
 import {
   LANGUAGE_DEFAULT,
   LANGUAGE_OPTIONS,
   LANGUAGE_STORAGE_KEY,
+  PUBLIC_LANGUAGE_STORAGE_KEY,
+  STOREFRONT_LANGUAGE_STORAGE_KEY,
   applyLanguageToDocument,
   normalizeLanguage,
   type LanguageCode,
 } from "@/lib/commerce";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 /**
  * Single source of truth for the interface language: kept in localStorage
@@ -26,18 +35,42 @@ function subscribe(onChange: () => void) {
   };
 }
 
-const readLanguage = () => normalizeLanguage(window.localStorage.getItem(LANGUAGE_STORAGE_KEY));
-const serverLanguage = () => LANGUAGE_DEFAULT;
+const serverStoredLanguage = () => null;
 
-export function setStoredLanguage(lang: LanguageCode) {
-  window.localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+export function setStoredLanguage(lang: LanguageCode, storageKey: string = LANGUAGE_STORAGE_KEY) {
+  window.localStorage.setItem(storageKey, lang);
   applyLanguageToDocument(lang);
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
-export function useLanguagePreference() {
-  const language = useSyncExternalStore(subscribe, readLanguage, serverLanguage);
-  return { language, setLanguage: setStoredLanguage };
+/**
+ * The chosen language for one surface, or `fallback` when nothing was chosen yet.
+ * The dashboard and the storefront use separate storage keys, so they stay independent.
+ */
+export function useLanguagePreference(
+  fallback: LanguageCode = LANGUAGE_DEFAULT,
+  storageKey: string = LANGUAGE_STORAGE_KEY,
+) {
+  const readStored = useCallback(() => window.localStorage.getItem(storageKey), [storageKey]);
+  const stored = useSyncExternalStore(subscribe, readStored, serverStoredLanguage);
+  const language = stored ? normalizeLanguage(stored) : fallback;
+  const setLanguage = useCallback((lang: LanguageCode) => setStoredLanguage(lang, storageKey), [storageKey]);
+  return { language, setLanguage };
+}
+
+/** Dashboard interface language: its own preference, defaulting to the store language. */
+export function useDashboardLanguage(fallback: LanguageCode = LANGUAGE_DEFAULT) {
+  return useLanguagePreference(fallback, LANGUAGE_STORAGE_KEY);
+}
+
+/** Public storefront language: its own preference, defaulting to the store language. */
+export function useStorefrontLanguage(fallback: LanguageCode = LANGUAGE_DEFAULT) {
+  return useLanguagePreference(fallback, STOREFRONT_LANGUAGE_STORAGE_KEY);
+}
+
+/** Landing and auth pages: English by default, remembered once the visitor picks another language. */
+export function usePublicLanguage(fallback: LanguageCode = "en") {
+  return useLanguagePreference(fallback, PUBLIC_LANGUAGE_STORAGE_KEY);
 }
 
 /** Translator bound to the current interface language, or to `language` when given. */
@@ -71,7 +104,7 @@ export function LanguageSwitcher({
 }: {
   value: LanguageCode;
   onChange: (lang: LanguageCode) => void;
-  className?: string;
+  className?: string | undefined;
   compact?: boolean;
   disabled?: boolean;
 }) {
@@ -104,5 +137,54 @@ export function LanguageSwitcher({
         </button>
       ))}
     </div>
+  );
+}
+
+/**
+ * Compact language button that opens a menu of the three interface languages.
+ * Used by the dashboard chrome (mobile + desktop) and the storefront header.
+ */
+export function LanguageMenu({
+  value,
+  onChange,
+  className,
+  compact = false,
+}: {
+  value: LanguageCode;
+  onChange: (lang: LanguageCode) => void;
+  className?: string | undefined;
+  compact?: boolean;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={translate(value, "lang.group")}
+          title={translate(value, "lang.group")}
+          className={cn(
+            compact
+              ? "inline-flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              : "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary",
+            className,
+          )}
+        >
+          <Languages className={compact ? "size-[18px]" : "size-4"} strokeWidth={1.8} />
+          {!compact && <span className="uppercase">{value}</span>}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-36">
+        {LANGUAGE_OPTIONS.map((option) => (
+          <DropdownMenuItem
+            key={option.value}
+            onSelect={() => onChange(option.value)}
+            className="justify-between gap-2"
+          >
+            <span>{option.label}</span>
+            {option.value === value && <Check className="size-3.5" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

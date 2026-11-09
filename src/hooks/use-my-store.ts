@@ -33,12 +33,18 @@ export function useMyStore() {
   const q = useQuery(myStoreQuery);
   const store = q.data?.store ?? null;
   const access: StoreAccess = q.data?.access ?? "owner";
-  const sub = store ? subscriptionState(store) : null;
-  const tier = store ? effectiveTier(store) : "start";
+  // Platform admin: no limits, no trial banners, every Pro feature open.
+  const { data: isAdmin = false } = useQuery(isAdminQuery);
+  const rawSub = store ? subscriptionState(store) : null;
+  const sub = rawSub && isAdmin
+    ? { ...rawSub, isActive: true, isTrial: false, showWarning: false, isGracePeriod: false, graceEndsAt: null }
+    : rawSub;
+  const tier = isAdmin ? "pro" : store ? effectiveTier(store) : "start";
   return {
     ...q,
     store,
     sub,
+    isAdmin,
     readOnly: sub ? !sub.isActive : false,
     tier,
     isPro: tier === "pro",
