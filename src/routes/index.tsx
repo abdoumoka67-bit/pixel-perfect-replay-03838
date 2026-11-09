@@ -51,6 +51,7 @@ const FEATURES: { title: TranslationKey; text: TranslationKey }[] = [
   { title: "landing.f4.title", text: "landing.f4.text" },
   { title: "landing.f5.title", text: "landing.f5.text" },
   { title: "landing.f6.title", text: "landing.f6.text" },
+  { title: "landing.f7.title", text: "landing.f7.text" },
 ];
 
 function FeaturesAccordion() {
