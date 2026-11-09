@@ -132,15 +132,15 @@ function Home() {
         </header>
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
-          <h1 className="mx-auto max-w-full text-balance break-words text-[2rem] font-medium leading-[1.3] text-foreground sm:text-5xl sm:leading-[1.2]">
+          <h1 className="mx-auto max-w-2xl whitespace-pre-line text-balance break-words text-center text-3xl font-medium leading-[1.15] text-[#1D1D20] sm:text-4xl md:text-5xl lg:text-6xl">
             {t("landing.hero.title")}
           </h1>
-          <p className="mt-3 text-sm text-muted-foreground sm:text-base font-normal">
+          <p className="mt-4 mb-8 text-sm text-[#6B6B6B] sm:text-base">
             {t("landing.hero.sub")}
           </p>
           <form
             onSubmit={startWithEmail}
-            className="mx-auto mt-7 flex w-full max-w-md items-center gap-1.5 rounded-full border border-border bg-white p-1.5 shadow-sm"
+            className="mx-auto flex w-full max-w-md items-center gap-1.5 rounded-full border border-border bg-white p-1.5 shadow-sm"
           >
             <input
               type="email"

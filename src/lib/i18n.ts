@@ -157,8 +157,8 @@ const ar = {
   // Landing page
   "landing.login": "تسجيل الدخول",
   "landing.cta": "ابدأ التجربة المجانية",
-  "landing.hero.title": "متجرك الإلكتروني في دقائق",
-  "landing.hero.sub": "تجربة مجانية مدة 10 أيام",
+  "landing.hero.title": "متجرك جاهز للبيع\nفي دقائق",
+  "landing.hero.sub": "تجربة مجانية مدة 10 أيام · بدون بطاقة بنكية",
   "landing.hero.email": "أدخل بريدك الإلكتروني",
   "landing.hero.emailCta": "ابدأ",
   "landing.features.badge": "المميزات",
@@ -373,8 +373,8 @@ const fr: Dictionary = {
   // Landing page
   "landing.login": "Se connecter",
   "landing.cta": "Commencer l'essai gratuit",
-  "landing.hero.title": "Votre boutique en ligne en quelques minutes",
-  "landing.hero.sub": "Essai gratuit de 10 jours",
+  "landing.hero.title": "Votre boutique prête à vendre\nen quelques minutes",
+  "landing.hero.sub": "Essai gratuit de 10 jours · Sans carte bancaire",
   "landing.hero.email": "Entrez votre e-mail",
   "landing.hero.emailCta": "Continuer",
   "landing.features.badge": "Fonctionnalités",
@@ -586,8 +586,8 @@ const en: Dictionary = {
   // Landing page
   "landing.login": "Sign in",
   "landing.cta": "Start free trial",
-  "landing.hero.title": "Your online store in minutes",
-  "landing.hero.sub": "10-day free trial",
+  "landing.hero.title": "Your store ready to sell\nin minutes",
+  "landing.hero.sub": "10-day free trial · No credit card required",
   "landing.hero.email": "Enter your email",
   "landing.hero.emailCta": "Enter",
   "landing.features.badge": "Features",
