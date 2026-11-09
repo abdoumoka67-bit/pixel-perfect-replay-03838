@@ -5,7 +5,6 @@ import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { getPublicPlans } from "@/lib/storefront.functions";
 import { PlanCards } from "@/components/PlanCards";
-import { ScrollStorySection } from "@/components/ScrollStorySection";
 import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
@@ -151,8 +150,6 @@ function Home() {
             </Button>
           </form>
         </section>
-
-        <ScrollStorySection />
 
         <DeliveryLogosMarquee />
 
