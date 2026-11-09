@@ -32,7 +32,7 @@ export function Logo({
       <img
         src={tone === "light" ? "/logo-orx-white.png" : "/logo-orx.png"}
         alt="ORX"
-        className="h-6 w-auto max-w-[130px] object-contain sm:h-7"
+        className="h-5 w-auto max-w-[120px] object-contain sm:h-6"
         loading="eager"
       />
     </span>
