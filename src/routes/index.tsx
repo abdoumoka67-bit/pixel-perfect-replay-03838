@@ -127,9 +127,12 @@ function Home() {
           <h1 className="mx-auto max-w-full text-balance break-words text-[2rem] font-medium leading-[1.3] text-foreground sm:text-5xl sm:leading-[1.2]">
             {t("landing.hero.title")}
           </h1>
+          <p className="mt-3 text-sm text-muted-foreground sm:text-base font-normal">
+            {t("landing.hero.sub")}
+          </p>
           <form
             onSubmit={startWithEmail}
-            className="mx-auto mt-9 flex w-full max-w-md items-center gap-1.5 rounded-full border border-border bg-white p-1.5 shadow-sm"
+            className="mx-auto mt-7 flex w-full max-w-md items-center gap-1.5 rounded-full border border-border bg-white p-1.5 shadow-sm"
           >
             <input
               type="email"
