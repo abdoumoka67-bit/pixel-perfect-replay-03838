@@ -157,12 +157,16 @@ function Home() {
             className={cn(
               "mx-auto max-w-3xl text-balance break-words text-center font-medium text-[#1D1D20] lg:max-w-none",
               "text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl flex flex-col items-center gap-3 sm:gap-4",
+              isRtl && "lg:flex-row lg:flex-nowrap lg:gap-3",
               isRtl ? "leading-[1.4] tracking-normal" : "leading-[1.06] tracking-tight",
             )}
           >
             {renderHeroLine1()}
             {heroLine2 && (
-              <span className="inline-flex items-center px-4 py-1 sm:px-5 sm:py-1.5 rounded-full bg-neutral-100/80 border border-neutral-200/70 text-[#1D1D20] text-[0.8em] shadow-xs">
+              <span className={cn(
+                "inline-flex items-center px-4 py-1 sm:px-5 sm:py-1.5 rounded-full bg-neutral-100/80 border border-neutral-200/70 text-[#1D1D20] text-[0.8em] shadow-xs",
+                isRtl && "lg:shrink-0 lg:whitespace-nowrap",
+              )}>
                 {heroLine2}
               </span>
             )}
