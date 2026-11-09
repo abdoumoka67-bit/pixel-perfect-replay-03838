@@ -317,16 +317,16 @@ function AuthPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-3xl font-medium">
-                {mode === "signin" ? t("auth.title.signin") : mode === "signup" ? t("auth.title.signup") : t("auth.title.forgot")}
-              </h1>
-              <p className="mt-2 text-muted-foreground">
-                {mode === "signup"
-                  ? t("auth.sub.signup")
-                  : mode === "signin"
-                    ? t("auth.sub.signin")
-                    : t("auth.sub.forgot")}
-              </p>
+              {mode !== "signup" && (
+                <div>
+                  <h1 className="text-3xl font-medium">
+                    {mode === "signin" ? t("auth.title.signin") : t("auth.title.forgot")}
+                  </h1>
+                  <p className="mt-2 text-muted-foreground">
+                    {mode === "signin" ? t("auth.sub.signin") : t("auth.sub.forgot")}
+                  </p>
+                </div>
+              )}
 
               {mode !== "forgot" && googleEnabled && (
                 <>
