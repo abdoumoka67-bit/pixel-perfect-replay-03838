@@ -58,46 +58,48 @@ function FeaturesAccordion() {
   const t = (key: TranslationKey) => translate(language, key);
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <ul className="space-y-2">
-      {FEATURES.map((f, i) => {
-        const isOpen = open === i;
-        const id = `feature-${i}`;
-        return (
-          <li
-            key={f.title}
-            className={cn(
-              "rounded-3xl border transition-colors duration-300",
-              isOpen ? "border-border bg-card shadow-card" : "border-transparent bg-secondary",
-            )}
-          >
-            <button
-              type="button"
-              aria-expanded={isOpen}
-              aria-controls={id}
-              onClick={() => setOpen(isOpen ? null : i)}
-              className="flex w-full items-center gap-4 px-5 py-2.5 text-start sm:px-6"
-            >
-              <span className="w-7 shrink-0 text-sm text-muted-foreground num">{String(i + 1).padStart(2, "0")}</span>
-              <span className="min-w-0 flex-1 text-lg font-medium sm:text-xl">{t(f.title)}</span>
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <ChevronDown className={cn("size-4 transition-transform duration-300", isOpen && "rotate-180")} />
-              </span>
-            </button>
-            <div
-              id={id}
+    <div className="rounded-3xl border border-border/80 bg-secondary/40 p-2 sm:p-2.5 shadow-xs">
+      <ul className="space-y-1.5">
+        {FEATURES.map((f, i) => {
+          const isOpen = open === i;
+          const id = `feature-${i}`;
+          return (
+            <li
+              key={f.title}
               className={cn(
-                "grid transition-[grid-template-rows] duration-300 ease-out",
-                isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                "rounded-2xl border transition-colors duration-300",
+                isOpen ? "border-border/80 bg-card shadow-xs" : "border-transparent bg-secondary/80 hover:bg-secondary",
               )}
             >
-              <div className="overflow-hidden">
-                <p className="px-5 pb-6 ps-16 text-base leading-8 text-muted-foreground sm:px-6 sm:ps-[4.25rem]">{t(f.text)}</p>
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                aria-controls={id}
+                onClick={() => setOpen(isOpen ? null : i)}
+                className="flex w-full items-center gap-4 px-4 py-2 text-start sm:px-5 sm:py-2.5"
+              >
+                <span className="w-6 shrink-0 text-xs text-muted-foreground num">{String(i + 1).padStart(2, "0")}</span>
+                <span className="min-w-0 flex-1 text-base font-medium sm:text-lg">{t(f.title)}</span>
+                <span className="flex size-7.5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <ChevronDown className={cn("size-3.5 transition-transform duration-300", isOpen && "rotate-180")} />
+                </span>
+              </button>
+              <div
+                id={id}
+                className={cn(
+                  "grid transition-[grid-template-rows] duration-300 ease-out",
+                  isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                )}
+              >
+                <div className="overflow-hidden">
+                  <p className="px-4 pb-4 ps-12 text-sm leading-relaxed text-muted-foreground sm:px-5 sm:ps-14">{t(f.text)}</p>
+                </div>
               </div>
-            </div>
-          </li>
-        );
-      })}
-    </ul>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
