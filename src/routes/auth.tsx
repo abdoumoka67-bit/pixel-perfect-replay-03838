@@ -243,163 +243,149 @@ function AuthPage() {
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2" dir={isRtl ? "rtl" : "ltr"}>
-      <div className="flex flex-col px-6 py-8 sm:px-12">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <ArrowLeft className="size-4 rtl:rotate-180" />
-              {t("common.back")}
-            </Link>
-            <Link to="/">
-              <Logo />
-            </Link>
-          </div>
-          <LanguageMenu compact value={language} onChange={setLanguage} />
+    <div className="flex min-h-screen flex-col px-6 py-8 sm:px-12" dir={isRtl ? "rtl" : "ltr"}>
+      <div className="flex w-full items-center justify-between gap-3">
+        <div className="flex items-center gap-4">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4 rtl:rotate-180" />
+            {t("common.back")}
+          </Link>
+          <Link to="/">
+            <Logo />
+          </Link>
         </div>
-        <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
-          {step ? (
-            <div>
-              <div className="flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand">
-                <MailCheck className="size-7" />
-              </div>
-              <h1 className="mt-5 text-2xl font-medium">
-                {step === "confirm" ? t("auth.code.titleConfirm") : t("auth.code.titleReset")}
-              </h1>
-              <p className="mt-2 text-muted-foreground">
-                {t("auth.code.sentEmail")} <span dir="ltr" className="font-medium text-foreground">{email}</span>. {t("auth.code.spam")}
-              </p>
-
-              <form onSubmit={verify} className="mt-8 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="code">{t("auth.code.label")}</Label>
-                  <Input
-                    id="code"
-                    dir="ltr"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    autoFocus
-                    maxLength={8}
-                    placeholder="••••••"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                    className="h-14 text-center text-2xl tracking-[0.5em]"
-                  />
-                </div>
-                {step === "reset" && (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="new-password">{t("auth.code.newPassword")}</Label>
-                    <Input id="new-password" type="password" dir="ltr" required minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="h-11" />
-                  </div>
-                )}
-                <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
-                  {busy && <Loader2 className="animate-spin" />}
-                  {step === "reset" ? t("auth.code.savePassword") : t("auth.code.confirm")}
-                </Button>
-              </form>
-
-              <div className="mt-6 flex items-center justify-between text-sm">
-                <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => { setStep(null); setMode("signin"); }}>
-                  {t("auth.backToSignin")}
-                </button>
-                <button
-                  type="button"
-                  className="font-medium text-brand hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground disabled:no-underline"
-                  disabled={cooldown > 0 || busy}
-                  onClick={resend}
-                >
-                  {cooldown > 0 ? t("auth.code.resendIn", { n: cooldown }) : t("auth.code.resend")}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              {mode !== "signup" && (
-                <div>
-                  <h1 className="text-3xl font-medium">
-                    {mode === "signin" ? t("auth.title.signin") : t("auth.title.forgot")}
-                  </h1>
-                  <p className="mt-2 text-muted-foreground">
-                    {mode === "signin" ? t("auth.sub.signin") : t("auth.sub.forgot")}
-                  </p>
-                </div>
-              )}
-
-              {mode !== "forgot" && googleEnabled && (
-                <>
-                  <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
-                    <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
-                      <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.6c2-1.9 3.2-4.7 3.2-8z" />
-                      <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8C3.9 20.6 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.8 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.7-2.8z" />
-                      <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2C17.5 2.1 15 1 12 1 7.7 1 3.9 3.4 2.1 7l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z" />
-                    </svg>
-                    {t("auth.google")}
-                  </Button>
-                  <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="h-px flex-1 bg-border" /> {t("auth.or")} <span className="h-px flex-1 bg-border" />
-                  </div>
-                </>
-              )}
-
-              <form onSubmit={submit} className={mode !== "forgot" && googleEnabled ? "mt-6 space-y-4" : "mt-8 space-y-4"}>
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">{t("auth.email")}</Label>
-                  <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
-                </div>
-                {mode !== "forgot" && (
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password">{t("auth.password")}</Label>
-                      {mode === "signin" && (
-                        <button type="button" className="text-xs text-brand hover:underline" onClick={() => setMode("forgot")}>
-                          {t("auth.forgotLink")}
-                        </button>
-                      )}
-                    </div>
-                    <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} autoFocus={Boolean(initialEmail)} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
-                  </div>
-                )}
-                <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
-                  {busy && <Loader2 className="animate-spin" />}
-                  {mode === "forgot"
-                    ? t("auth.sendResetCode")
-                    : mode === "signin"
-                      ? t("auth.signin")
-                      : t("auth.signup")}
-                </Button>
-              </form>
-
-              <p className="mt-6 text-center text-sm text-muted-foreground">
-                {mode === "signin" ? (
-                  <>{t("auth.noAccount")} <button className="font-medium text-brand hover:underline" onClick={() => setMode("signup")}>{t("auth.createFree")}</button></>
-                ) : (
-                  <>{t("auth.haveAccount")} <button className="font-medium text-brand hover:underline" onClick={() => setMode("signin")}>{t("auth.signinLink")}</button></>
-                )}
-              </p>
-              {mode === "forgot" && (
-                <button type="button" className="mt-4 w-full text-center text-sm text-brand hover:underline" onClick={() => setMode("signin")}>
-                  {t("auth.backToSignin")}
-                </button>
-              )}
-            </>
-          )}
-        </div>
+        <LanguageMenu compact value={language} onChange={setLanguage} />
       </div>
-      <div className="relative hidden overflow-hidden bg-sidebar lg:block">
-        <div className="absolute inset-0 bg-hero opacity-20" />
-        <div className="relative flex h-full flex-col justify-end p-12 text-sidebar-foreground">
-          <p className="font-display text-4xl font-medium leading-tight">
-            {t("auth.side.title1")} <span className="text-sidebar-primary">{t("auth.side.title2")}</span>
-            <br /> {t("auth.side.title3")}
-          </p>
-          <p className="mt-4 max-w-md text-sidebar-muted">
-            {t("auth.side.body")}
-          </p>
-        </div>
+      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
+        {step ? (
+          <div>
+            <div className="flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand">
+              <MailCheck className="size-7" />
+            </div>
+            <h1 className="mt-5 text-2xl font-medium">
+              {step === "confirm" ? t("auth.code.titleConfirm") : t("auth.code.titleReset")}
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              {t("auth.code.sentEmail")} <span dir="ltr" className="font-medium text-foreground">{email}</span>. {t("auth.code.spam")}
+            </p>
+
+            <form onSubmit={verify} className="mt-8 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="code">{t("auth.code.label")}</Label>
+                <Input
+                  id="code"
+                  dir="ltr"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  maxLength={8}
+                  placeholder="••••••"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  className="h-14 text-center text-2xl tracking-[0.5em]"
+                />
+              </div>
+              {step === "reset" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-password">{t("auth.code.newPassword")}</Label>
+                  <Input id="new-password" type="password" dir="ltr" required minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="h-11" />
+                </div>
+              )}
+              <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
+                {busy && <Loader2 className="animate-spin" />}
+                {step === "reset" ? t("auth.code.savePassword") : t("auth.code.confirm")}
+              </Button>
+            </form>
+
+            <div className="mt-6 flex items-center justify-between text-sm">
+              <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => { setStep(null); setMode("signin"); }}>
+                {t("auth.backToSignin")}
+              </button>
+              <button
+                type="button"
+                className="font-medium text-brand hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground disabled:no-underline"
+                disabled={cooldown > 0 || busy}
+                onClick={resend}
+              >
+                {cooldown > 0 ? t("auth.code.resendIn", { n: cooldown }) : t("auth.code.resend")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {mode !== "signup" && (
+              <div>
+                <h1 className="text-3xl font-medium">
+                  {mode === "signin" ? t("auth.title.signin") : t("auth.title.forgot")}
+                </h1>
+                <p className="mt-2 text-muted-foreground">
+                  {mode === "signin" ? t("auth.sub.signin") : t("auth.sub.forgot")}
+                </p>
+              </div>
+            )}
+
+            {mode !== "forgot" && googleEnabled && (
+              <>
+                <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
+                  <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
+                    <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.6c2-1.9 3.2-4.7 3.2-8z" />
+                    <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8C3.9 20.6 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.8 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.7-2.8z" />
+                    <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2C17.5 2.1 15 1 12 1 7.7 1 3.9 3.4 2.1 7l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z" />
+                  </svg>
+                  {t("auth.google")}
+                </Button>
+                <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="h-px flex-1 bg-border" /> {t("auth.or")} <span className="h-px flex-1 bg-border" />
+                </div>
+              </>
+            )}
+
+            <form onSubmit={submit} className={mode !== "forgot" && googleEnabled ? "mt-6 space-y-4" : "mt-8 space-y-4"}>
+              <div className="space-y-1.5">
+                <Label htmlFor="email">{t("auth.email")}</Label>
+                <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
+              </div>
+              {mode !== "forgot" && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">{t("auth.password")}</Label>
+                    {mode === "signin" && (
+                      <button type="button" className="text-xs text-brand hover:underline" onClick={() => setMode("forgot")}>
+                        {t("auth.forgotLink")}
+                      </button>
+                    )}
+                  </div>
+                  <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} autoFocus={Boolean(initialEmail)} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
+                </div>
+              )}
+              <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
+                {busy && <Loader2 className="animate-spin" />}
+                {mode === "forgot"
+                  ? t("auth.sendResetCode")
+                  : mode === "signin"
+                    ? t("auth.signin")
+                    : t("auth.signup")}
+              </Button>
+            </form>
+
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              {mode === "signin" ? (
+                <>{t("auth.noAccount")} <button className="font-medium text-brand hover:underline" onClick={() => setMode("signup")}>{t("auth.createFree")}</button></>
+              ) : (
+                <>{t("auth.haveAccount")} <button className="font-medium text-brand hover:underline" onClick={() => setMode("signin")}>{t("auth.signinLink")}</button></>
+              )}
+            </p>
+            {mode === "forgot" && (
+              <button type="button" className="mt-4 w-full text-center text-sm text-brand hover:underline" onClick={() => setMode("signin")}>
+                {t("auth.backToSignin")}
+              </button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
