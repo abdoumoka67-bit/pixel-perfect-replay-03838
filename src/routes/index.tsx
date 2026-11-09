@@ -117,13 +117,15 @@ function Home() {
 
   function renderHeroLine1() {
     let part1 = "متجرك";
-    if (language === "fr") part1 = "Votre boutique,";
-    else if (language === "en") part1 = "Your store,";
+    if (language === "fr") part1 = "Votre boutique";
+    else if (language === "en") part1 = "Your store";
     // Keep the translated remainder (and its capitalization) after the pill.
-    const part2 = heroLine1.startsWith(part1) ? heroLine1.slice(part1.length).trimStart() : "";
+    const part2 = heroLine1.startsWith(part1)
+      ? heroLine1.slice(part1.length).trimStart().replace(/^,\s*/, "")
+      : "";
 
     return (
-      <span className="inline-flex flex-wrap items-center justify-center gap-y-1">
+      <span className="inline-flex flex-wrap items-center justify-center gap-y-1 lg:flex-nowrap lg:whitespace-nowrap">
         <span>{part1}</span>{" "}
         <span className="inline-flex items-center justify-center align-middle mx-1.5 sm:mx-2 p-1.5 sm:p-2 rounded-xl bg-neutral-100/90 border border-neutral-200/70 shadow-xs">
           <svg className="size-5 sm:size-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -170,11 +172,11 @@ function Home() {
           </div>
         </header>
 
-        <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
+        <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20 lg:max-w-7xl">
           <h1
             className={cn(
-              "mx-auto max-w-3xl text-balance break-words text-center font-medium text-[#1D1D20]",
-              "text-4xl sm:text-5xl md:text-6xl lg:text-7xl flex flex-col items-center gap-3 sm:gap-4",
+              "mx-auto max-w-3xl text-balance break-words text-center font-medium text-[#1D1D20] lg:max-w-none",
+              "text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl flex flex-col items-center gap-3 sm:gap-4",
               isRtl ? "leading-[1.4] tracking-normal" : "leading-[1.06] tracking-tight",
             )}
           >
