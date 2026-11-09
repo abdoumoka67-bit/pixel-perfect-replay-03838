@@ -12,7 +12,15 @@ import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
 import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
 
 export const Route = createFileRoute("/")({
-  loader: () => getPublicPlans(),
+  loader: async () => {
+    try {
+      return await getPublicPlans();
+    } catch (error) {
+      // Keep the landing page rendering even if the plans call fails.
+      console.error("Public plans loader failed", error);
+      return [];
+    }
+  },
   head: () => ({
     meta: [
       { title: "oranix — Build your store, manage your sales, and launch with ease" },
@@ -43,6 +51,7 @@ const FEATURES: { title: TranslationKey; text: TranslationKey }[] = [
   { title: "landing.f4.title", text: "landing.f4.text" },
   { title: "landing.f5.title", text: "landing.f5.text" },
   { title: "landing.f6.title", text: "landing.f6.text" },
+  { title: "landing.f7.title", text: "landing.f7.text" },
 ];
 
 function FeaturesAccordion() {
@@ -50,46 +59,48 @@ function FeaturesAccordion() {
   const t = (key: TranslationKey) => translate(language, key);
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <ul className="space-y-2">
-      {FEATURES.map((f, i) => {
-        const isOpen = open === i;
-        const id = `feature-${i}`;
-        return (
-          <li
-            key={f.title}
-            className={cn(
-              "rounded-3xl border transition-colors duration-300",
-              isOpen ? "border-border bg-card shadow-card" : "border-transparent bg-secondary",
-            )}
-          >
-            <button
-              type="button"
-              aria-expanded={isOpen}
-              aria-controls={id}
-              onClick={() => setOpen(isOpen ? null : i)}
-              className="flex w-full items-center gap-4 px-5 py-2.5 text-start sm:px-6"
-            >
-              <span className="w-7 shrink-0 text-sm text-muted-foreground num">{String(i + 1).padStart(2, "0")}</span>
-              <span className="min-w-0 flex-1 text-lg font-medium sm:text-xl">{t(f.title)}</span>
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <ChevronDown className={cn("size-4 transition-transform duration-300", isOpen && "rotate-180")} />
-              </span>
-            </button>
-            <div
-              id={id}
+    <div className="rounded-3xl border border-border/80 bg-secondary/40 p-2 sm:p-2.5 shadow-xs">
+      <ul className="space-y-1.5">
+        {FEATURES.map((f, i) => {
+          const isOpen = open === i;
+          const id = `feature-${i}`;
+          return (
+            <li
+              key={f.title}
               className={cn(
-                "grid transition-[grid-template-rows] duration-300 ease-out",
-                isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                "rounded-2xl border transition-colors duration-300",
+                isOpen ? "border-border/80 bg-card shadow-xs" : "border-transparent bg-secondary/80 hover:bg-secondary",
               )}
             >
-              <div className="overflow-hidden">
-                <p className="px-5 pb-6 ps-16 text-base leading-8 text-muted-foreground sm:px-6 sm:ps-[4.25rem]">{t(f.text)}</p>
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                aria-controls={id}
+                onClick={() => setOpen(isOpen ? null : i)}
+                className="flex w-full items-center gap-4 px-4 py-2 text-start sm:px-5 sm:py-2.5"
+              >
+                <span className="w-6 shrink-0 text-xs text-muted-foreground num">{String(i + 1).padStart(2, "0")}</span>
+                <span className="min-w-0 flex-1 text-base font-medium sm:text-lg">{t(f.title)}</span>
+                <span className="flex size-7.5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <ChevronDown className={cn("size-3.5 transition-transform duration-300", isOpen && "rotate-180")} />
+                </span>
+              </button>
+              <div
+                id={id}
+                className={cn(
+                  "grid transition-[grid-template-rows] duration-300 ease-out",
+                  isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                )}
+              >
+                <div className="overflow-hidden">
+                  <p className="px-4 pb-4 ps-12 text-sm leading-relaxed text-muted-foreground sm:px-5 sm:ps-14">{t(f.text)}</p>
+                </div>
               </div>
-            </div>
-          </li>
-        );
-      })}
-    </ul>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
@@ -101,7 +112,43 @@ function Home() {
   const isRtl = language === "ar";
   useDocumentLanguage(language);
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
+  const [heroLine1 = "", heroLine2] = t("landing.hero.title").split("\n");
   const [email, setEmail] = useState("");
+
+  function renderHeroLine1() {
+    let part1 = "متجرك";
+    if (language === "fr") part1 = "Votre Boutique";
+    else if (language === "en") part1 = "Your Store";
+    // Keep the translated remainder (and its capitalization) after the pill.
+    const part2 = heroLine1.startsWith(part1) ? heroLine1.slice(part1.length).trimStart() : "";
+
+    return (
+      <span className="inline-flex flex-wrap items-center justify-center gap-y-1">
+        <span>{part1}</span>{" "}
+        <span className="inline-flex items-center justify-center align-middle mx-1.5 sm:mx-2 p-1.5 sm:p-2 rounded-xl bg-neutral-100/90 border border-neutral-200/70 shadow-xs">
+          <svg className="size-5 sm:size-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            {/* Blue Bag behind */}
+            <rect x="7" y="5" width="13" height="15" rx="2" fill="#3B82F6" />
+            <path
+              d="M11 5V3.5C11 2.67 11.67 2 12.5 2H14.5C15.33 2 16 2.67 16 3.5V5"
+              stroke="#1D4ED8"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            {/* Yellow Bag in front */}
+            <rect x="4" y="8" width="13" height="14" rx="2" fill="#FACC15" />
+            <path
+              d="M8 8V6.5C8 5.67 8.67 5 9.5 5H11.5C12.33 5 13 5.67 13 6.5V8"
+              stroke="#CA8A04"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </span>{" "}
+        {part2 && <span>{part2}</span>}
+      </span>
+    );
+  }
 
   function startWithEmail(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -124,12 +171,26 @@ function Home() {
         </header>
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
-          <h1 className="mx-auto max-w-full text-balance break-words text-[2rem] font-medium leading-[1.3] text-foreground sm:text-5xl sm:leading-[1.2]">
-            {t("landing.hero.title")}
+          <h1
+            className={cn(
+              "mx-auto max-w-3xl text-balance break-words text-center leading-tight text-[#1D1D20]",
+              "text-3xl sm:text-4xl md:text-5xl lg:text-6xl flex flex-col items-center gap-2.5 sm:gap-3.5",
+              isRtl ? "font-normal md:font-light" : "font-medium sm:font-semibold tracking-tight",
+            )}
+          >
+            {renderHeroLine1()}
+            {heroLine2 && (
+              <span className="inline-flex items-center px-4 py-1 sm:px-5 sm:py-1.5 rounded-full bg-neutral-100/80 border border-neutral-200/70 text-[#1D1D20] text-[0.8em] font-normal tracking-tight shadow-xs">
+                {heroLine2}
+              </span>
+            )}
           </h1>
+          <p className="mt-4 mb-8 text-sm text-[#6B6B6B] sm:text-base">
+            {t("landing.hero.sub")}
+          </p>
           <form
             onSubmit={startWithEmail}
-            className="mx-auto mt-9 flex w-full max-w-md items-center gap-1.5 rounded-full border border-border bg-white p-1.5 shadow-sm"
+            className="mx-auto flex w-full max-w-md items-center gap-1.5 rounded-full border border-border bg-white p-1.5 shadow-sm"
           >
             <input
               type="email"
