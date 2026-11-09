@@ -373,7 +373,7 @@ const fr: Dictionary = {
   // Landing page
   "landing.login": "Se connecter",
   "landing.cta": "Commencer l'essai gratuit",
-  "landing.hero.title": "Votre boutique prête à vendre\nen quelques minutes",
+  "landing.hero.title": "Votre Boutique Prête à Vendre\nEn quelques Minutes",
   "landing.hero.sub": "Essai gratuit de 10 jours · Sans carte bancaire",
   "landing.hero.email": "Entrez votre e-mail",
   "landing.hero.emailCta": "Continuer",
@@ -586,7 +586,7 @@ const en: Dictionary = {
   // Landing page
   "landing.login": "Sign in",
   "landing.cta": "Start free trial",
-  "landing.hero.title": "Your store ready to sell\nin minutes",
+  "landing.hero.title": "Your Store Ready To Sell\nIn Minutes",
   "landing.hero.sub": "10-day free trial · No credit card required",
   "landing.hero.email": "Enter your email",
   "landing.hero.emailCta": "Enter",

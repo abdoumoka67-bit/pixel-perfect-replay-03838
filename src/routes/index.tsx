@@ -109,6 +109,7 @@ function Home() {
   const isRtl = language === "ar";
   useDocumentLanguage(language);
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
+  const [heroLine1, heroLine2] = t("landing.hero.title").split("\n");
   const [email, setEmail] = useState("");
 
   function startWithEmail(e: React.FormEvent<HTMLFormElement>) {
@@ -132,8 +133,13 @@ function Home() {
         </header>
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
-          <h1 className="mx-auto max-w-2xl whitespace-pre-line text-balance break-words text-center text-3xl font-medium leading-[1.15] text-[#1D1D20] sm:text-4xl md:text-5xl lg:text-6xl">
-            {t("landing.hero.title")}
+          <h1 className="mx-auto max-w-3xl text-balance break-words text-center text-3xl font-medium leading-tight text-[#1D1D20] sm:text-4xl md:text-5xl lg:text-6xl flex flex-col items-center gap-2.5 sm:gap-3.5">
+            <span>{heroLine1}</span>
+            {heroLine2 && (
+              <span className="inline-flex items-center px-4 py-1 sm:px-5 sm:py-1.5 rounded-full bg-neutral-100/80 border border-neutral-200/70 text-[#1D1D20] text-[0.8em] font-normal tracking-tight shadow-xs">
+                {heroLine2}
+              </span>
+            )}
           </h1>
           <p className="mt-4 mb-8 text-sm text-[#6B6B6B] sm:text-base">
             {t("landing.hero.sub")}
