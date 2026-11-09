@@ -1,34 +1,40 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * Official ORX Brand Logo
+ * - Displays the new official ORX wordmark emblem.
+ * - Handles both dark tone (for light backgrounds) and light tone (for dark sidebars/headers).
+ */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <span
-      className={cn(
-        "relative inline-flex size-9 items-center justify-center rounded-full bg-primary",
-        className,
-      )}
-      aria-hidden
-    >
-      <svg viewBox="0 0 24 24" className="size-5 text-primary-foreground" fill="none">
-        <circle cx="12" cy="12" r="6.5" stroke="currentColor" strokeWidth="2.6" />
-        <circle cx="17.5" cy="6.5" r="2.2" fill="currentColor" />
-      </svg>
-    </span>
+    <img
+      src="/logo-orx.png"
+      alt="ORX"
+      className={cn("h-6 w-auto object-contain select-none", className)}
+      loading="eager"
+    />
   );
 }
 
-export function Logo({ className, tone = "dark" }: { className?: string; tone?: "dark" | "light" }) {
+export function Logo({
+  className,
+  tone = "dark",
+}: {
+  className?: string;
+  tone?: "dark" | "light";
+}) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)} dir="ltr">
-      <LogoMark />
-      <span
-        className={cn(
-          "font-display text-xl font-medium tracking-tight",
-          tone === "light" ? "text-sidebar-foreground" : "text-foreground",
-        )}
-      >
-        oranix
-      </span>
+    <span
+      className={cn("inline-flex items-center select-none", className)}
+      dir="ltr"
+      aria-label="ORX"
+    >
+      <img
+        src={tone === "light" ? "/logo-orx-white.png" : "/logo-orx.png"}
+        alt="ORX"
+        className="h-6 w-auto max-w-[130px] object-contain sm:h-7"
+        loading="eager"
+      />
     </span>
   );
 }
