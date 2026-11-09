@@ -144,7 +144,7 @@ function Home() {
             />
             <Button
               type="submit"
-              className="h-10 shrink-0 rounded-full bg-black px-5 text-sm font-medium text-white hover:bg-black/90"
+              className="h-10 shrink-0 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all px-5 text-sm font-medium"
             >
               {t("landing.hero.emailCta")}
             </Button>

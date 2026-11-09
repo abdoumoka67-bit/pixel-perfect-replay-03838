@@ -132,12 +132,12 @@ html[lang="en"] {
   --popover-foreground: #202223;
 
   /* Shopify Polaris Typography */
-  --foreground: #202223;
+  --foreground: #1D1D1F;
   --muted: #F1F2F4;
   --muted-foreground: #6D7175;
 
   /* Primary Action (Solid Crisp Dark) */
-  --primary: #1A1A1A;
+  --primary: #1D1D1F;
   --primary-foreground: #FFFFFF;
 
   /* Secondary & Surfaces */
@@ -150,7 +150,7 @@ html[lang="en"] {
   --table-header: #F7F7F8;
   --border: #E1E3E5;
   --input: #E1E3E5;
-  --ring: rgba(26, 26, 26, 0.2);
+  --ring: rgba(29, 29, 31, 0.15);
 
   /* Shopify Subdued Status Badges */
   /* Success / Delivered / Paid */
