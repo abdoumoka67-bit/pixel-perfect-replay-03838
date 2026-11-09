@@ -117,8 +117,8 @@ function Home() {
 
   function renderHeroLine1() {
     let part1 = "متجرك";
-    if (language === "fr") part1 = "Votre Boutique";
-    else if (language === "en") part1 = "Your Store";
+    if (language === "fr") part1 = "Votre boutique,";
+    else if (language === "en") part1 = "Your store,";
     // Keep the translated remainder (and its capitalization) after the pill.
     const part2 = heroLine1.startsWith(part1) ? heroLine1.slice(part1.length).trimStart() : "";
 
@@ -173,14 +173,14 @@ function Home() {
         <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
           <h1
             className={cn(
-              "mx-auto max-w-3xl text-balance break-words text-center leading-tight text-[#1D1D20]",
-              "text-3xl sm:text-4xl md:text-5xl lg:text-6xl flex flex-col items-center gap-2.5 sm:gap-3.5",
-              isRtl ? "font-normal md:font-light" : "font-medium sm:font-semibold tracking-tight",
+              "mx-auto max-w-3xl text-balance break-words text-center font-medium text-[#1D1D20]",
+              "text-4xl sm:text-5xl md:text-6xl lg:text-7xl flex flex-col items-center gap-3 sm:gap-4",
+              isRtl ? "leading-[1.4] tracking-normal" : "leading-[1.06] tracking-tight",
             )}
           >
             {renderHeroLine1()}
             {heroLine2 && (
-              <span className="inline-flex items-center px-4 py-1 sm:px-5 sm:py-1.5 rounded-full bg-neutral-100/80 border border-neutral-200/70 text-[#1D1D20] text-[0.8em] font-normal tracking-tight shadow-xs">
+              <span className="inline-flex items-center px-4 py-1 sm:px-5 sm:py-1.5 rounded-full bg-neutral-100/80 border border-neutral-200/70 text-[#1D1D20] text-[0.8em] shadow-xs">
                 {heroLine2}
               </span>
             )}
