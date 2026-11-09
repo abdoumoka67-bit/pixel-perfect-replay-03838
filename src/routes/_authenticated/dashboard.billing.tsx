@@ -65,9 +65,9 @@ function Billing() {
   const settings = useQuery({
     queryKey: ["platform-settings"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("platform_settings").select("*").eq("id", 1).maybeSingle();
+      const { data, error } = await supabase.rpc("get_platform_payment_info");
       if (error) throw error;
-      return data;
+      return data?.[0] ?? null;
     },
   });
   const receipts = useQuery({

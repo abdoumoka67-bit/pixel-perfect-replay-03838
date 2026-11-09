@@ -12,7 +12,15 @@ import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
 import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
 
 export const Route = createFileRoute("/")({
-  loader: () => getPublicPlans(),
+  loader: async () => {
+    try {
+      return await getPublicPlans();
+    } catch (error) {
+      // Keep the landing page rendering even if the plans call fails.
+      console.error("Public plans loader failed", error);
+      return [];
+    }
+  },
   head: () => ({
     meta: [
       { title: "oranix — Build your store, manage your sales, and launch with ease" },

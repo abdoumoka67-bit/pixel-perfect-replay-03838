@@ -64,7 +64,7 @@ async function loadStore(client: ReturnType<typeof publicClient>, slug: string) 
 }
 
 export const getStorefront = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(60) }).parse(d))
+  .validator((d: unknown) => z.object({ slug: z.string().min(1).max(60) }).parse(d))
   .handler(async ({ data }) => {
     const client = publicClient();
     const s = await loadStore(client, data.slug);
@@ -104,7 +104,7 @@ export const getStorefront = createServerFn({ method: "GET" })
   });
 
 export const getProductPage = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ slug: z.string().min(1).max(60), product: z.string().min(1).max(90) }).parse(d),
   )
   .handler(async ({ data }) => {
@@ -150,14 +150,20 @@ export const getProductPage = createServerFn({ method: "GET" })
   });
 
 export const getPublicPlans = createServerFn({ method: "GET" }).handler(async () => {
-  const { data, error } = await publicClient()
-    .from("plans")
-    .select("id,name,months,price,tier")
-    .eq("is_active", true)
-    .order("sort");
-  if (error) {
+  try {
+    const { data, error } = await publicClient()
+      .from("plans")
+      .select("id,name,months,price,tier")
+      .eq("is_active", true)
+      .order("sort");
+    if (error) {
+      console.error("plans load failed", error);
+      return [];
+    }
+    return data ?? [];
+  } catch (error) {
+    // Never let a Supabase/network failure break SSR of the public landing page.
     console.error("plans load failed", error);
-    throw error;
+    return [];
   }
-  return data ?? [];
 });

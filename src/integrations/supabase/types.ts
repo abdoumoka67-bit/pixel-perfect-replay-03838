@@ -658,6 +658,16 @@ export type Database = {
       }
       can_manage_store: { Args: { _store_id: string }; Returns: boolean }
       current_verified_email: { Args: never; Returns: string }
+      get_platform_payment_info: {
+        Args: never
+        Returns: {
+          ccp_holder: string
+          ccp_key: string
+          ccp_number: string
+          rip: string
+          support_phone: string
+        }[]
+      }
       get_public_store: {
         Args: { _slug: string }
         Returns: {
