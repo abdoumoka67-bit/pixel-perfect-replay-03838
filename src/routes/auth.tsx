@@ -14,6 +14,7 @@ import { translate, type TranslationKey } from "@/lib/i18n";
 const search = z.object({
   redirect: z.string().optional(),
   mode: z.enum(["signin", "signup"]).optional(),
+  email: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -38,7 +39,7 @@ function safePath(p?: string) {
 const RESEND_SECONDS = 60;
 
 function AuthPage() {
-  const { redirect, mode: initialMode } = Route.useSearch();
+  const { redirect, mode: initialMode, email: initialEmail } = Route.useSearch();
   const navigate = useNavigate();
   // Public pages open in English by default; the visitor can switch language.
   const { language, setLanguage } = usePublicLanguage("en");
@@ -46,7 +47,7 @@ function AuthPage() {
   useDocumentLanguage(language);
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode ?? "signin");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail ?? "");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   // Which code the user is entering: account confirmation or password reset.
@@ -359,7 +360,7 @@ function AuthPage() {
                         </button>
                       )}
                     </div>
-                    <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
+                    <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} autoFocus={Boolean(initialEmail)} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
                   </div>
                 )}
                 <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
