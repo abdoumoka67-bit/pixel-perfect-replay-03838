@@ -510,13 +510,17 @@ function CarrierHub({
               </div>
               <div className="mt-auto flex flex-col gap-2">
                 <Button
-                  variant={linked ? "outline" : "brand"}
+                  variant={linked ? "outline" : "secondary"}
                   size="sm"
-                  className="w-full"
+                  className={
+                    linked
+                      ? "w-full"
+                      : "w-full bg-[#F1F2F4] text-[#111111] hover:bg-[#E2E4E8] active:bg-[#D5D8DC] font-medium transition-colors shadow-none"
+                  }
                   disabled={readOnly}
                   onClick={() => openLink(carrier)}
                 >
-                  <PlugZap />{" "}
+                  <PlugZap className="size-4" />{" "}
                   {linked
                     ? t("تعديل الربط")
                     : carrier.category === "private"
