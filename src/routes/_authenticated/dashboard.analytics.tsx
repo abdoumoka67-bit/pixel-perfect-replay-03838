@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { ProLock } from "@/components/dashboard/ProLock";
@@ -89,6 +89,7 @@ function AnalyticsPro() {
     { label: t("نسبة التأكيد"), value: `${m.confirmRate}%` },
     { label: t("نسبة التوصيل"), value: `${m.deliveryRate}%` },
   ];
+  const latestDay = m.daily[m.daily.length - 1]?.label;
 
   return (
     <>
@@ -115,9 +116,37 @@ function AnalyticsPro() {
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} interval={4} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} width={28} />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }} />
-              <Area type="monotone" dataKey="orders" name={t("الطلبات")} stroke="var(--chart-1)" strokeWidth={2.5} fill="url(#g1)" />
+              <YAxis
+                allowDecimals={false}
+                domain={[0, (max: number) => Math.max(max, 1)]}
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                tickLine={false}
+                axisLine={false}
+                width={28}
+              />
+              <Tooltip
+                cursor={{ stroke: "var(--chart-1)", strokeDasharray: "4 4", strokeWidth: 1.5 }}
+                contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }}
+              />
+              {latestDay && (
+                <ReferenceLine
+                  x={latestDay}
+                  stroke="var(--chart-1)"
+                  strokeDasharray="3 3"
+                  strokeWidth={1.5}
+                  label={{ value: t("اليوم"), position: "insideTopRight", fill: "var(--chart-1)", fontSize: 11 }}
+                />
+              )}
+              <Area
+                type="monotone"
+                dataKey="orders"
+                name={t("الطلبات")}
+                stroke="var(--chart-1)"
+                strokeWidth={2.5}
+                fill="url(#g1)"
+                dot={{ r: 2, fill: "var(--chart-1)", stroke: "var(--card)", strokeWidth: 1 }}
+                activeDot={{ r: 5, fill: "var(--chart-1)", stroke: "var(--card)", strokeWidth: 2 }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
