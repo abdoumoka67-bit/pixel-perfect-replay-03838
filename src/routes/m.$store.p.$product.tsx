@@ -123,7 +123,7 @@ function ProductLanding() {
     if (!commune) { toast.error(t("يرجى اختيار البلدية.")); return; }
     if (currentShip == null) { toast.error(t("نوع التوصيل هذا غير متوفر في ولايتك.")); return; }
     setBusy(true);
-    const { data, error } = await supabase.rpc("place_order", {
+    const args = {
       _product_id: product.id,
       _quantity: qty,
       _customer_name: name.trim(),
@@ -136,7 +136,13 @@ function ProductLanding() {
       ...(product.sizes.length ? { _size: size } : {}),
       ...(product.colors.length ? { _color: color } : {}),
       _attribution: readAttribution(),
-    });
+    };
+    let { data, error } = await supabase.rpc("place_order", args);
+    if (error && /_attribution|PGRST202|schema cache|Could not find the function/i.test(`${error.code} ${error.message}`)) {
+      // Migration not applied yet: place the order without attribution instead of failing.
+      const { _attribution: _unused, ...legacy } = args;
+      ({ data, error } = await supabase.rpc("place_order", legacy));
+    }
     setBusy(false);
     if (error) { toast.error(t(friendlyError(error.message))); return; }
     const row = data?.[0];
