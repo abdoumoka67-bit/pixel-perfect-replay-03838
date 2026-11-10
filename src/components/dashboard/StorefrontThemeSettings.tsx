@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Check, Loader2, Plus, Save, Star, Trash2 } from "lucide-react";
+import { Check, ExternalLink, ImagePlus, Loader2, Plus, Save, Star, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,6 @@ import {
   TRUST_BADGE_KEYS,
   TRUST_BADGE_LABELS,
   parseStorefrontConfig,
-  presetStyles,
   storefrontConfigSchema,
   type FaqItem,
   type PresetKey,
@@ -29,15 +28,19 @@ import {
 import { useTr } from "@/lib/ui-i18n";
 import type { Tables } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
+import { useSignedUrls } from "@/hooks/use-signed-urls";
+import { fileExt, PRODUCT_BUCKET } from "@/lib/images";
 
 type Store = Tables<"stores">;
 
 export function StorefrontThemeSettings({
   store,
   readOnly,
+  userId,
 }: {
   store: Store | null;
   readOnly: boolean;
+  userId: string;
 }) {
   const t = useTr();
   const qc = useQueryClient();
@@ -45,6 +48,7 @@ export function StorefrontThemeSettings({
     ? parseStorefrontConfig(store.storefront_config, store.name).language
     : STOREFRONT_LANGUAGE_DEFAULT;
   const defaults = STOREFRONT_DEFAULTS[language];
+  const imageFileRef = useRef<HTMLInputElement>(null);
 
   const [preset, setPreset] = useState<PresetKey>("noir");
   const [heroTitle, setHeroTitle] = useState("");
@@ -52,6 +56,25 @@ export function StorefrontThemeSettings({
   const [heroButton, setHeroButton] = useState(defaults.heroButton);
   const [barEnabled, setBarEnabled] = useState(true);
   const [barText, setBarText] = useState(defaults.barText);
+  const [heroBgType, setHeroBgType] = useState<"color" | "image">("color");
+  const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [heroBgColor, setHeroBgColor] = useState("#111111");
+  const [heroTextColor, setHeroTextColor] = useState("#FFFFFF");
+  const [heroOverlayOpacity, setHeroOverlayOpacity] = useState(40);
+  const [fontFamily, setFontFamily] = useState("Tajawal");
+  const [titleSize, setTitleSize] = useState("xl");
+  const [textAlign, setTextAlign] = useState("center");
+  const [buttonBgColor, setButtonBgColor] = useState("#FFFFFF");
+  const [buttonTextColor, setButtonTextColor] = useState("#111111");
+  const [buttonSize, setButtonSize] = useState("md");
+  const [buttonRadius, setButtonRadius] = useState("lg");
+  const [buttonAlign, setButtonAlign] = useState("center");
+  const [barBgColor, setBarBgColor] = useState("#111111");
+  const [barTextColor, setBarTextColor] = useState("#FFFFFF");
+  const [activeTab, setActiveTab] = useState<"hero" | "button" | "bar" | "sections">("hero");
+  const [imageUploading, setImageUploading] = useState(false);
+  const signedUrls = useSignedUrls([heroImageUrl]);
+  const previewHeroImage = heroImageUrl.startsWith("http") ? heroImageUrl : signedUrls[heroImageUrl];
 
   // Sections
   const [faqEnabled, setFaqEnabled] = useState(true);
@@ -78,6 +101,21 @@ export function StorefrontThemeSettings({
     setHeroButton(cfg.hero_button);
     setBarEnabled(cfg.bar_enabled);
     setBarText(cfg.bar_text);
+    setHeroBgType(cfg.hero_bg_type);
+    setHeroImageUrl(cfg.hero_image_url ?? "");
+    setHeroBgColor(cfg.hero_bg_color);
+    setHeroTextColor(cfg.hero_text_color);
+    setHeroOverlayOpacity(cfg.hero_overlay_opacity);
+    setFontFamily(cfg.font_family);
+    setTitleSize(cfg.title_size);
+    setTextAlign(cfg.text_align);
+    setButtonBgColor(cfg.button_bg_color);
+    setButtonTextColor(cfg.button_text_color);
+    setButtonSize(cfg.button_size);
+    setButtonRadius(cfg.button_radius);
+    setButtonAlign(cfg.button_align);
+    setBarBgColor(cfg.bar_bg_color);
+    setBarTextColor(cfg.bar_text_color);
 
     setFaqEnabled(cfg.sections.faq.enabled);
     setFaqItems(cfg.sections.faq.items);
@@ -95,6 +133,29 @@ export function StorefrontThemeSettings({
     setTrustBadges(cfg.sections.trust.badges);
   }, [store]);
 
+  async function uploadHeroImage(file: File | undefined) {
+    if (!file || !store) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      toast.error(t("اختر صورة لا يتجاوز حجمها 5 ميغابايت."));
+      return;
+    }
+    if (!userId) {
+      toast.error(t("تعذر رفع صورة الواجهة."));
+      return;
+    }
+    setImageUploading(true);
+    const extension = fileExt(file).replace(/[^a-z0-9]/gi, "") || "jpg";
+    const path = `${userId}/hero-${crypto.randomUUID()}.${extension}`;
+    const { error } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, file, { contentType: file.type });
+    setImageUploading(false);
+    if (error) {
+      toast.error(t("تعذر رفع صورة الواجهة."));
+      return;
+    }
+    setHeroImageUrl(path);
+    setHeroBgType("image");
+  }
+
   function addFaqItem() {
     if (faqItems.length >= 8) return;
     setFaqItems([...faqItems, { q: "", a: "" }]);
@@ -103,6 +164,106 @@ export function StorefrontThemeSettings({
   function updateFaqItem(index: number, field: "q" | "a", val: string) {
     setFaqItems(
       faqItems.map((item, i) => (i === index ? { ...item, [field]: val } : item)),
+    );
+  }
+
+  function ColorControl({
+    label,
+    value,
+    onChange,
+    disabled,
+    presets = [],
+  }: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    disabled: boolean;
+    presets?: string[];
+  }) {
+    return (
+      <div className="space-y-2">
+        <Label className="flex items-center justify-between gap-3">
+          <span>{label}</span>
+          <span className="flex items-center gap-2 rounded-lg border px-2 py-1 text-xs font-normal" dir="ltr">
+            <input
+              type="color"
+              value={value}
+              onChange={(event) => onChange(event.target.value.toUpperCase())}
+              disabled={disabled}
+              className="size-6 cursor-pointer rounded border-0 bg-transparent p-0 disabled:cursor-not-allowed"
+              aria-label={label}
+            />
+            {value}
+          </span>
+        </Label>
+        {presets.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {presets.map((color) => (
+              <button
+                key={color}
+                type="button"
+                onClick={() => onChange(color)}
+                disabled={disabled}
+                aria-label={color}
+                className={cn("size-7 rounded-full border border-border disabled:cursor-not-allowed", value.toLowerCase() === color.toLowerCase() ? "ring-2 ring-primary ring-offset-2" : "")}
+                style={{ backgroundColor: color }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function OptionButtons({
+    label,
+    value,
+    values,
+    onChange,
+    disabled,
+    t,
+  }: {
+    label: string;
+    value: string;
+    values: string[];
+    onChange: (value: string) => void;
+    disabled: boolean;
+    t: ReturnType<typeof useTr>;
+  }) {
+    const labels: Record<string, string> = {
+      sm: "صغير",
+      md: "متوسط",
+      lg: "كبير",
+      base: "أساسي",
+      xl: "كبير",
+      "2xl": "كبير جداً",
+      none: "حواف حادة",
+      full: "كبسولة كاملة",
+      soft: "دائرية خفيفة",
+      round: "دائرية",
+      start: "يمين",
+      center: "وسط",
+      end: "يسار",
+    };
+    const isRadius = values.includes("none") || values.includes("full");
+    return (
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium">{label}</legend>
+        <div className="flex flex-wrap gap-2">
+          {values.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChange(option)}
+              disabled={disabled}
+              aria-pressed={value === option}
+              className={cn("rounded-xl border px-4 py-2 text-sm disabled:cursor-not-allowed", value === option ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground")}
+            >
+              {t(isRadius && option === "md" ? "دائرية خفيفة" : isRadius && option === "lg" ? "دائرية" : labels[option] ?? option)}
+            </button>
+          ))}
+        </div>
+      </fieldset>
     );
   }
 
@@ -137,6 +298,15 @@ export function StorefrontThemeSettings({
     }
   }
 
+  function selectPreset(key: PresetKey) {
+    const colors = HERO_PRESETS[key];
+    setPreset(key);
+    setHeroBgColor(colors.from);
+    setHeroTextColor(colors.textColor);
+    setButtonBgColor(colors.buttonBg);
+    setButtonTextColor(colors.buttonText);
+  }
+
   const saveTheme = useMutation({
     mutationFn: async () => {
       if (!store) throw new Error("STORE_NOT_FOUND");
@@ -146,8 +316,23 @@ export function StorefrontThemeSettings({
         hero_title: heroTitle.trim(),
         hero_subtitle: heroSubtitle.trim(),
         hero_button: heroButton.trim(),
+        hero_bg_type: heroBgType,
+        hero_image_url: heroImageUrl || undefined,
+        hero_bg_color: heroBgColor,
+        hero_text_color: heroTextColor,
+        hero_overlay_opacity: heroOverlayOpacity,
+        font_family: fontFamily,
+        title_size: titleSize,
+        text_align: textAlign,
+        button_bg_color: buttonBgColor,
+        button_text_color: buttonTextColor,
+        button_size: buttonSize,
+        button_radius: buttonRadius,
+        button_align: buttonAlign,
         bar_enabled: barEnabled,
         bar_text: barText.trim(),
+        bar_bg_color: barBgColor,
+        bar_text_color: barTextColor,
         sections: {
           faq: {
             enabled: faqEnabled,
@@ -191,29 +376,106 @@ export function StorefrontThemeSettings({
     },
   });
 
-  const previewStyles = presetStyles(preset);
   const badgeLabels = TRUST_BADGE_LABELS[language];
+  const storeUrl = typeof window !== "undefined" && store ? `${window.location.origin}/m/${store.slug}` : "";
+  const heroBackground = heroBgType === "image" && previewHeroImage
+    ? {
+        backgroundColor: heroBgColor,
+        backgroundImage: `linear-gradient(rgba(0,0,0,${heroOverlayOpacity / 100}), rgba(0,0,0,${heroOverlayOpacity / 100})), url("${previewHeroImage}")`,
+        backgroundPosition: "center",
+        backgroundSize: "cover",
+      }
+    : { backgroundColor: heroBgColor };
+  const titleSizeClass: Record<string, string> = {
+    sm: "text-base sm:text-lg",
+    base: "text-lg sm:text-xl",
+    lg: "text-xl sm:text-2xl",
+    xl: "text-2xl sm:text-4xl",
+    "2xl": "text-3xl sm:text-5xl",
+  };
+  const buttonSizeClass: Record<string, string> = {
+    sm: "h-9 px-5 text-xs",
+    md: "h-11 px-7 text-sm",
+    lg: "h-14 px-10 text-base",
+  };
+  const buttonRadiusClass: Record<string, string> = {
+    none: "rounded-none",
+    md: "rounded-lg",
+    lg: "rounded-2xl",
+    full: "rounded-full",
+  };
+  const buttonAlignClass: Record<string, string> = {
+    start: "justify-start",
+    center: "justify-center",
+    end: "justify-end",
+  };
+  const textAlignClass: Record<string, string> = {
+    start: "text-start",
+    center: "text-center",
+    end: "text-end",
+  };
+  const tabs = [
+    { id: "hero" as const, label: t("الواجهة الرئيسية") },
+    { id: "button" as const, label: t("زر الطلب") },
+    { id: "bar" as const, label: t("شريط الإعلان") },
+    { id: "sections" as const, label: t("أقسام المتجر") },
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+      <header className="sticky top-0 z-20 -mx-4 flex flex-wrap items-center justify-between gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
         <div>
-          <h2 className="text-xl font-bold text-foreground">{t("مظهر المتجر")}</h2>
-          <p className="text-sm text-muted-foreground">
-            {t("تخصيص ألوان الواجهة الرئيسية والتحكم في أقسام صفحة الهبوط.")}
-          </p>
+          <h1 className="text-lg font-bold text-foreground">{t("تصميم المتجر")}</h1>
+          <p className="text-xs text-muted-foreground">{t("تخصيص ألوان الواجهة الرئيسية والتحكم في أقسام صفحة الهبوط.")}</p>
         </div>
+        <div className="flex items-center gap-2">
+          {storeUrl && (
+            <Button asChild type="button" variant="outline" size="sm">
+              <a href={storeUrl} target="_blank" rel="noreferrer">
+                {t("معاينة المتجر")} <ExternalLink className="ms-1 size-4" />
+              </a>
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="brand"
+            size="sm"
+            onClick={() => saveTheme.mutate()}
+            disabled={saveTheme.isPending || readOnly || imageUploading}
+          >
+            {saveTheme.isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            {t("حفظ التعديلات")}
+          </Button>
+        </div>
+      </header>
+
+      <div role="tablist" aria-label={t("أقسام محرر التصميم")} className="flex gap-2 overflow-x-auto rounded-2xl bg-muted p-1.5">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "shrink-0 rounded-xl px-4 py-2 text-sm transition-colors",
+              activeTab === tab.id ? "bg-card font-medium text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         {/* Main Configuration Card */}
         <div className="space-y-6">
           {/* Colors & Hero config card */}
-          <div className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card">
-            <h3 className="text-base font-bold text-foreground">{t("الواجهة الرئيسية (Hero)")}</h3>
+          <div className={cn("space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card", activeTab === "hero" || activeTab === "bar" ? "" : "hidden")}>
+            <h3 className="text-base font-bold text-foreground">{activeTab === "bar" ? t("شريط الإعلان العلوي") : t("الواجهة الرئيسية (Hero)")}</h3>
 
             {/* 6 Round Swatches */}
-            <div className="space-y-2.5">
+            <div className={cn("space-y-2.5", activeTab === "hero" ? "" : "hidden")}>
               <Label className="text-sm font-medium">{t("ألوان الواجهة الرئيسية")}</Label>
               <div className="flex flex-wrap items-center gap-3.5">
                 {PRESET_KEYS.map((key) => {
@@ -223,7 +485,7 @@ export function StorefrontThemeSettings({
                     <button
                       key={key}
                       type="button"
-                      onClick={() => setPreset(key)}
+                      onClick={() => selectPreset(key)}
                       title={t(p.label)}
                       disabled={readOnly}
                       className={cn(
@@ -255,7 +517,72 @@ export function StorefrontThemeSettings({
             </div>
 
             {/* Hero Inputs */}
-            <div className="space-y-3.5 pt-2">
+            <div className={cn("space-y-4 pt-2", activeTab === "hero" ? "" : "hidden")}>
+              <div className="space-y-2">
+                <Label>{t("خلفية الواجهة")}</Label>
+                <div className="flex gap-2">
+                  {(["color", "image"] as const).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setHeroBgType(type)}
+                      disabled={readOnly}
+                      className={cn("rounded-xl border px-4 py-2 text-sm", heroBgType === type ? "border-primary bg-primary/10 text-primary" : "border-border")}
+                    >
+                      {type === "color" ? t("لون سادة") : t("صورة")}
+                    </button>
+                  ))}
+                </div>
+                {heroBgType === "image" ? (
+                  <div className="space-y-2">
+                    <input
+                      ref={imageFileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        void uploadHeroImage(event.target.files?.[0]);
+                        event.currentTarget.value = "";
+                      }}
+                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button type="button" variant="outline" onClick={() => imageFileRef.current?.click()} disabled={readOnly || imageUploading}>
+                        {imageUploading ? <Loader2 className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
+                        {t("رفع صورة للواجهة")}
+                      </Button>
+                      {heroImageUrl && (
+                        <Button type="button" variant="ghost" size="icon" aria-label={t("حذف الصورة")} onClick={() => setHeroImageUrl("")} disabled={readOnly}>
+                          <X className="size-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t("صورة JPG أو PNG حتى 5 ميغابايت.")}</p>
+                    {previewHeroImage && <img src={previewHeroImage} alt="" className="h-28 w-full rounded-xl object-cover" />}
+                    <div className="space-y-2 pt-2">
+                      <Label htmlFor="hero-overlay">{t("تعتيم الصورة")} · {heroOverlayOpacity}%</Label>
+                      <input
+                        id="hero-overlay"
+                        type="range"
+                        min="0"
+                        max="90"
+                        value={heroOverlayOpacity}
+                        onChange={(event) => setHeroOverlayOpacity(Number(event.target.value))}
+                        disabled={readOnly}
+                        className="w-full accent-primary"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <ColorControl
+                    label={t("لون خلفية الواجهة")}
+                    value={heroBgColor}
+                    onChange={setHeroBgColor}
+                    disabled={readOnly}
+                    presets={["#111111", "#1C1C1C", "#0F1B33", "#0F3D2E", "#3B1F3A", "#F5F5F5"]}
+                  />
+                )}
+              </div>
+              <ColorControl label={t("لون نص الواجهة")} value={heroTextColor} onChange={setHeroTextColor} disabled={readOnly} presets={["#FFFFFF", "#111111", "#F5D17A"]} />
               <div className="space-y-1.5">
                 <Label htmlFor="th-title">{t("عنوان الواجهة")}</Label>
                 <Input
@@ -291,10 +618,38 @@ export function StorefrontThemeSettings({
                   disabled={readOnly}
                 />
               </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="font-family">{t("نوع الخط")}</Label>
+                  <select id="font-family" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" value={fontFamily} disabled={readOnly} onChange={(event) => setFontFamily(event.target.value)}>
+                    {["Tajawal", "Cairo", "Almarai", "Readex Pro", "Outfit", "Plus Jakarta Sans"].map((font) => (
+                      <option key={font} value={font} style={{ fontFamily: font }}>{font}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="title-size">{t("حجم العنوان")}</Label>
+                  <select id="title-size" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" value={titleSize} disabled={readOnly} onChange={(event) => setTitleSize(event.target.value)}>
+                    {[
+                      ["sm", "صغير"],
+                      ["base", "أساسي"],
+                      ["lg", "متوسط"],
+                      ["xl", "كبير"],
+                      ["2xl", "كبير جداً"],
+                    ].map(([size, label]) => <option key={size} value={size}>{t(label)}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="text-align">{t("محاذاة النص")}</Label>
+                  <select id="text-align" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" value={textAlign} disabled={readOnly} onChange={(event) => setTextAlign(event.target.value)}>
+                    <option value="start">{t("يمين")}</option><option value="center">{t("وسط")}</option><option value="end">{t("يسار")}</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             {/* Announcement Bar */}
-            <div className="space-y-3 pt-2">
+            <div className={cn("space-y-3 pt-2", activeTab === "bar" ? "" : "hidden")}>
               <div className="flex items-center justify-between rounded-xl border border-border p-3.5">
                 <div>
                   <Label htmlFor="sw-bar" className="cursor-pointer text-sm font-medium">
@@ -313,7 +668,8 @@ export function StorefrontThemeSettings({
               </div>
 
               {barEnabled && (
-                <div className="space-y-1.5">
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
                   <Label htmlFor="th-bar">{t("نص شريط الإعلانات")}</Label>
                   <Input
                     id="th-bar"
@@ -323,13 +679,29 @@ export function StorefrontThemeSettings({
                     maxLength={80}
                     disabled={readOnly}
                   />
+                  </div>
+                  <ColorControl label={t("لون خلفية الشريط")} value={barBgColor} onChange={setBarBgColor} disabled={readOnly} presets={["#111111", "#FFFFFF", "#C9A24B", "#0F3D2E"]} />
+                  <ColorControl label={t("لون نص الشريط")} value={barTextColor} onChange={setBarTextColor} disabled={readOnly} presets={["#FFFFFF", "#111111", "#F5D17A"]} />
                 </div>
               )}
             </div>
           </div>
 
+          {activeTab === "button" && (
+            <div className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card">
+              <h3 className="font-bold">{t("زر الطلب الرئيسي")}</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <ColorControl label={t("خلفية الزر")} value={buttonBgColor} onChange={setButtonBgColor} disabled={readOnly} presets={["#FFFFFF", "#111111", "#C9A24B", "#0F3D2E"]} />
+                <ColorControl label={t("لون نص الزر")} value={buttonTextColor} onChange={setButtonTextColor} disabled={readOnly} presets={["#111111", "#FFFFFF", "#F5D17A"]} />
+              </div>
+              <OptionButtons label={t("حجم الزر")} value={buttonSize} values={["sm", "md", "lg"]} onChange={setButtonSize} disabled={readOnly} t={t} />
+              <OptionButtons label={t("استدارة الحواف")} value={buttonRadius} values={["none", "md", "lg", "full"]} onChange={setButtonRadius} disabled={readOnly} t={t} />
+              <OptionButtons label={t("محاذاة الزر")} value={buttonAlign} values={["start", "center", "end"]} onChange={setButtonAlign} disabled={readOnly} t={t} />
+            </div>
+          )}
+
           {/* Landing Sections Manager */}
-          <div className="space-y-4">
+          <div className={cn("space-y-4", activeTab === "sections" ? "" : "hidden")}>
             <div>
               <h3 className="text-base font-bold text-foreground">{t("أقسام صفحة الهبوط")}</h3>
               <p className="text-xs text-muted-foreground">
@@ -618,7 +990,7 @@ export function StorefrontThemeSettings({
         </div>
 
         {/* Live Preview Column (Sticky on Desktop) */}
-        <div className="space-y-6">
+        <div className="order-first space-y-6 lg:order-last">
           <div className="sticky top-6 space-y-4">
             <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
               <div className="flex items-center justify-between border-b bg-muted/60 px-4 py-2.5 text-xs text-muted-foreground">
@@ -627,50 +999,61 @@ export function StorefrontThemeSettings({
                   {t("مباشر")}
                 </span>
               </div>
+              <div className="flex items-center justify-between border-b bg-card px-4 py-3 text-sm">
+                <span className="font-medium">{store?.name || t("اسم متجرك")}</span>
+                <span className="text-xs text-muted-foreground">{t("منتجاتنا")}</span>
+              </div>
 
               {barEnabled && (
-                <div className="bg-primary px-3 py-2 text-center text-xs text-white">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("bar")}
+                  style={{ backgroundColor: barBgColor, color: barTextColor }}
+                  className={cn("w-full px-3 py-2 text-center text-xs", activeTab === "bar" ? "ring-2 ring-inset ring-brand" : "")}
+                >
                   {barText || defaults.barText}
-                </div>
+                </button>
               )}
 
               <div
-                style={previewStyles.hero}
-                className="p-6 text-center transition-colors sm:p-8"
+                style={{ ...heroBackground, color: heroTextColor, fontFamily }}
+                onClick={() => setActiveTab("hero")}
+                className={cn("cursor-pointer p-6 transition-colors sm:p-8", activeTab === "hero" ? "ring-2 ring-inset ring-brand" : "")}
               >
-                <p className="text-xl font-normal leading-tight">
+                <p className={cn("font-normal leading-tight", titleSizeClass[titleSize], textAlignClass[textAlign])}>
                   {heroTitle || store?.name || t("اسم متجرك")}
                 </p>
-                <p className="mx-auto mt-2 max-w-xs text-xs font-light opacity-90 leading-relaxed">
+                <p className={cn("mt-2 max-w-xs text-xs font-light leading-relaxed opacity-90", textAlign === "center" ? "mx-auto" : textAlign === "start" ? "me-auto" : "ms-auto", textAlignClass[textAlign])}>
                   {heroSubtitle || defaults.heroSubtitle}
                 </p>
-                <div
-                  style={previewStyles.button}
-                  className="mt-4 inline-flex h-9 items-center justify-center rounded-full px-6 text-xs font-normal shadow-sm"
-                >
-                  {heroButton || defaults.heroButton}
+                <div className={cn("mt-4 flex", buttonAlignClass[buttonAlign])}>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setActiveTab("button");
+                    }}
+                    style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+                    className={cn("inline-flex items-center justify-center font-normal shadow-sm", buttonSizeClass[buttonSize], buttonRadiusClass[buttonRadius], activeTab === "button" ? "ring-2 ring-brand ring-offset-2" : "")}
+                  >
+                    {heroButton || defaults.heroButton}
+                  </button>
                 </div>
               </div>
-            </div>
-
-            {/* Save Button */}
-            <div className="rounded-2xl border border-border bg-card p-5 shadow-card space-y-3">
-              <Button
+              {trustEnabled && (
+              <button
                 type="button"
-                onClick={() => saveTheme.mutate()}
-                disabled={saveTheme.isPending || readOnly}
-                className="w-full rounded-full bg-primary text-primary-foreground hover:opacity-90"
+                onClick={() => setActiveTab("sections")}
+                className={cn("grid w-full grid-cols-3 gap-2 p-3 text-center", activeTab === "sections" ? "ring-2 ring-inset ring-brand" : "")}
               >
-                {saveTheme.isPending ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <Save className="size-4" />
-                )}
-                {t("حفظ التغييرات")}
-              </Button>
-              <p className="text-center text-xs text-muted-foreground">
-                {t("تطبق التغييرات فوراً على صفحة متجرك للزبائن.")}
-              </p>
+                {trustBadges.slice(0, 3).map((badgeKey) => (
+                  <span key={badgeKey} className="rounded-xl border bg-background px-2 py-2 text-[10px]">
+                    {badgeLabels[badgeKey]}
+                  </span>
+                ))}
+                {trustBadges.length === 0 && <span className="col-span-3 text-xs text-muted-foreground">{t("شارات الثقة")}</span>}
+              </button>
+              )}
             </div>
           </div>
         </div>

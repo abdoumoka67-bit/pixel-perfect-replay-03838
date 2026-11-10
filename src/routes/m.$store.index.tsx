@@ -16,13 +16,13 @@ import { formatDZD, whatsappLink } from "@/lib/commerce";
 import {
   TRUST_BADGES,
   parseStorefrontConfig,
-  presetStyles,
   trustBadgeLabel,
   type TrustBadgeKey,
 } from "@/lib/storefront-theme";
 import { useStorefrontLanguage } from "@/components/LanguageSwitcher";
 import { tr } from "@/lib/ui-i18n";
 import { cn } from "@/lib/utils";
+import type { CSSProperties } from "react";
 
 export const Route = createFileRoute("/m/$store/")({
   loader: async ({ params }) => {
@@ -104,7 +104,45 @@ function Storefront() {
 
   const config = store.storefront_config ?? parseStorefrontConfig({}, store.name);
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
-  const styles = presetStyles(config.preset);
+  const heroBackground: CSSProperties = {
+    backgroundColor: config.hero_bg_color,
+    color: config.hero_text_color,
+    ...(config.hero_bg_type === "image" && config.hero_image_url
+      ? {
+          backgroundImage: `linear-gradient(rgba(0,0,0,${config.hero_overlay_opacity / 100}), rgba(0,0,0,${config.hero_overlay_opacity / 100})), url(${JSON.stringify(config.hero_image_url)})`,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+        }
+      : {}),
+  };
+  const titleSizeClass: Record<string, string> = {
+    sm: "text-2xl sm:text-3xl",
+    base: "text-[1.75rem] sm:text-4xl",
+    lg: "text-[2rem] sm:text-4xl",
+    xl: "text-[2rem] sm:text-5xl",
+    "2xl": "text-3xl sm:text-6xl",
+  };
+  const buttonSizeClass: Record<string, string> = {
+    sm: "h-11 px-8 text-base",
+    md: "h-14 px-12 text-lg",
+    lg: "h-16 px-14 text-xl",
+  };
+  const buttonRadiusClass: Record<string, string> = {
+    none: "rounded-none",
+    md: "rounded-lg",
+    lg: "rounded-2xl",
+    full: "rounded-full",
+  };
+  const textAlignClass: Record<string, string> = {
+    start: "text-start",
+    center: "text-center",
+    end: "text-end",
+  };
+  const buttonAlignClass: Record<string, string> = {
+    start: "justify-start",
+    center: "justify-center",
+    end: "justify-end",
+  };
 
   const socialWhatsapp = config.sections.social.whatsapp || store.whatsapp;
   const socialInstagram = normalizeUrl(config.sections.social.instagram);
@@ -117,20 +155,22 @@ function Storefront() {
     <StoreChrome store={store}>
       {/* 1. Hero Section */}
       <section
-        style={styles.hero}
-        className="px-6 py-20 text-center transition-colors sm:py-28"
+        style={heroBackground}
+        className={`px-6 py-20 transition-colors sm:py-28 ${textAlignClass[config.text_align]}`}
       >
-        <h1 className="text-[2rem] font-normal leading-tight sm:text-5xl">{config.hero_title}</h1>
-        <p className="mx-auto mt-5 max-w-md text-lg font-light leading-9 opacity-90 sm:text-xl">
+        <h1 className={`font-normal leading-tight ${titleSizeClass[config.title_size]}`}>{config.hero_title}</h1>
+        <p className={`mt-5 max-w-md text-lg font-light leading-9 opacity-90 sm:text-xl ${config.text_align === "center" ? "mx-auto" : config.text_align === "start" ? "me-auto" : "ms-auto"}`}>
           {config.hero_subtitle}
         </p>
-        <a
-          href="#products"
-          style={styles.button}
-          className="mt-9 inline-flex h-14 items-center rounded-xl px-12 text-lg font-normal shadow-float transition-opacity hover:opacity-90"
-        >
-          {config.hero_button}
-        </a>
+        <div className={`mt-9 flex ${buttonAlignClass[config.button_align]}`}>
+          <a
+            href="#products"
+            style={{ backgroundColor: config.button_bg_color, color: config.button_text_color }}
+            className={`inline-flex items-center font-normal shadow-float transition-opacity hover:opacity-90 ${buttonSizeClass[config.button_size]} ${buttonRadiusClass[config.button_radius]}`}
+          >
+            {config.hero_button}
+          </a>
+        </div>
       </section>
 
       {/* 2. Products Section */}

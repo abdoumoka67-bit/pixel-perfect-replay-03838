@@ -79,7 +79,12 @@ export const getStorefront = createServerFn({ method: "GET" })
       throw error;
     }
 
-    const urls = await resolveImageUrls(client, [s.logo_url, ...(products ?? []).map((p) => p.images[0])]);
+    const config = parseStorefrontConfig(s.storefront_config, s.name);
+    const urls = await resolveImageUrls(client, [
+      s.logo_url,
+      config.hero_image_url,
+      ...(products ?? []).map((p) => p.images[0]),
+    ]);
     const store: PublicStore = {
       id: s.id,
       name: s.name,
@@ -90,7 +95,10 @@ export const getStorefront = createServerFn({ method: "GET" })
       default_desk_price: s.default_desk_price,
       accepting_orders: s.accepting_orders,
       meta_pixel_id: s.meta_pixel_id ?? null,
-      storefront_config: parseStorefrontConfig(s.storefront_config, s.name),
+      storefront_config: {
+        ...config,
+        hero_image_url: config.hero_image_url ? urls[config.hero_image_url] : undefined,
+      },
     };
     return {
       store,
@@ -129,7 +137,8 @@ export const getProductPage = createServerFn({ method: "GET" })
       console.error("Storefront delivery rates load failed", ratesError);
       throw ratesError;
     }
-    const urls = await resolveImageUrls(client, [s.logo_url, ...p.images]);
+    const config = parseStorefrontConfig(s.storefront_config, s.name);
+    const urls = await resolveImageUrls(client, [s.logo_url, config.hero_image_url, ...p.images]);
     const store: PublicStore = {
       id: s.id,
       name: s.name,
@@ -140,7 +149,10 @@ export const getProductPage = createServerFn({ method: "GET" })
       default_desk_price: s.default_desk_price,
       accepting_orders: s.accepting_orders,
       meta_pixel_id: s.meta_pixel_id ?? null,
-      storefront_config: parseStorefrontConfig(s.storefront_config, s.name),
+      storefront_config: {
+        ...config,
+        hero_image_url: config.hero_image_url ? urls[config.hero_image_url] : undefined,
+      },
     };
     const product: PublicProduct = { ...p, images: p.images.map((i) => urls[i]).filter((x): x is string => !!x) };
     return { store, product, rates: rates ?? [] };

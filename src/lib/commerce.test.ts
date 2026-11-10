@@ -273,6 +273,13 @@ describe("Ad pixel IDs", () => {
 });
 
 describe("Team page access by address", () => {
+  it("design is available to owners and managers, but not agents", () => {
+    const designArea = areaForPath("/dashboard/design");
+    expect(designArea).toBe("design");
+    expect(canOpen("owner", designArea)).toBe(true);
+    expect(canOpen("manager", designArea)).toBe(true);
+    expect(canOpen("agent", designArea)).toBe(false);
+  });
   it("an agent cannot open the team, activity or settings pages", () => {
     expect(canOpen("agent", areaForPath("/dashboard/team"))).toBe(false);
     expect(canOpen("agent", areaForPath("/dashboard/activity"))).toBe(false);

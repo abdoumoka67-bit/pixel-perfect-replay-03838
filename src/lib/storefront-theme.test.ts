@@ -15,8 +15,23 @@ describe("storefront theme config", () => {
     expect(config.hero_title).toBe("متجر النخبة");
     expect(config.hero_subtitle).toBe("Order now and pay on delivery");
     expect(config.hero_button).toBe("Shop now");
+    expect(config.hero_bg_type).toBe("color");
+    expect(config.hero_image_url).toBeUndefined();
+    expect(config.hero_bg_color).toBe("#111111");
+    expect(config.hero_text_color).toBe("#FFFFFF");
+    expect(config.hero_overlay_opacity).toBe(40);
+    expect(config.font_family).toBe("Tajawal");
+    expect(config.title_size).toBe("xl");
+    expect(config.text_align).toBe("center");
+    expect(config.button_bg_color).toBe("#FFFFFF");
+    expect(config.button_text_color).toBe("#111111");
+    expect(config.button_size).toBe("md");
+    expect(config.button_radius).toBe("lg");
+    expect(config.button_align).toBe("center");
     expect(config.bar_enabled).toBe(true);
     expect(config.bar_text).toBe("Welcome to our store");
+    expect(config.bar_bg_color).toBe("#111111");
+    expect(config.bar_text_color).toBe("#FFFFFF");
     expect(config.sections.faq.enabled).toBe(true);
     expect(config.sections.faq.items).toEqual(DEFAULT_FAQ_BY_LANGUAGE.en);
     expect(config.sections.reviews.enabled).toBe(false);
@@ -49,6 +64,61 @@ describe("storefront theme config", () => {
 
     const config3 = parseStorefrontConfig({ preset: null }, "متجري");
     expect(config3.preset).toBe("noir");
+  });
+
+  it("parses design options and safely falls back for invalid values", () => {
+    const config = parseStorefrontConfig({
+      hero_bg_type: "image",
+      hero_image_url: "owner/hero.png",
+      hero_bg_color: "#123abc",
+      hero_text_color: "#abcdef",
+      hero_overlay_opacity: 120,
+      font_family: "Readex Pro",
+      title_size: "2xl",
+      text_align: "end",
+      button_bg_color: "#102030",
+      button_text_color: "#FFFFFF",
+      button_size: "lg",
+      button_radius: "full",
+      button_align: "start",
+      bar_bg_color: "#202020",
+      bar_text_color: "#EEEEEE",
+    });
+
+    expect(config.hero_bg_type).toBe("image");
+    expect(config.hero_image_url).toBe("owner/hero.png");
+    expect(config.hero_bg_color).toBe("#123abc");
+    expect(config.hero_text_color).toBe("#abcdef");
+    expect(config.hero_overlay_opacity).toBe(90);
+    expect(config.font_family).toBe("Readex Pro");
+    expect(config.title_size).toBe("2xl");
+    expect(config.text_align).toBe("end");
+    expect(config.button_bg_color).toBe("#102030");
+    expect(config.button_text_color).toBe("#FFFFFF");
+    expect(config.button_size).toBe("lg");
+    expect(config.button_radius).toBe("full");
+    expect(config.button_align).toBe("start");
+    expect(config.bar_bg_color).toBe("#202020");
+    expect(config.bar_text_color).toBe("#EEEEEE");
+
+    const invalid = parseStorefrontConfig({
+      hero_bg_type: "video",
+      hero_image_url: "javascript:alert(1)",
+      hero_bg_color: "red",
+      hero_overlay_opacity: -3,
+      font_family: "Comic Sans",
+      title_size: "huge",
+      text_align: "left",
+      button_radius: "circle",
+    });
+    expect(invalid.hero_bg_type).toBe("color");
+    expect(invalid.hero_image_url).toBeUndefined();
+    expect(invalid.hero_bg_color).toBe("#111111");
+    expect(invalid.hero_overlay_opacity).toBe(0);
+    expect(invalid.font_family).toBe("Tajawal");
+    expect(invalid.title_size).toBe("xl");
+    expect(invalid.text_align).toBe("center");
+    expect(invalid.button_radius).toBe("lg");
   });
 
   it("FAQ capped at 8", () => {

@@ -421,6 +421,7 @@ export type DashboardArea =
   | "overview"
   | "orders"
   | "products"
+  | "design"
   | "analytics"
   | "activity"
   | "team"
@@ -434,6 +435,7 @@ export const AREA_ACCESS: Record<DashboardArea, StoreAccess[]> = {
   overview: ["owner", "manager", "agent"],
   orders: ["owner", "manager", "agent"],
   products: ["owner", "manager"],
+  design: ["owner", "manager"],
   analytics: ["owner", "manager"],
   activity: ["owner", "manager"],
   team: ["owner"],
@@ -461,6 +463,7 @@ export function areaForPath(path: string): DashboardArea {
   const map: Record<string, DashboardArea> = {
     orders: "orders",
     products: "products",
+    design: "design",
     analytics: "analytics",
     activity: "activity",
     team: "team",

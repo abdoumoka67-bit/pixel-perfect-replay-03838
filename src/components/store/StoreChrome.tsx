@@ -21,6 +21,7 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
   // The store language is the default; visitors can switch it and their choice is remembered.
   const storeLanguage = store.storefront_config?.language ?? parseStorefrontConfig({}, store.name).language;
   const { language, setLanguage } = useStorefrontLanguage(storeLanguage);
+  const config = store.storefront_config ?? parseStorefrontConfig({}, store.name);
   const isRtl = language === "ar";
   useDocumentLanguage(language);
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
@@ -31,14 +32,14 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
     initPixels(store);
   }, [store]);
 
-  const barEnabled = store.storefront_config?.bar_enabled ?? true;
-  const barText = store.storefront_config?.bar_text || t("مرحبا بك في متجرنا");
+  const barEnabled = config.bar_enabled;
+  const barText = config.bar_text || t("مرحبا بك في متجرنا");
 
   return (
     <UiLanguageProvider language={language}>
-      <div className="min-h-screen bg-card" dir={isRtl ? "rtl" : "ltr"}>
+      <div className="min-h-screen bg-card" dir={isRtl ? "rtl" : "ltr"} style={{ fontFamily: config.font_family }}>
         {bar && barEnabled && (
-          <div className="relative bg-primary px-10 py-2.5 text-center text-sm text-primary-foreground">
+          <div className="relative px-10 py-2.5 text-center text-sm" style={{ backgroundColor: config.bar_bg_color, color: config.bar_text_color }}>
             {barText}
             <button onClick={() => setBar(false)} className="absolute end-3 top-1/2 -translate-y-1/2 p-1 opacity-80" aria-label={t("إغلاق")}>
               <X className="size-4" />

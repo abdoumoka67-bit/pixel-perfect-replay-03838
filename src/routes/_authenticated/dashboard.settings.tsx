@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { verifyCustomDomain } from "@/lib/domain.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Copy, ExternalLink, Globe, ImagePlus, Loader2, Save, Target } from "lucide-react";
+import { Copy, ExternalLink, Globe, ImagePlus, Loader2, Palette, Save, Target } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { ProLock, ProPill } from "@/components/dashboard/ProLock";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { StorefrontThemeSettings } from "@/components/dashboard/StorefrontThemeSettings";
 import { WILAYAS } from "@/data/wilayas";
 import { useMyStore } from "@/hooks/use-my-store";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
@@ -122,7 +121,7 @@ function SettingsPage() {
     <div className="space-y-10">
       <PageHeader
         title={t("إعدادات المتجر")}
-        description={t("هوية متجرك، معلومات التواصل، ومظهر صفحة الهبوط.")}
+        description={t("هوية متجرك ومعلومات التواصل والإعدادات الأساسية.")}
         actions={<RestartTourButton />}
       />
       <form
@@ -219,8 +218,21 @@ function SettingsPage() {
         </div>
       </form>
 
-      <div className="border-t border-border pt-8">
-        <StorefrontThemeSettings store={store} readOnly={readOnly} />
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+              <Palette className="size-5" strokeWidth={1.7} />
+            </span>
+            <div>
+              <h2 className="font-medium">{t("مظهر وتصميم المتجر")}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t("خصص واجهة متجرك وأقسامه من محرر التصميم.")}</p>
+            </div>
+          </div>
+          <Button asChild variant="outline" className="shrink-0">
+            <Link to="/dashboard/design">{t("تخصيص تصميم المتجر")}</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="border-t border-border pt-8">
