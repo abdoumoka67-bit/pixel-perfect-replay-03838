@@ -41,6 +41,73 @@
   }
 }
 
+/* Pixel attribution demo: flowing dashes, floating platform tiles, breathing card. */
+@keyframes pixel-dash {
+  to {
+    stroke-dashoffset: -44;
+  }
+}
+
+@keyframes pixel-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pixel-card-breathe {
+  0%,
+  100% {
+    box-shadow: 0 18px 40px -28px rgba(15, 23, 42, 0.45);
+  }
+  50% {
+    box-shadow: 0 26px 55px -28px rgba(15, 23, 42, 0.55);
+  }
+}
+
+@keyframes pixel-ping {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.7;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.pixel-connector path {
+  stroke-dasharray: 4 7;
+  animation: pixel-dash 1.4s linear infinite;
+}
+
+.pixel-tile {
+  animation: pixel-float 6s ease-in-out infinite;
+}
+
+.pixel-card {
+  animation: pixel-card-breathe 6s ease-in-out infinite;
+}
+
+.pixel-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pixel-ping 2.4s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-connector path,
+  .pixel-tile,
+  .pixel-card,
+  .pixel-ping {
+    animation: none;
+  }
+}
+
 /*
  * oranix design system — warm sand background, charcoal structure,
  * calm terracotta accents. All colors in oklch.

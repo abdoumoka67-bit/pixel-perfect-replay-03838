@@ -181,6 +181,15 @@ const ar = {
   "landing.f6.text": "صدّر الطلبات المؤكدة بنقرة زر واحدة لطباعة البوالص وتحميلها للناقلين بسهولة.",
   "landing.f7.title": "بيكسل الإعلانات المتعدد",
   "landing.f7.text": "اربط Facebook وTikTok وSnapchat بيكسل بمجرد وضع الـ ID، وتتبع مبيعاتك وأرباح حملاتك بدقة دون أي كود.",
+  "landing.pixels.badge": "بكسل الإعلانات",
+  "landing.pixels.title": "كل طلبية تعرف إعلانها",
+  "landing.pixels.sub": "اربط بكسل Meta وTikTok وSnapchat وGoogle، وتابع مصدر كل طلبية وأرباح حملاتك بدقة.",
+  "landing.pixels.product": "فستان صيفي أبيض",
+  "landing.pixels.amount": "5.500 دج",
+  "landing.pixels.sourceLabel": "المصدر",
+  "landing.pixels.sourceValue": "TikTok · فيديوهات سبتمبر",
+  "landing.pixels.carrierLabel": "التوصيل",
+  "landing.pixels.shield": "تُحتسب حتى مع مانع الإعلانات",
 
   // Legal pages
   "legal.home": "الرئيسية",
@@ -399,6 +408,15 @@ const fr: Dictionary = {
   "landing.f6.text": "Exportez vos commandes confirmées en un clic pour imprimer les bordereaux facilement.",
   "landing.f7.title": "Multi-Pixels Publicitaires",
   "landing.f7.text": "Connectez vos pixels Facebook, TikTok et Snapchat en collant votre ID, et suivez vos ventes sans toucher au code.",
+  "landing.pixels.badge": "Pixels publicitaires",
+  "landing.pixels.title": "Chaque commande connaît sa pub",
+  "landing.pixels.sub": "Connectez vos pixels Meta, TikTok, Snapchat et Google et suivez la source de chaque commande.",
+  "landing.pixels.product": "Robe d'été blanche",
+  "landing.pixels.amount": "5 500 DA",
+  "landing.pixels.sourceLabel": "Source",
+  "landing.pixels.sourceValue": "TikTok · Vidéos de septembre",
+  "landing.pixels.carrierLabel": "Livraison",
+  "landing.pixels.shield": "Suivie même avec un bloqueur de pub",
 
   // Legal pages
   "legal.home": "Accueil",
@@ -614,6 +632,15 @@ const en: Dictionary = {
   "landing.f6.text": "Export confirmed orders in one click to print labels and hand them to carriers easily.",
   "landing.f7.title": "Multi ad pixels",
   "landing.f7.text": "Connect Facebook, TikTok and Snapchat pixels by pasting the ID, and track your sales and campaign profit accurately with no code.",
+  "landing.pixels.badge": "Ad pixels",
+  "landing.pixels.title": "Every order knows its ad",
+  "landing.pixels.sub": "Connect Meta, TikTok, Snapchat and Google pixels and track where each order comes from.",
+  "landing.pixels.product": "White summer dress",
+  "landing.pixels.amount": "5,500 DZD",
+  "landing.pixels.sourceLabel": "Source",
+  "landing.pixels.sourceValue": "TikTok · September videos",
+  "landing.pixels.carrierLabel": "Delivery",
+  "landing.pixels.shield": "Tracked even with ad blockers",
 
   // Legal pages
   "legal.home": "Home",

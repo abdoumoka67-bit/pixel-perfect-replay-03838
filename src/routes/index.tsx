@@ -10,6 +10,7 @@ import { translate, type TranslationKey } from "@/lib/i18n";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
 import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
 import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
+import { PixelAttribution } from "@/components/landing/PixelAttribution";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -125,7 +126,7 @@ function Home() {
       : "";
 
     return (
-      <span className="inline-flex flex-wrap items-center justify-center gap-y-1 lg:flex-nowrap lg:whitespace-nowrap">
+      <span className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 lg:flex-nowrap lg:whitespace-nowrap">
         <span>{part1}</span>{" "}
         {part2 && <span>{part2}</span>}
       </span>
@@ -212,6 +213,8 @@ function Home() {
           </div>
           <FeaturesAccordion />
         </section>
+
+        <PixelAttribution />
 
         {plans.length > 0 && (
           <section className="border-t bg-background">
