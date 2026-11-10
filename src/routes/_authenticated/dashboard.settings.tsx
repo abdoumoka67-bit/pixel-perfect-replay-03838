@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { verifyCustomDomain } from "@/lib/domain.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Globe, ImagePlus, Loader2, Save, Target } from "lucide-react";
+import { Copy, ExternalLink, Globe, ImagePlus, Loader2, Save, Target } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { ProLock, ProPill } from "@/components/dashboard/ProLock";
 import { supabase } from "@/integrations/supabase/client";
@@ -214,6 +214,7 @@ function SettingsPage() {
             onTiktok={setTiktokPixel}
             saving={savePixels.isPending}
             onSave={() => savePixels.mutate()}
+            storeUrl={storeUrl}
           />
         </div>
       </form>
@@ -240,6 +241,7 @@ function PixelCard(props: {
   onTiktok: (v: string) => void;
   saving: boolean;
   onSave: () => void;
+  storeUrl: string;
 }) {
   const t = useTr();
   const locked = !props.isPro;
@@ -287,9 +289,22 @@ function PixelCard(props: {
           <Link to="/dashboard/billing">{t("الترقية إلى Pro لتفعيل البيكسل")}</Link>
         </Button>
       ) : (
-        <Button type="button" className="w-full" disabled={props.saving || props.disabled} onClick={props.onSave}>
-          {props.saving ? <Loader2 className="animate-spin" /> : <Save />} {t("حفظ البيكسل")}
-        </Button>
+        <>
+          <Button type="button" className="w-full" disabled={props.saving || props.disabled} onClick={props.onSave}>
+            {props.saving ? <Loader2 className="animate-spin" /> : <Save />} {t("حفظ البيكسل")}
+          </Button>
+          <div className="space-y-1.5 border-t border-border pt-3">
+            <Button asChild variant="ghost" size="sm" className="w-full justify-start gap-2 px-2 text-xs">
+              <a href={`${props.storeUrl}?pixel_debug=1`} target="_blank" rel="noreferrer">
+                <ExternalLink className="size-3.5" />
+                {t("افتح المتجر في وضع فحص البيكسل")}
+              </a>
+            </Button>
+            <p className="px-2 text-[11px] leading-5 text-muted-foreground">
+              {t("سجّل في Meta Events Manager ← Test Events أو TikTok Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.")}
+            </p>
+          </div>
+        </>
       )}
     </div>
   );

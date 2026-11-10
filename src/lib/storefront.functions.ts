@@ -149,6 +149,22 @@ export const getProductPage = createServerFn({ method: "GET" })
     return { store, product, rates: rates ?? [] };
   });
 
+export const getStorePixelIds = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({ slug: z.string().min(1).max(60) }).parse(d))
+  .handler(async ({ data }) => {
+    // IDs are already masked by get_public_store unless the store is Pro.
+    try {
+      const s = await loadStore(publicClient(), data.slug);
+      return {
+        meta_pixel_id: s?.meta_pixel_id ?? null,
+        tiktok_pixel_id: s?.tiktok_pixel_id ?? null,
+      };
+    } catch (error) {
+      console.error("store pixel ids load failed", error);
+      return { meta_pixel_id: null, tiktok_pixel_id: null };
+    }
+  });
+
 export const getPublicPlans = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const { data, error } = await publicClient()

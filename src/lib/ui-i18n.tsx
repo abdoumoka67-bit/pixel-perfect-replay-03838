@@ -512,6 +512,9 @@ const en: Record<string, string> = {
   "حفظ الأسعار": "Save prices",
   "حفظ الإعدادات": "Save settings",
   "حفظ البيكسل": "Save pixel",
+  "افتح المتجر في وضع فحص البيكسل": "Open the store in pixel test mode",
+  "سجّل في Meta Events Manager ← Test Events أو TikTok Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.":
+    "Create a Test Events session in Meta Events Manager (or TikTok Events), then open the link above to watch each event fire live.",
   "حفظ التغييرات": "Save changes",
   "حفظ الدومين": "Save domain",
   "حفظ الربط": "Save integration",
@@ -1270,6 +1273,9 @@ const fr: Record<string, string> = {
   "حفظ الأسعار": "Enregistrer les tarifs",
   "حفظ الإعدادات": "Enregistrer les paramètres",
   "حفظ البيكسل": "Enregistrer le pixel",
+  "افتح المتجر في وضع فحص البيكسل": "Ouvrir la boutique en mode test pixel",
+  "سجّل في Meta Events Manager ← Test Events أو TikTok Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.":
+    "Ouvrez une session Test Events dans Meta Events Manager (ou TikTok Events), puis cliquez sur le lien ci-dessus pour voir chaque événement en direct.",
   "حفظ التغييرات": "Enregistrer les modifications",
   "حفظ الدومين": "Enregistrer le domaine",
   "حفظ الربط": "Enregistrer la connexion",

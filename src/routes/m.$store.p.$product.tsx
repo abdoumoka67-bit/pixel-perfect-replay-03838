@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { StoreChrome, StoreFaq } from "@/components/store/StoreChrome";
 import { formatDZD, friendlyError, isValidDzPhone, normalizeDzPhone, orderTotal, shippingPrice, type DeliveryType } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
-import { trackPixel } from "@/lib/pixels";
+import { identifyPixelCustomer, trackPixel } from "@/lib/pixels";
+import { readAttribution } from "@/lib/attribution";
 import { useStorefrontLanguage } from "@/components/LanguageSwitcher";
 import { tr } from "@/lib/ui-i18n";
 
@@ -134,11 +135,14 @@ function ProductLanding() {
       _delivery_type: delivery,
       ...(product.sizes.length ? { _size: size } : {}),
       ...(product.colors.length ? { _color: color } : {}),
+      _attribution: readAttribution(),
     });
     setBusy(false);
     if (error) { toast.error(t(friendlyError(error.message))); return; }
     const row = data?.[0];
-    trackPixel("Purchase", { id: product.id, name: product.name, value: Number(row?.total ?? total), quantity: qty });
+    // Advanced matching: send hashed buyer data so Meta/TikTok can match the order
+    // to the ad click. Must run before the Purchase event on the thank-you page.
+    await identifyPixelCustomer({ phone: normalizeDzPhone(phone), name });
     navigate({
       to: "/m/$store/thank-you",
       params: { store: store.slug },
@@ -146,6 +150,7 @@ function ProductLanding() {
         n: Number(row?.order_number ?? 0),
         t: Number(row?.total ?? total),
         p: product.name,
+        pid: product.id,
         l: language,
       },
     });

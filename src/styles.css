@@ -87,6 +87,8 @@
 
 .pixel-tile {
   animation: pixel-float 6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .pixel-card {

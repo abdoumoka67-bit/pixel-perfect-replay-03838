@@ -1,18 +1,30 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { z } from "zod";
 import { CheckCircle2, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDZD } from "@/lib/commerce";
 import { useDocumentLanguage } from "@/components/LanguageSwitcher";
 import { tr } from "@/lib/ui-i18n";
+import { initPixels, trackPixel } from "@/lib/pixels";
+import { getStorePixelIds } from "@/lib/storefront.functions";
 
 export const Route = createFileRoute("/m/$store/thank-you")({
   validateSearch: z.object({
     n: z.number().optional(),
     t: z.number().optional(),
     p: z.string().optional(),
+    pid: z.string().optional(),
     l: z.enum(["ar", "fr", "en"]).optional(),
   }),
+  loader: async ({ params }) => {
+    try {
+      return await getStorePixelIds({ data: { slug: params.store } });
+    } catch {
+      // The confirmation page must render even when Supabase is unreachable.
+      return { meta_pixel_id: null, tiktok_pixel_id: null };
+    }
+  },
   head: ({ match }) => {
     const language = match.search.l ?? "en";
     const title = tr(language, "تم تسجيل طلبك بنجاح");
@@ -33,11 +45,30 @@ export const Route = createFileRoute("/m/$store/thank-you")({
 });
 
 function ThankYou() {
-  const { n, t, p, l } = Route.useSearch();
+  const { n, t, p, pid, l } = Route.useSearch();
   const { store } = Route.useParams();
+  const pixels = Route.useLoaderData();
   const language = l ?? "en";
   useDocumentLanguage(language);
   const s = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
+
+  useEffect(() => {
+    initPixels(pixels);
+    if (!n) return;
+    // One Purchase per order number, even if the buyer reloads the page.
+    const key = `oranix_purchase_${store}_${n}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // Storage blocked: fall through and still report the conversion.
+    }
+    trackPixel(
+      "Purchase",
+      { id: pid ?? `orx-${n}`, name: p ?? "", value: t ?? 0 },
+      { eventId: `orx-${n}` },
+    );
+  }, [n, p, pid, pixels, store, t]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-hero px-5 py-10">

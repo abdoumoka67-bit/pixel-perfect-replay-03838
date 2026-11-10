@@ -7,6 +7,7 @@ import { whatsappLink } from "@/lib/commerce";
 import { LanguageMenu, useDocumentLanguage, useStorefrontLanguage } from "@/components/LanguageSwitcher";
 import type { PublicStore } from "@/lib/storefront.functions";
 import { initPixels } from "@/lib/pixels";
+import { captureAttribution } from "@/lib/attribution";
 import {
   DEFAULT_FAQ_BY_LANGUAGE,
   parseStorefrontConfig,
@@ -25,6 +26,8 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
 
   useEffect(() => {
+    // Remember the ad click (UTM/click id) before the next client-side navigation drops it.
+    captureAttribution();
     initPixels(store);
   }, [store]);
 
