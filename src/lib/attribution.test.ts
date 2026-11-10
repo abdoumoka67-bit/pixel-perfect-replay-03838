@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attributionLabel, hasAttribution, parseAttribution } from "./attribution";
+import { attributionFromJson, attributionLabel, hasAttribution, parseAttribution } from "./attribution";
 
 describe("ad attribution", () => {
   it("reads UTMs and platform click ids", () => {
@@ -45,5 +45,15 @@ describe("ad attribution", () => {
     expect(attributionLabel({ source: "tiktok", campaign: "sept" })).toBe("tiktok · sept");
     expect(attributionLabel({ source: "facebook" })).toBe("facebook");
     expect(attributionLabel(null)).toBeNull();
+  });
+
+  it("reads an order's stored jsonb and drops unknown keys", () => {
+    expect(attributionFromJson({ source: "facebook", campaign: "sept", evil: "x", term: 5 })).toEqual({
+      source: "facebook",
+      campaign: "sept",
+    });
+    expect(attributionFromJson({})).toBeNull();
+    expect(attributionFromJson(null)).toBeNull();
+    expect(attributionFromJson("facebook")).toBeNull();
   });
 });

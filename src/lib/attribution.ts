@@ -141,6 +141,11 @@ export function readAttribution(): OrderAttribution | null {
   return stored.data;
 }
 
+/** Reads the attribution jsonb stored on an order (already sanitized in SQL). */
+export function attributionFromJson(value: unknown): OrderAttribution | null {
+  return sanitize(value);
+}
+
 /** Human label for a source, e.g. "TikTok · september_videos". */
 export function attributionLabel(a: OrderAttribution | null): string | null {
   if (!a) return null;

@@ -97,10 +97,10 @@ describe("pixel tracking", () => {
     expect(identify).toBeTruthy();
     const data = identify?.[2] as Record<string, string>;
     // 64 hex chars = SHA-256, and nothing reversible leaves the browser.
-    expect(data.ph).toMatch(/^[a-f0-9]{64}$/);
-    expect(data.fn).toMatch(/^[a-f0-9]{64}$/);
-    expect(data.ln).toMatch(/^[a-f0-9]{64}$/);
-    expect(data.country).toBe("dz");
+    expect(data["ph"]).toMatch(/^[a-f0-9]{64}$/);
+    expect(data["fn"]).toMatch(/^[a-f0-9]{64}$/);
+    expect(data["ln"]).toMatch(/^[a-f0-9]{64}$/);
+    expect(data["country"]).toBe("dz");
     expect(JSON.stringify(data)).not.toContain("0551234567");
     expect(JSON.stringify(data)).not.toContain("Ali");
   });

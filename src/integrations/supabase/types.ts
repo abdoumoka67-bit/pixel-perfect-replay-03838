@@ -203,6 +203,7 @@ export type Database = {
         Row: {
           address: string | null
           assigned_member_id: string | null
+          attribution: Json | null
           call_attempts: number
           commune: string
           created_at: string
@@ -234,6 +235,7 @@ export type Database = {
         Insert: {
           address?: string | null
           assigned_member_id?: string | null
+          attribution?: Json | null
           call_attempts?: number
           commune: string
           created_at?: string
@@ -265,6 +267,7 @@ export type Database = {
         Update: {
           address?: string | null
           assigned_member_id?: string | null
+          attribution?: Json | null
           call_attempts?: number
           commune?: string
           created_at?: string
