@@ -6,9 +6,6 @@ import { useUiLanguage } from "@/lib/ui-i18n";
 const META_PATH =
   "M6.915 4.03c-1.968 0-3.683 1.28-4.871 3.113C.704 9.208 0 11.883 0 14.449c0 .706.07 1.369.21 1.973a6.624 6.624 0 0 0 .265.86 5.297 5.297 0 0 0 .371.761c.696 1.159 1.818 1.927 3.593 1.927 1.497 0 2.633-.671 3.965-2.444.76-1.012 1.144-1.626 2.663-4.32l.756-1.339.186-.325c.061.1.121.196.183.3l2.152 3.595c.724 1.21 1.665 2.556 2.47 3.314 1.046.987 1.992 1.22 3.06 1.22 1.075 0 1.876-.355 2.455-.843a3.743 3.743 0 0 0 .81-.973c.542-.939.861-2.127.861-3.745 0-2.72-.681-5.357-2.084-7.45-1.282-1.912-2.957-2.93-4.716-2.93-1.047 0-2.088.467-3.053 1.308-.652.57-1.257 1.29-1.82 2.05-.69-.875-1.335-1.547-1.958-2.056-1.182-.966-2.315-1.303-3.454-1.303zm10.16 2.053c1.147 0 2.188.758 2.992 1.999 1.132 1.748 1.647 4.195 1.647 6.4 0 1.548-.368 2.9-1.839 2.9-.58 0-1.027-.23-1.664-1.004-.496-.601-1.343-1.878-2.832-4.358l-.617-1.028a44.908 44.908 0 0 0-1.255-1.98c.07-.109.141-.224.211-.327 1.12-1.667 2.118-2.602 3.358-2.602zm-10.201.553c1.265 0 2.058.791 2.675 1.446.307.327.737.871 1.234 1.579l-1.02 1.566c-.757 1.163-1.882 3.017-2.837 4.338-1.191 1.649-1.81 1.817-2.486 1.817-.524 0-1.038-.237-1.383-.794-.263-.426-.464-1.13-.464-2.046 0-2.221.63-4.535 1.66-6.088.454-.687.964-1.226 1.533-1.533a2.264 2.264 0 0 1 1.088-.285z";
 
-const FACEBOOK_F =
-  "M13.6 21v-7.1h2.4l.4-2.8h-2.8V9.3c0-.8.2-1.4 1.4-1.4h1.5V5.4c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.1H8.2v2.8h2.4V21h3z";
-
 /** One platform tile: white rounded square, brand-tinted glyph, floating. */
 function Tile({
   x,
@@ -41,9 +38,12 @@ function Tile({
 
 function FacebookGlyph({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden>
-      <circle cx="12" cy="12" r="12" fill="#1877F2" />
-      <path d={FACEBOOK_F} fill="#FFFFFF" transform="translate(2 1.1) scale(0.83)" />
+    <svg viewBox="0 0 56 56" className={className} aria-hidden>
+      <rect x="12" y="12" width="32" height="32" rx="9" fill="#0866FF" />
+      <path
+        d="M27.5 28.5h-3.2v9.5h-3.9v-9.5h-1.9v-3.4h1.9v-2.2c0-2.6 1.6-4.1 4-4.1 1.1 0 2.3.2 2.3.2v2.5h-1.3c-1.3 0-1.7.8-1.7 1.6v2h3.4l-.5 3.4z"
+        fill="#FFFFFF"
+      />
     </svg>
   );
 }
@@ -88,7 +88,7 @@ export function PixelAttribution() {
   return (
     <section className="border-t bg-background">
       <div className="mx-auto w-full max-w-4xl px-5 py-16">
-        <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-secondary/40 p-5 sm:p-8 shadow-xs">
+        <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-5 sm:p-8 shadow-xs">
           <div className="relative text-center">
             <span className="inline-flex rounded-full border border-border/70 bg-card px-3.5 py-1 text-xs text-muted-foreground">
               {t("landing.pixels.badge")}
@@ -123,25 +123,20 @@ export function PixelAttribution() {
 
             {/* Instagram */}
             <Tile x={100} delay={0} label="Instagram">
-              <rect x="12" y="12" width="32" height="32" rx="10" fill="url(#pixel-ig-gradient)" />
-              <rect
-                x="18.6"
-                y="18.6"
-                width="18.8"
-                height="18.8"
-                rx="6.2"
-                fill="none"
-                stroke="#FFFFFF"
-                strokeWidth="2.6"
+              <rect x="12" y="12" width="32" height="32" rx="9" fill="url(#pixel-ig-gradient)" />
+              <path
+                d="M28 17.5c3.4 0 3.8 0 5.2.1 1.2.1 1.9.3 2.3.5.6.2 1 .5 1.5 1 .4.4.7.9 1 1.5.2.4.4 1.1.5 2.3.1 1.3.1 1.7.1 5.2s0 3.8-.1 5.2c-.1 1.2-.3 1.9-.5 2.3-.2.6-.5 1-1 1.5-.4.4-.9.7-1.5 1-.4.2-1.1.4-2.3.5-1.3.1-1.7.1-5.2.1s-3.8 0-5.2-.1c-1.2-.1-1.9-.3-2.3-.5-.6-.2-1-.5-1.5-1-.4-.4-.7-.9-1-1.5-.2-.4-.4-1.1-.5-2.3-.1-1.3-.1-1.7-.1-5.2s0-3.8.1-5.2c.1-1.2.3-1.9.5-2.3.2-.6.5-1 1-1.5.4-.4.9-.7 1.5-1 .4-.2 1.1-.4 2.3-.5 1.4-.1 1.8-.1 5.2-.1zm0-2c-3.5 0-3.9 0-5.3.1-1.4.1-2.4.3-3.2.6-.9.3-1.6.8-2.3 1.5-.7.7-1.2 1.4-1.5 2.3-.3.8-.5 1.8-.6 3.2-.1 1.4-.1 1.8-.1 5.3s0 3.9.1 5.3c.1 1.4.3 2.4.6 3.2.3.9.8 1.6 1.5 2.3.7.7 1.4 1.2 2.3 1.5.8.3 1.8.5 3.2.6 1.4.1 1.8.1 5.3.1s3.9 0 5.3-.1c1.4-.1 2.4-.3 3.2-.6.9-.3 1.6-.8 2.3-1.5.7-.7 1.2-1.4 1.5-2.3.3-.8.5-1.8.6-3.2.1-1.4.1-1.8.1-5.3s0-3.9-.1-5.3c-.1-1.4-.3-2.4-.6-3.2-.3-.9-.8-1.6-1.5-2.3-.7-.7-1.4-1.2-2.3-1.5-.8-.3-1.8-.5-3.2-.6-1.4-.1-1.8-.1-5.3-.1zm0 5.1a7.4 7.4 0 1 0 0 14.8 7.4 7.4 0 0 0 0-14.8zm0 12.2a4.8 4.8 0 1 1 0-9.6 4.8 4.8 0 0 1 0 9.6zm9.4-12.8a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 0 1 3.4 0z"
+                fill="#FFFFFF"
               />
-              <circle cx="28" cy="28" r="5.1" fill="none" stroke="#FFFFFF" strokeWidth="2.6" />
-              <circle cx="34.2" cy="21.8" r="1.5" fill="#FFFFFF" />
             </Tile>
 
             {/* Facebook */}
             <Tile x={244} delay={-0.7} label="Facebook">
-              <circle cx="28" cy="28" r="16" fill="#1877F2" />
-              <path d={FACEBOOK_F} fill="#FFFFFF" transform="translate(14.4 13) scale(0.72)" />
+              <rect x="12" y="12" width="32" height="32" rx="9" fill="#0866FF" />
+              <path
+                d="M27.5 28.5h-3.2v9.5h-3.9v-9.5h-1.9v-3.4h1.9v-2.2c0-2.6 1.6-4.1 4-4.1 1.1 0 2.3.2 2.3.2v2.5h-1.3c-1.3 0-1.7.8-1.7 1.6v2h3.4l-.5 3.4z"
+                fill="#FFFFFF"
+              />
             </Tile>
 
             {/* Meta node: both apps report into it. */}
