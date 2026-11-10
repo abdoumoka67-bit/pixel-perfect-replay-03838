@@ -23,6 +23,7 @@ type AnalyticsData = {
   daily: { day: string; orders: number; revenue: number }[] | null;
   wilayas: { name: string; count: number }[];
   products: { name: string; orders: number; qty: number; delivered: number; revenue: number }[];
+  sources: { name: string; count: number }[];
 };
 
 function Analytics() {
@@ -40,6 +41,7 @@ function Analytics() {
             t("أكثر الولايات طلباً"),
             t("نسبة التأكيد والتوصيل والإلغاء"),
             t("المنتجات الأكثر ربحاً"),
+            t("مصادر الطلبات والإعلانات"),
           ]}
         />
       </>
@@ -76,6 +78,7 @@ function AnalyticsPro() {
       daily: (d?.daily ?? []).map((x) => ({ ...x, label: x.day.slice(8, 10) + "/" + x.day.slice(5, 7) })),
       wilayas: d?.wilayas ?? [],
       products: d?.products ?? [],
+      sources: d?.sources ?? [],
       st,
     };
   }, [q.data]);
@@ -174,6 +177,38 @@ function AnalyticsPro() {
             </ul>
           </div>
         </div>
+      </div>
+
+      <div className="mt-6 rounded-2xl bg-card p-5 shadow-card">
+        <h2 className="mb-3 font-medium">{t("مصادر الطلبات والإعلانات")}</h2>
+        <ul className="space-y-2.5">
+          {m.sources.map((src) => {
+            const pct = m.total ? Math.round((src.count / m.total) * 100) : 0;
+            const isFb = src.name === "Facebook";
+            const isIg = src.name === "Instagram";
+            const isDirect = src.name === "direct";
+            const displayName = isDirect ? t("زيارات مباشرة") : src.name;
+            const dotColor = isFb ? "bg-[#1877F2]" : isIg ? "bg-[#E1306C]" : "bg-muted-foreground";
+
+            return (
+              <li key={src.name}>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <span className={`size-2 rounded-full ${dotColor}`} aria-hidden />
+                    <span>{displayName}</span>
+                  </span>
+                  <span className="num text-xs text-muted-foreground">
+                    {src.count} ({pct}%)
+                  </span>
+                </div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div className={`h-full rounded-full ${dotColor}`} style={{ width: `${pct}%` }} />
+                </div>
+              </li>
+            );
+          })}
+          {m.sources.length === 0 && <li className="text-sm text-muted-foreground">{t("لا توجد بيانات بعد.")}</li>}
+        </ul>
       </div>
     </>
   );

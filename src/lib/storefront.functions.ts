@@ -37,7 +37,6 @@ export type PublicStore = {
   default_desk_price: number;
   accepting_orders: boolean;
   meta_pixel_id: string | null;
-  tiktok_pixel_id: string | null;
   storefront_config: StorefrontConfig;
 };
 
@@ -91,7 +90,6 @@ export const getStorefront = createServerFn({ method: "GET" })
       default_desk_price: s.default_desk_price,
       accepting_orders: s.accepting_orders,
       meta_pixel_id: s.meta_pixel_id ?? null,
-      tiktok_pixel_id: s.tiktok_pixel_id ?? null,
       storefront_config: parseStorefrontConfig(s.storefront_config, s.name),
     };
     return {
@@ -142,7 +140,6 @@ export const getProductPage = createServerFn({ method: "GET" })
       default_desk_price: s.default_desk_price,
       accepting_orders: s.accepting_orders,
       meta_pixel_id: s.meta_pixel_id ?? null,
-      tiktok_pixel_id: s.tiktok_pixel_id ?? null,
       storefront_config: parseStorefrontConfig(s.storefront_config, s.name),
     };
     const product: PublicProduct = { ...p, images: p.images.map((i) => urls[i]).filter((x): x is string => !!x) };

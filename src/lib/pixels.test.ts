@@ -29,7 +29,7 @@ describe("pixel tracking", () => {
     const { calls } = stubFbq();
     const { initPixels } = await import("./pixels");
 
-    initPixels({ meta_pixel_id: META_ID, tiktok_pixel_id: null });
+    initPixels({ meta_pixel_id: META_ID });
 
     const scripts = injectedScripts();
     expect(scripts).toHaveLength(1);
@@ -38,7 +38,7 @@ describe("pixel tracking", () => {
     expect(calls[0]).toEqual(["track", "PageView"]);
 
     // A second mount must not inject the same pixel again.
-    initPixels({ meta_pixel_id: META_ID, tiktok_pixel_id: null });
+    initPixels({ meta_pixel_id: META_ID });
     expect(injectedScripts()).toHaveLength(1);
     expect(calls).toHaveLength(2);
   });
@@ -47,7 +47,7 @@ describe("pixel tracking", () => {
     const { calls } = stubFbq();
     const { initPixels } = await import("./pixels");
 
-    initPixels({ meta_pixel_id: "not-a-pixel", tiktok_pixel_id: null });
+    initPixels({ meta_pixel_id: "not-a-pixel" });
 
     expect(injectedScripts()).toHaveLength(0);
     expect(calls).toHaveLength(0);
@@ -57,7 +57,7 @@ describe("pixel tracking", () => {
     const { calls } = stubFbq();
     const { initPixels, trackPixel } = await import("./pixels");
 
-    initPixels({ meta_pixel_id: META_ID, tiktok_pixel_id: null });
+    initPixels({ meta_pixel_id: META_ID });
     trackPixel(
       "Purchase",
       { id: "product-1", name: "White dress", value: 5500, quantity: 2 },
@@ -90,7 +90,7 @@ describe("pixel tracking", () => {
     const { calls } = stubFbq();
     const { initPixels, identifyPixelCustomer } = await import("./pixels");
 
-    initPixels({ meta_pixel_id: META_ID, tiktok_pixel_id: null });
+    initPixels({ meta_pixel_id: META_ID });
     await identifyPixelCustomer({ phone: "0551234567", name: "Ali Ben" });
 
     const identify = calls.find((c) => c[0] === "init" && c[1] === META_ID && c[2]);

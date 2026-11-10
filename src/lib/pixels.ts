@@ -1,26 +1,24 @@
-// Meta Pixel + TikTok Pixel for merchant storefronts (Pro). Browser only.
-// IDs come from the database already validated (digits / Latin letters only) and are
+// Meta Pixel for merchant storefronts (Pro). Browser only.
+// The ID comes from the database already validated (digits only) and is
 // re-checked here before being placed in a script.
-import { isValidMetaPixelId, isValidTiktokPixelId, normalizeDzPhone } from "./commerce";
+import { isValidMetaPixelId, normalizeDzPhone } from "./commerce";
 
 type Fn = (...args: unknown[]) => void;
-type Ttq = { page: Fn; track: Fn; identify: Fn };
 type PixelWindow = Window & {
   fbq?: Fn;
-  ttq?: Ttq;
   __oranixPixels?: Array<{ at: number; event: string; detail: unknown }>;
 };
 
-export type PixelIds = { meta_pixel_id: string | null; tiktok_pixel_id: string | null };
+export type PixelIds = { meta_pixel_id: string | null };
 
 export type PixelEvent = "ViewContent" | "InitiateCheckout" | "Purchase";
 
 export type PixelProduct = { id: string; name: string; value: number; quantity?: number };
 
-/** Extra options shared by both platforms: same id on browser + server = one conversion. */
+/** Extra options: same id on browser + server = one conversion. */
 export type PixelOptions = { eventId?: string };
 
-const loaded = { meta: "", tiktok: "" };
+const loaded = { meta: "" };
 let debug = false;
 
 /** `?pixel_debug=1` turns on a readable log so merchants can verify tracking. */
@@ -65,40 +63,27 @@ async function sha256(value: string): Promise<string> {
   }
 }
 
-/** Loads the pixels once and records a page view. Call on every storefront page mount. */
+/** Loads the pixel once and records a page view. Call on every storefront page mount. */
 export function initPixels(ids: PixelIds) {
   if (typeof window === "undefined") return;
   const w = window as PixelWindow;
   const meta = ids.meta_pixel_id?.trim() ?? "";
-  const tiktok = ids.tiktok_pixel_id?.trim() ?? "";
 
-  if (meta && isValidMetaPixelId(meta)) {
-    if (loaded.meta !== meta) {
-      inject(
-        `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${meta}');`,
-      );
-      loaded.meta = meta;
-      log("meta:init", { id: meta });
-    }
-    w.fbq?.("track", "PageView");
-    log("meta:PageView", {});
-  }
+  if (!meta || !isValidMetaPixelId(meta)) return;
 
-  if (tiktok && isValidTiktokPixelId(tiktok)) {
-    if (loaded.tiktok !== tiktok) {
-      inject(
-        `!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=d.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=d.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};ttq.load('${tiktok.toUpperCase()}');}(window,document,'ttq');`,
-      );
-      loaded.tiktok = tiktok;
-      log("tiktok:init", { id: tiktok });
-    }
-    w.ttq?.page();
-    log("tiktok:page", {});
+  if (loaded.meta !== meta) {
+    inject(
+      `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${meta}');`,
+    );
+    loaded.meta = meta;
+    log("meta:init", { id: meta });
   }
+  w.fbq?.("track", "PageView");
+  log("meta:PageView", {});
 }
 
 /**
- * Hashing the buyer's phone/name raises the match rate with Meta and TikTok.
+ * Hashing the buyer's phone/name raises the match rate with Meta.
  * The raw values never leave the browser: only SHA-256 hex digests are sent.
  */
 export async function identifyPixelCustomer(input: {
@@ -107,7 +92,7 @@ export async function identifyPixelCustomer(input: {
   email?: string;
 }): Promise<void> {
   if (typeof window === "undefined") return;
-  if (!loaded.meta && !loaded.tiktok) return;
+  if (!loaded.meta) return;
 
   const phone = normalizeDzPhone(input.phone ?? "").replace(/\D/g, "");
   const e164 = phone ? `213${phone.replace(/^0/, "")}` : "";
@@ -125,33 +110,17 @@ export async function identifyPixelCustomer(input: {
   if (!ph && !fn && !em) return;
 
   const w = window as PixelWindow;
-  if (loaded.meta) {
-    w.fbq?.("init", loaded.meta, {
-      ...(ph ? { ph } : {}),
-      ...(fn ? { fn } : {}),
-      ...(ln ? { ln } : {}),
-      ...(em ? { em } : {}),
-      country: "dz",
-    });
-  }
-  if (loaded.tiktok) {
-    w.ttq?.identify({
-      ...(ph ? { phone_number: ph } : {}),
-      ...(fn ? { first_name: fn } : {}),
-      ...(ln ? { last_name: ln } : {}),
-      ...(em ? { email: em } : {}),
-    });
-  }
+  w.fbq?.("init", loaded.meta, {
+    ...(ph ? { ph } : {}),
+    ...(fn ? { fn } : {}),
+    ...(ln ? { ln } : {}),
+    ...(em ? { em } : {}),
+    country: "dz",
+  });
   log("identify", { phone: Boolean(ph), name: Boolean(fn), email: Boolean(em) });
 }
 
-const TIKTOK_EVENT = {
-  ViewContent: "ViewContent",
-  InitiateCheckout: "InitiateCheckout",
-  Purchase: "CompletePayment",
-} as const;
-
-/** Sends a commerce event to every loaded pixel (no-op when none). */
+/** Sends a commerce event to the loaded pixel (no-op when none). */
 export function trackPixel(event: PixelEvent, p: PixelProduct, opts: PixelOptions = {}) {
   if (typeof window === "undefined") return;
   const w = window as PixelWindow;
@@ -172,20 +141,5 @@ export function trackPixel(event: PixelEvent, p: PixelProduct, opts: PixelOption
       ...(eventId ? [{ eventID: eventId }] : []),
     );
   }
-  if (loaded.tiktok) {
-    w.ttq?.track(TIKTOK_EVENT[event], {
-      content_id: p.id,
-      content_name: p.name,
-      content_type: "product",
-      value: p.value,
-      currency: "DZD",
-      quantity: p.quantity ?? 1,
-    }, ...(eventId ? [{ event_id: eventId }] : []));
-  }
-  log(event, {
-    ...p,
-    eventId: eventId ?? null,
-    meta: Boolean(loaded.meta),
-    tiktok: Boolean(loaded.tiktok),
-  });
+  log(event, { ...p, eventId: eventId ?? null, meta: Boolean(loaded.meta) });
 }
