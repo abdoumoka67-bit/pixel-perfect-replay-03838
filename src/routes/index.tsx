@@ -202,7 +202,6 @@ function Home() {
         </section>
 
         <DeliveryLogosMarquee />
-        <DispatchShowcase />
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16">
           <div className="mb-8 text-center">
@@ -216,6 +215,7 @@ function Home() {
           <FeaturesAccordion />
         </section>
 
+        <DispatchShowcase />
         <PixelAttribution />
 
         {plans.length > 0 && (
