@@ -600,75 +600,75 @@ html[lang="en"] {
     margin: 0;
   }
 
+  .showcase-dash-scale-viewport {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+  }
+
+  .showcase-dash-scale-canvas {
+    width: 1152px;
+    max-width: none;
+    transform: scale(0.23);
+    transform-origin: top left;
+  }
+
   .showcase-dash-grid {
-    min-height: 0;
-    grid-template-columns: minmax(0, 1fr);
+    min-height: 530px;
+    grid-template-columns: 210px minmax(0, 1fr);
   }
 
   .showcase-dash-sidebar {
-    display: none;
+    display: flex;
   }
 
   .showcase-dash-main {
-    padding: 12px;
+    padding: 20px;
   }
 
   .showcase-dash-bottom-tabs {
-    display: grid;
-    height: 52px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-top: 1px solid #e5e5e8;
-    background: #fff;
-  }
-
-  .showcase-dash-tab {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    border: 0;
-    background: transparent;
-    color: #96979a;
-    font: inherit;
-    font-size: 8px;
-  }
-
-  .showcase-dash-tab-active {
-    color: #171719;
-    font-weight: 600;
-  }
-
-  .showcase-dash-tab-icon {
-    width: 14px;
-    height: 14px;
-  }
-
-  .showcase-dash-carriers {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .showcase-dash-carrier-card {
-    width: 100%;
-  }
-
-  .showcase-dash-generate {
-    width: 100%;
-    min-height: 44px;
+    display: none;
   }
 
   .showcase-dash-phone {
-    position: static;
-    inset: auto;
-    z-index: auto;
-    display: block;
-    width: 70vw;
-    max-width: 280px;
-    margin: 16px auto 0;
-    transform: none;
-    translate: none !important;
+    display: none;
+  }
+
+  .showcase-dash-url {
+    display: inline;
+  }
+
+  .showcase-dash-search {
+    display: flex;
+  }
+
+  .showcase-dash-title {
+    font-size: 16px;
+  }
+
+  .showcase-dash-subtitle {
+    font-size: 10px;
+  }
+
+  .showcase-dash-order-customer {
+    font-size: 12px;
+  }
+
+  .showcase-dash-order-details {
+    font-size: 10px;
+  }
+
+  .showcase-dash-order-status {
+    padding-inline: 8px;
+    font-size: 9px;
+  }
+
+  .showcase-dash-stat-value {
+    font-size: 20px;
+  }
+
+  .showcase-dash-carrier-card {
+    padding: 12px;
   }
 }

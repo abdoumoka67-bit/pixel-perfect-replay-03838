@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BadgeCheck,
   BarChart3,
@@ -172,10 +172,10 @@ function OrdersScreen({ mobile, baseStage }: { mobile: boolean; baseStage: Order
                   {order.id.slice(1)}
                 </span>
                 <div className="min-w-0">
-                  <div className="truncate text-[11px] font-medium text-foreground sm:text-xs">
+                  <div className="showcase-dash-order-customer truncate text-[11px] font-medium text-foreground sm:text-xs">
                     {order.customer}
                   </div>
-                  <div className="mt-0.5 truncate text-[9px] text-muted-foreground sm:text-[10px]">
+                  <div className="showcase-dash-order-details mt-0.5 truncate text-[9px] text-muted-foreground sm:text-[10px]">
                     {order.city} ({order.wilaya}) · {order.product}
                   </div>
                   <div className="mt-0.5 font-mono text-[9px] text-muted-foreground" dir="ltr">
@@ -186,7 +186,7 @@ function OrdersScreen({ mobile, baseStage }: { mobile: boolean; baseStage: Order
               <div className="shrink-0 text-end">
                 <div className="text-[10px] font-semibold text-foreground">{order.amount}</div>
                 <span
-                  className={`mt-1 ms-auto flex w-fit items-center gap-1 whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[8px] font-medium sm:px-2 sm:text-[9px] ${meta.tone}`}
+                  className={`showcase-dash-order-status mt-1 ms-auto flex w-fit items-center gap-1 whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[8px] font-medium sm:px-2 sm:text-[9px] ${meta.tone}`}
                 >
                   {stage === 0 ? (
                     <span className="relative flex size-1.5" aria-hidden>
@@ -247,12 +247,16 @@ function StatisticsScreen({ mobile }: { mobile: boolean }) {
     <div className={`grid gap-2 ${mobile ? "grid-cols-1" : "grid-cols-2"}`}>
       <div className="rounded-xl border border-border/70 bg-card p-3">
         <div className="text-[10px] text-muted-foreground">Revenu du jour</div>
-        <div className="mt-1 text-base font-semibold text-foreground sm:text-xl">84 500 DA</div>
+        <div className="showcase-dash-stat-value mt-1 text-base font-semibold text-foreground sm:text-xl">
+          84 500 DA
+        </div>
         <div className="mt-1 text-[9px] font-medium text-emerald-600">+12,8 % cette semaine</div>
       </div>
       <div className="rounded-xl border border-border/70 bg-card p-3">
         <div className="text-[10px] text-muted-foreground">Taux de confirmation</div>
-        <div className="mt-1 text-base font-semibold text-foreground sm:text-xl">88 %</div>
+        <div className="showcase-dash-stat-value mt-1 text-base font-semibold text-foreground sm:text-xl">
+          88 %
+        </div>
         <div className="mt-1 flex h-1.5 overflow-hidden rounded-full bg-muted">
           <div className="w-[88%] rounded-full bg-emerald-500" />
         </div>
@@ -356,9 +360,40 @@ export function DashboardShowcase() {
   const isRtl = language === "ar";
   const [tab, setTab] = useState<DashboardTab>("orders");
   const [baseStage, setBaseStage] = useState<OrderStage>(0);
+  const [previewScale, setPreviewScale] = useState<number | null>(null);
+  const [previewHeight, setPreviewHeight] = useState(140);
+  const previewViewportRef = useRef<HTMLDivElement>(null);
+  const previewCanvasRef = useRef<HTMLDivElement>(null);
   const t = (key: TranslationKey) => translate(language, key);
   // Pause the demo the moment it leaves the viewport, resume when it returns.
   const { ref, inView } = useInView<HTMLElement>();
+
+  useEffect(() => {
+    const viewport = previewViewportRef.current;
+    const canvas = previewCanvasRef.current;
+    if (!viewport || !canvas) return;
+
+    const updateScale = () => {
+      const canvasWidth = canvas.offsetWidth;
+      if (!canvasWidth) return;
+      const scale = Math.min(1, viewport.clientWidth / canvasWidth);
+      const height = Math.ceil(canvas.offsetHeight * scale);
+      setPreviewScale((current) =>
+        current !== null && Math.abs(current - scale) < 0.001 ? current : scale,
+      );
+      setPreviewHeight((current) => (current === height ? current : height));
+    };
+
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(viewport);
+    observer.observe(canvas);
+    window.addEventListener("resize", updateScale);
+    updateScale();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateScale);
+    };
+  }, []);
 
   useEffect(() => {
     if (!inView) return;
@@ -412,199 +447,220 @@ export function DashboardShowcase() {
           lang="fr"
           dir="ltr"
         >
-          <div className="min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl">
-            <div className="flex h-11 items-center justify-between border-b border-border/60 bg-muted/40 px-4">
-              <div className="flex items-center gap-1.5">
-                <span className="size-2.5 rounded-full bg-red-400/80" />
-                <span className="size-2.5 rounded-full bg-amber-400/80" />
-                <span className="size-2.5 rounded-full bg-emerald-400/80" />
-                <span className="ms-3 hidden font-mono text-[10px] text-muted-foreground sm:inline">
-                  oranix.store/dashboard
-                </span>
-              </div>
-              <span className="font-mono text-[10px] text-muted-foreground">● LIVE</span>
-            </div>
-
-            <div className="showcase-dash-grid grid min-h-[380px] grid-cols-1 sm:min-h-[440px] md:min-h-[530px] md:grid-cols-[210px_minmax(0,1fr)]">
-              <aside className="showcase-dash-sidebar hidden flex-col bg-[#111113] px-3 py-4 text-white md:flex">
-                <div className="mb-5 h-6 px-2" aria-hidden />
-                <div className="mb-2 px-2 text-[8px] font-semibold tracking-[0.16em] text-zinc-500">
-                  MENU PRINCIPAL
-                </div>
-                <nav className="space-y-1">
-                  {MAIN_MENU.map(({ label, icon: Icon, tab: itemTab }) => {
-                    const selected = itemTab === activeTab;
-                    return (
-                      <div
-                        key={label}
-                        className={`flex min-h-8 items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-[10px] transition-colors ${
-                          selected
-                            ? "bg-white/10 font-medium text-white"
-                            : "text-zinc-400 hover:bg-white/5 hover:text-white"
-                        }`}
-                      >
-                        <span className="flex min-w-0 items-center gap-2">
-                          <Icon className="size-3.5 shrink-0" aria-hidden />
-                          <span className="truncate">{label}</span>
-                        </span>
-                        {itemTab === "orders" && (
-                          <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[8px] text-emerald-400">
-                            25
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </nav>
-
-                <div className="mb-2 mt-6 px-2 text-[8px] font-semibold tracking-[0.16em] text-zinc-500">
-                  PARAMÈTRES
-                </div>
-                <nav className="space-y-1">
-                  {SETTINGS_MENU.map(({ label, icon: Icon, tab: itemTab }) => {
-                    const selected = itemTab === activeTab;
-                    return (
-                      <div
-                        key={label}
-                        className={`flex min-h-8 items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] ${
-                          selected ? "bg-white/10 font-medium text-white" : "text-zinc-400"
-                        }`}
-                      >
-                        <Icon className="size-3.5 shrink-0" aria-hidden />
-                        <span className="truncate">{label}</span>
-                      </div>
-                    );
-                  })}
-                </nav>
-
-                <div className="mt-auto rounded-xl border border-white/10 bg-white/5 p-2.5">
-                  <div className="text-[9px] text-zinc-400">Revenu du jour</div>
-                  <div className="mt-1 text-xs font-semibold">84 500 DA</div>
-                </div>
-              </aside>
-
-              <main className="showcase-dash-main min-w-0 bg-[#F7F7F8] p-3 sm:p-5" dir="ltr">
-                <div className="mb-4 flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <h3 className="truncate text-sm font-semibold text-[#202124] sm:text-base">
-                      {tab === "orders"
-                        ? "Commandes récentes"
-                        : tab === "stats"
-                          ? "Statistiques"
-                          : "Livraison"}
-                    </h3>
-                    <p className="mt-0.5 text-[9px] text-[#74777B] sm:text-[10px]">
-                      {tab === "orders"
-                        ? "Synchronisation en direct"
-                        : tab === "stats"
-                          ? "Performance de votre boutique"
-                          : "Gérez vos transporteurs"}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    {tab === "orders" && (
-                      <div className="hidden items-center gap-1 rounded-lg border border-[#E3E4E8] bg-white px-2 py-1 text-[9px] text-[#74777B] sm:flex">
-                        <Search className="size-3" aria-hidden />
-                        Recherche
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1 rounded-lg border border-[#E3E4E8] bg-white px-2 py-1 text-[9px] text-[#74777B]">
-                      <SlidersHorizontal className="size-3" aria-hidden />
-                      Filtrer
-                    </div>
-                  </div>
-                </div>
-                <div
-                  key={tab}
-                  className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-500"
-                >
-                  <ScreenContent tab={tab} baseStage={baseStage} mobile={false} showcaseDash />
-                </div>
-                <div className="mt-4 flex items-center justify-between border-t border-[#E5E5E8] pt-3 text-[9px] text-[#74777B]">
-                  <span>Affichage de 1 à 4 sur 25 commandes</span>
-                  <span className="flex items-center gap-1">
-                    Mis à jour à l’instant <Check className="size-3 text-emerald-600" aria-hidden />
-                  </span>
-                </div>
-              </main>
-            </div>
-
-            <nav className="showcase-dash-bottom-tabs hidden" aria-label="Dashboard tabs">
-              {showcaseTabs.map(({ label, icon: Icon, tab: tabId }) => {
-                const active = tabId === activeTab;
-                return (
-                  <button
-                    key={tabId}
-                    type="button"
-                    className={`showcase-dash-tab ${active ? "showcase-dash-tab-active" : ""}`}
-                    aria-current={active ? "page" : undefined}
-                    onClick={() => setTab(tabId)}
-                  >
-                    <Icon className="showcase-dash-tab-icon" aria-hidden />
-                    <span>{label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div className="showcase-dash-phone absolute right-2 top-1/2 z-20 w-[min(34vw,150px)] -translate-y-1/2 left-auto sm:right-4 sm:w-[190px] md:right-5 md:w-[220px] lg:right-6 lg:w-[240px] xl:w-[260px]">
-            <div className="relative aspect-[270/590] w-full rounded-[30px] border-[5px] border-[#1A1A1E] bg-[#1A1A1E] p-[3px] shadow-[0_28px_70px_-24px_rgba(0,0,0,0.65)] ring-1 ring-white/15 sm:rounded-[36px] sm:border-[6px] sm:p-1 md:rounded-[42px] md:border-[7px] md:p-[5px]">
-              <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] bg-[#F7F7F8] sm:rounded-[30px] md:rounded-[34px]">
-                <div className="relative flex h-9 shrink-0 items-center justify-between px-3 pt-1 font-mono text-[10px] font-semibold text-[#171719] sm:h-12 sm:px-4 md:h-[58px] md:px-5">
-                  <span>9:41</span>
-                  <div className="absolute left-1/2 top-2 h-4 w-[50px] -translate-x-1/2 rounded-full bg-black sm:top-[9px] sm:h-5 sm:w-[68px] md:h-[25px] md:w-[88px]" />
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-[9px]">5G</span>
-                    <span className="h-2.5 w-4 rounded-[3px] border border-[#171719] p-[1px]">
-                      <span className="block h-full w-3/4 rounded-[1px] bg-emerald-600" />
+          <div
+            ref={previewViewportRef}
+            className="showcase-dash-scale-viewport"
+            style={
+              previewScale !== null && previewScale < 1
+                ? { height: `${previewHeight}px` }
+                : undefined
+            }
+          >
+            <div
+              ref={previewCanvasRef}
+              className="showcase-dash-scale-canvas"
+              style={
+                previewScale !== null && previewScale < 1
+                  ? { transform: `scale(${previewScale})` }
+                  : undefined
+              }
+            >
+              <div className="min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl">
+                <div className="flex h-11 items-center justify-between border-b border-border/60 bg-muted/40 px-4">
+                  <div className="flex items-center gap-1.5">
+                    <span className="size-2.5 rounded-full bg-red-400/80" />
+                    <span className="size-2.5 rounded-full bg-amber-400/80" />
+                    <span className="size-2.5 rounded-full bg-emerald-400/80" />
+                    <span className="showcase-dash-url ms-3 hidden font-mono text-[10px] text-muted-foreground sm:inline">
+                      oranix.store/dashboard
                     </span>
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-[#E5E5E8] px-3 pb-3">
-                  <div className="min-w-0">
-                    <div className="truncate text-[13px] font-semibold text-[#202124]">
-                      {tab === "orders"
-                        ? "Mes commandes"
-                        : tab === "stats"
-                          ? "Statistiques"
-                          : "Livraison"}
-                    </div>
-                    <div className="mt-0.5 text-[9px] text-[#74777B]">oranix.store</div>
                   </div>
-                  <span className="flex size-7 items-center justify-center rounded-full bg-white text-[#45464A] shadow-sm">
-                    <Smartphone className="size-3.5" aria-hidden />
-                  </span>
+                  <span className="font-mono text-[10px] text-muted-foreground">● LIVE</span>
                 </div>
 
-                <div
-                  key={`${tab}-mobile`}
-                  className="min-h-0 flex-1 overflow-y-auto px-2.5 py-3 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-500"
-                >
-                  <ScreenContent tab={tab} baseStage={baseStage} mobile />
-                </div>
-
-                <div className="grid h-12 shrink-0 grid-cols-3 border-t border-[#E5E5E8] bg-white">
-                  {[
-                    { label: "Commandes", icon: ShoppingBag, active: tab === "orders" },
-                    { label: "Stats", icon: BarChart3, active: tab === "stats" },
-                    { label: "Livraison", icon: Truck, active: tab === "delivery" },
-                  ].map(({ label, icon: Icon, active }) => (
-                    <div
-                      key={label}
-                      className={`flex flex-col items-center justify-center gap-0.5 text-[8px] ${
-                        active ? "font-semibold text-[#171719]" : "text-[#96979A]"
-                      }`}
-                    >
-                      <Icon className="size-3.5" aria-hidden />
-                      {label}
+                <div className="showcase-dash-grid grid min-h-[380px] grid-cols-1 sm:min-h-[440px] md:min-h-[530px] md:grid-cols-[210px_minmax(0,1fr)]">
+                  <aside className="showcase-dash-sidebar hidden flex-col bg-[#111113] px-3 py-4 text-white md:flex">
+                    <div className="mb-5 h-6 px-2" aria-hidden />
+                    <div className="mb-2 px-2 text-[8px] font-semibold tracking-[0.16em] text-zinc-500">
+                      MENU PRINCIPAL
                     </div>
-                  ))}
+                    <nav className="space-y-1">
+                      {MAIN_MENU.map(({ label, icon: Icon, tab: itemTab }) => {
+                        const selected = itemTab === activeTab;
+                        return (
+                          <div
+                            key={label}
+                            className={`flex min-h-8 items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-[10px] transition-colors ${
+                              selected
+                                ? "bg-white/10 font-medium text-white"
+                                : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                            }`}
+                          >
+                            <span className="flex min-w-0 items-center gap-2">
+                              <Icon className="size-3.5 shrink-0" aria-hidden />
+                              <span className="truncate">{label}</span>
+                            </span>
+                            {itemTab === "orders" && (
+                              <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[8px] text-emerald-400">
+                                25
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </nav>
+
+                    <div className="mb-2 mt-6 px-2 text-[8px] font-semibold tracking-[0.16em] text-zinc-500">
+                      PARAMÈTRES
+                    </div>
+                    <nav className="space-y-1">
+                      {SETTINGS_MENU.map(({ label, icon: Icon, tab: itemTab }) => {
+                        const selected = itemTab === activeTab;
+                        return (
+                          <div
+                            key={label}
+                            className={`flex min-h-8 items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] ${
+                              selected ? "bg-white/10 font-medium text-white" : "text-zinc-400"
+                            }`}
+                          >
+                            <Icon className="size-3.5 shrink-0" aria-hidden />
+                            <span className="truncate">{label}</span>
+                          </div>
+                        );
+                      })}
+                    </nav>
+
+                    <div className="mt-auto rounded-xl border border-white/10 bg-white/5 p-2.5">
+                      <div className="text-[9px] text-zinc-400">Revenu du jour</div>
+                      <div className="mt-1 text-xs font-semibold">84 500 DA</div>
+                    </div>
+                  </aside>
+
+                  <main className="showcase-dash-main min-w-0 bg-[#F7F7F8] p-3 sm:p-5" dir="ltr">
+                    <div className="mb-4 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="showcase-dash-title truncate text-sm font-semibold text-[#202124] sm:text-base">
+                          {tab === "orders"
+                            ? "Commandes récentes"
+                            : tab === "stats"
+                              ? "Statistiques"
+                              : "Livraison"}
+                        </h3>
+                        <p className="showcase-dash-subtitle mt-0.5 text-[9px] text-[#74777B] sm:text-[10px]">
+                          {tab === "orders"
+                            ? "Synchronisation en direct"
+                            : tab === "stats"
+                              ? "Performance de votre boutique"
+                              : "Gérez vos transporteurs"}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        {tab === "orders" && (
+                          <div className="showcase-dash-search hidden items-center gap-1 rounded-lg border border-[#E3E4E8] bg-white px-2 py-1 text-[9px] text-[#74777B] sm:flex">
+                            <Search className="size-3" aria-hidden />
+                            Recherche
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1 rounded-lg border border-[#E3E4E8] bg-white px-2 py-1 text-[9px] text-[#74777B]">
+                          <SlidersHorizontal className="size-3" aria-hidden />
+                          Filtrer
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      key={tab}
+                      className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-500"
+                    >
+                      <ScreenContent tab={tab} baseStage={baseStage} mobile={false} showcaseDash />
+                    </div>
+                    <div className="mt-4 flex items-center justify-between border-t border-[#E5E5E8] pt-3 text-[9px] text-[#74777B]">
+                      <span>Affichage de 1 à 4 sur 25 commandes</span>
+                      <span className="flex items-center gap-1">
+                        Mis à jour à l’instant{" "}
+                        <Check className="size-3 text-emerald-600" aria-hidden />
+                      </span>
+                    </div>
+                  </main>
                 </div>
 
-                <div className="flex h-[18px] shrink-0 items-center justify-center bg-white">
-                  <div className="h-1 w-[92px] rounded-full bg-[#171719]" />
+                <nav className="showcase-dash-bottom-tabs hidden" aria-label="Dashboard tabs">
+                  {showcaseTabs.map(({ label, icon: Icon, tab: tabId }) => {
+                    const active = tabId === activeTab;
+                    return (
+                      <button
+                        key={tabId}
+                        type="button"
+                        className={`showcase-dash-tab ${active ? "showcase-dash-tab-active" : ""}`}
+                        aria-current={active ? "page" : undefined}
+                        onClick={() => setTab(tabId)}
+                      >
+                        <Icon className="showcase-dash-tab-icon" aria-hidden />
+                        <span>{label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              <div className="showcase-dash-phone absolute right-2 top-1/2 z-20 w-[min(34vw,150px)] -translate-y-1/2 left-auto sm:right-4 sm:w-[190px] md:right-5 md:w-[220px] lg:right-6 lg:w-[240px] xl:w-[260px]">
+                <div className="relative aspect-[270/590] w-full rounded-[30px] border-[5px] border-[#1A1A1E] bg-[#1A1A1E] p-[3px] shadow-[0_28px_70px_-24px_rgba(0,0,0,0.65)] ring-1 ring-white/15 sm:rounded-[36px] sm:border-[6px] sm:p-1 md:rounded-[42px] md:border-[7px] md:p-[5px]">
+                  <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] bg-[#F7F7F8] sm:rounded-[30px] md:rounded-[34px]">
+                    <div className="relative flex h-9 shrink-0 items-center justify-between px-3 pt-1 font-mono text-[10px] font-semibold text-[#171719] sm:h-12 sm:px-4 md:h-[58px] md:px-5">
+                      <span>9:41</span>
+                      <div className="absolute left-1/2 top-2 h-4 w-[50px] -translate-x-1/2 rounded-full bg-black sm:top-[9px] sm:h-5 sm:w-[68px] md:h-[25px] md:w-[88px]" />
+                      <span className="flex items-center gap-1.5">
+                        <span className="text-[9px]">5G</span>
+                        <span className="h-2.5 w-4 rounded-[3px] border border-[#171719] p-[1px]">
+                          <span className="block h-full w-3/4 rounded-[1px] bg-emerald-600" />
+                        </span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between border-b border-[#E5E5E8] px-3 pb-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-[13px] font-semibold text-[#202124]">
+                          {tab === "orders"
+                            ? "Mes commandes"
+                            : tab === "stats"
+                              ? "Statistiques"
+                              : "Livraison"}
+                        </div>
+                        <div className="mt-0.5 text-[9px] text-[#74777B]">oranix.store</div>
+                      </div>
+                      <span className="flex size-7 items-center justify-center rounded-full bg-white text-[#45464A] shadow-sm">
+                        <Smartphone className="size-3.5" aria-hidden />
+                      </span>
+                    </div>
+
+                    <div
+                      key={`${tab}-mobile`}
+                      className="min-h-0 flex-1 overflow-y-auto px-2.5 py-3 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-500"
+                    >
+                      <ScreenContent tab={tab} baseStage={baseStage} mobile />
+                    </div>
+
+                    <div className="grid h-12 shrink-0 grid-cols-3 border-t border-[#E5E5E8] bg-white">
+                      {[
+                        { label: "Commandes", icon: ShoppingBag, active: tab === "orders" },
+                        { label: "Stats", icon: BarChart3, active: tab === "stats" },
+                        { label: "Livraison", icon: Truck, active: tab === "delivery" },
+                      ].map(({ label, icon: Icon, active }) => (
+                        <div
+                          key={label}
+                          className={`flex flex-col items-center justify-center gap-0.5 text-[8px] ${
+                            active ? "font-semibold text-[#171719]" : "text-[#96979A]"
+                          }`}
+                        >
+                          <Icon className="size-3.5" aria-hidden />
+                          {label}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex h-[18px] shrink-0 items-center justify-center bg-white">
+                      <div className="h-1 w-[92px] rounded-full bg-[#171719]" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

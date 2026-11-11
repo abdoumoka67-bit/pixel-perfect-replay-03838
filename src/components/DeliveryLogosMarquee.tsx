@@ -19,7 +19,7 @@ export function DeliveryLogosMarquee() {
 
   useEffect(() => {
     const updateCopies = () => {
-      const copies = Math.max(1, Math.ceil(window.innerWidth / LOGO_SET_WIDTH));
+      const copies = Math.max(1, Math.ceil(window.innerWidth / LOGO_SET_WIDTH) + 1);
       setLogoCopies((current) => (current === copies ? current : copies));
     };
 
