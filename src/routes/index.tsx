@@ -10,6 +10,7 @@ import { translate, type TranslationKey } from "@/lib/i18n";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
 import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
 import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
+import { DispatchShowcase } from "@/components/landing/DispatchShowcase";
 import { PixelAttribution } from "@/components/landing/PixelAttribution";
 
 export const Route = createFileRoute("/")({
@@ -201,6 +202,7 @@ function Home() {
         </section>
 
         <DeliveryLogosMarquee />
+        <DispatchShowcase />
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16">
           <div className="mb-8 text-center">
