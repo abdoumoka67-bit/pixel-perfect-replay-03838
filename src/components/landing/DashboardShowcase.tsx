@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  BadgeCheck,
   BarChart3,
   Check,
   CheckCircle2,
@@ -27,7 +28,68 @@ import { useUiLanguage } from "@/lib/ui-i18n";
 import { revealClasses, useInView } from "@/hooks/use-in-view";
 
 type DashboardTab = "orders" | "stats" | "delivery";
-type OrderStatus = 0 | 1 | 2;
+type OrderStage = 0 | 1 | 2 | 3 | 4;
+
+type StageMeta = {
+  label: string;
+  short: string;
+  tone: string;
+  icon: LucideIcon;
+};
+
+/** The five-stage lifecycle every simulated order walks through. */
+const ORDER_STAGES: readonly StageMeta[] = [
+  {
+    label: "En attente",
+    short: "En attente",
+    tone: "border-amber-500/20 bg-amber-500/10 text-amber-600",
+    icon: Clock3,
+  },
+  {
+    label: "Confirmée",
+    short: "Confirmée",
+    tone: "border-emerald-500/20 bg-emerald-500/10 text-emerald-600",
+    icon: CheckCircle2,
+  },
+  {
+    label: "Prête à expédier",
+    short: "Prête",
+    tone: "border-blue-500/20 bg-blue-500/10 text-blue-600",
+    icon: Package,
+  },
+  {
+    label: "En livraison · ZR Express",
+    short: "En livraison",
+    tone: "border-violet-600/25 bg-violet-600/10 text-violet-700",
+    icon: Truck,
+  },
+  {
+    label: "Livrée · Encaissée",
+    short: "Livrée",
+    tone: "border-emerald-700/30 bg-emerald-700/10 text-emerald-800",
+    icon: BadgeCheck,
+  },
+];
+
+// Each row starts at a different point of the same cycle, so the board always
+// shows a confirmed, a shipped and a delivered order side by side.
+const STAGE_OFFSETS = [0, 3, 4, 1] as const;
+/** One stage every 1.8s: fast enough to feel alive, slow enough to read. */
+const STAGE_MS = 1800;
+/** Give the orders tab a full lifecycle (5 stages) before the demo moves on. */
+const TAB_MS = 12000;
+
+const TRACKING_CODES: Record<string, string> = {
+  "#1048": "ZR-849201",
+  "#1047": "ZR-849188",
+  "#1046": "ZR-849173",
+  "#1045": "ZR-849160",
+};
+
+function stageFor(index: number, base: OrderStage): OrderStage {
+  const offset = STAGE_OFFSETS[index] ?? 0;
+  return ((base + offset) % ORDER_STAGES.length) as OrderStage;
+}
 
 const MAIN_MENU: { label: string; icon: LucideIcon; tab?: DashboardTab }[] = [
   { label: "Vue d'ensemble", icon: LayoutDashboard },
@@ -84,24 +146,23 @@ const ORDERS = [
   },
 ];
 
-const STATUS_LABELS = ["En attente", "Confirmée ✓", "Expédiée · ZR Express"];
-
-function OrdersScreen({ mobile, status }: { mobile: boolean; status: OrderStatus }) {
+function OrdersScreen({ mobile, baseStage }: { mobile: boolean; baseStage: OrderStage }) {
   return (
     <div className={mobile ? "space-y-2" : "space-y-2.5"}>
       {ORDERS.slice(0, mobile ? 3 : 4).map((order, index) => {
-        const label = index === 0 ? STATUS_LABELS[status] : STATUS_LABELS[index === 1 ? 1 : 2];
-        const tone =
-          label === STATUS_LABELS[0]
-            ? "border-amber-500/20 bg-amber-500/10 text-amber-700"
-            : label === STATUS_LABELS[1]
-              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700"
-              : "border-primary/20 bg-primary/10 text-primary";
+        // Every row is offset in the same cycle, so the board always shows a
+        // pending, a shipped and a delivered order at the same moment.
+        const stage = stageFor(index, baseStage);
+        const meta = ORDER_STAGES[stage]!;
+        const Icon = meta.icon;
+        const tracking = TRACKING_CODES[order.id];
+        const showTracking = stage >= 3 && tracking;
 
         return (
           <div
-            key={order.id}
-            className={`rounded-xl border bg-card transition-all duration-500 ${
+            // Remounting on each stage replays the pop/glow transition.
+            key={`${order.id}-${stage}`}
+            className={`order-stage-pop rounded-xl border bg-card transition-colors duration-500 ${
               mobile ? "p-2.5" : "p-3"
             } ${index === 0 ? "border-primary/20 shadow-2xs ring-1 ring-primary/10" : "border-border/70"}`}
           >
@@ -125,17 +186,35 @@ function OrdersScreen({ mobile, status }: { mobile: boolean; status: OrderStatus
               <div className="shrink-0 text-end">
                 <div className="text-[10px] font-semibold text-foreground">{order.amount}</div>
                 <span
-                  className={`mt-1 inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[8px] font-medium sm:px-2 sm:text-[9px] ${tone}`}
+                  className={`mt-1 ms-auto flex w-fit items-center gap-1 whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[8px] font-medium sm:px-2 sm:text-[9px] ${meta.tone}`}
                 >
-                  {label === STATUS_LABELS[0] ? (
-                    <Clock3 className="size-2.5" aria-hidden />
-                  ) : label === STATUS_LABELS[1] ? (
-                    <CheckCircle2 className="size-2.5" aria-hidden />
+                  {stage === 0 ? (
+                    <span className="relative flex size-1.5" aria-hidden>
+                      <span className="absolute inline-flex size-full rounded-full bg-amber-500/70 motion-safe:animate-ping" />
+                      <span className="relative inline-flex size-1.5 rounded-full bg-amber-500" />
+                    </span>
                   ) : (
-                    <Truck className="size-2.5" aria-hidden />
+                    <Icon className="size-2.5" aria-hidden />
                   )}
-                  {label}
+                  {mobile ? meta.short : meta.label}
                 </span>
+                {/* Height is reserved so the tracking code never resizes the row. */}
+                <div
+                  className={`mt-1 h-[11px] font-mono text-[8px] leading-[11px] transition-colors duration-500 ${
+                    showTracking
+                      ? stage === 3
+                        ? "text-violet-600"
+                        : "text-emerald-700"
+                      : "text-transparent"
+                  }`}
+                  dir="ltr"
+                >
+                  {showTracking && (
+                    <span className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
+                      {tracking}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             {mobile && index === 0 && (
@@ -250,26 +329,26 @@ function DeliveryScreen({ mobile }: { mobile: boolean }) {
 
 function ScreenContent({
   tab,
-  status,
+  baseStage,
   mobile,
 }: {
   tab: DashboardTab;
-  status: OrderStatus;
+  baseStage: OrderStage;
   mobile: boolean;
 }) {
   if (tab === "stats") return <StatisticsScreen mobile={mobile} />;
   if (tab === "delivery") return <DeliveryScreen mobile={mobile} />;
-  return <OrdersScreen mobile={mobile} status={status} />;
+  return <OrdersScreen mobile={mobile} baseStage={baseStage} />;
 }
 
 export function DashboardShowcase() {
   const language = useUiLanguage();
   const isRtl = language === "ar";
   const [tab, setTab] = useState<DashboardTab>("orders");
-  const [orderStatus, setOrderStatus] = useState<OrderStatus>(0);
+  const [baseStage, setBaseStage] = useState<OrderStage>(0);
   const t = (key: TranslationKey) => translate(language, key);
   // Pause the demo the moment it leaves the viewport, resume when it returns.
-  const { ref, inView } = useInView<HTMLElement>({ settleMs: 150 });
+  const { ref, inView } = useInView<HTMLElement>();
 
   useEffect(() => {
     if (!inView) return;
@@ -277,21 +356,20 @@ export function DashboardShowcase() {
       setTab((current) =>
         current === "orders" ? "stats" : current === "stats" ? "delivery" : "orders",
       );
-    }, 4000);
+    }, TAB_MS);
     return () => window.clearInterval(timer);
   }, [inView]);
 
+  // The lifecycle advances on its own clock, even while another tab is shown,
+  // so an orders visit always lands on a fresh, already-moving stage.
   useEffect(() => {
-    if (!inView || tab !== "orders") {
-      setOrderStatus(0);
-      return;
-    }
+    if (!inView) return;
 
     const timer = window.setInterval(() => {
-      setOrderStatus((current) => ((current + 1) % 3) as OrderStatus);
-    }, 1400);
+      setBaseStage((current) => ((current + 1) % ORDER_STAGES.length) as OrderStage);
+    }, STAGE_MS);
     return () => window.clearInterval(timer);
-  }, [tab, inView]);
+  }, [inView]);
 
   const activeTab = tab;
 
@@ -417,9 +495,8 @@ export function DashboardShowcase() {
                 <div
                   key={tab}
                   className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-500"
-                  aria-live="polite"
                 >
-                  <ScreenContent tab={tab} status={orderStatus} mobile={false} />
+                  <ScreenContent tab={tab} baseStage={baseStage} mobile={false} />
                 </div>
                 <div className="mt-4 flex items-center justify-between border-t border-[#E5E5E8] pt-3 text-[9px] text-[#74777B]">
                   <span>Affichage de 1 à 4 sur 25 commandes</span>
@@ -464,9 +541,8 @@ export function DashboardShowcase() {
                 <div
                   key={`${tab}-mobile`}
                   className="min-h-0 flex-1 overflow-y-auto px-2.5 py-3 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-500"
-                  aria-live="polite"
                 >
-                  <ScreenContent tab={tab} status={orderStatus} mobile />
+                  <ScreenContent tab={tab} baseStage={baseStage} mobile />
                 </div>
 
                 <div className="grid h-12 shrink-0 grid-cols-3 border-t border-[#E5E5E8] bg-white">

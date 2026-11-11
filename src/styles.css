@@ -118,6 +118,28 @@
   }
 }
 
+/* Order lifecycle demo: a brief scale pulse + soft glow on every stage change. */
+@keyframes order-stage-pop {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+  30% {
+    transform: scale(1.02);
+    box-shadow: 0 8px 22px -12px rgba(99, 102, 241, 0.45);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .order-stage-pop {
+    animation: order-stage-pop 480ms ease-out;
+  }
+}
+
 /*
  * oranix design system — warm sand background, charcoal structure,
  * calm terracotta accents. All colors in oklch.
