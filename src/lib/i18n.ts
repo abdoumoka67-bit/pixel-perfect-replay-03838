@@ -196,7 +196,6 @@ const ar = {
   "landing.dispatch.title": "حوّل طلبياتك المؤكدة إلى طرود جاهزة في ثوانٍ",
   "landing.dispatch.desc":
     "بدون نسخ ولصق أو إدخال يدوي؛ حدّد طلبيات اليوم بنقرة واحدة، لتصل بياناتها فوراً إلى شركة الشحن مع أرقام التتبع وبوليصات الطباعة.",
-  "landing.dispatch.link": "ربط فوري مع أكثر من 18 شركة توصيل",
 
   // Legal pages
   "legal.home": "الرئيسية",
@@ -426,11 +425,10 @@ const fr: Dictionary = {
   "landing.pixels.sourceFacebook": "Facebook · Campagne septembre",
   "landing.pixels.pixelsLabel": "Pixels",
   "landing.pixels.shield": "Un seul événement d'achat par commande, sans doublon",
-  "landing.dispatch.badge": "01 · Expédition & Bordereaux",
-  "landing.dispatch.title": "Transformez vos commandes en colis prêts en quelques secondes",
+  "landing.dispatch.badge": "01 · Expédition & Colis",
+  "landing.dispatch.title": "Transformez vos commandes confirmées en colis prêts en quelques secondes",
   "landing.dispatch.desc":
-    "Sans saisie manuelle. Transmettez vos commandes confirmées instantanément au transporteur avec bordereaux et numéros de suivi.",
-  "landing.dispatch.link": "Plus de 18 transporteurs connectés",
+    "Fini le copier-coller. En un clic, transmettez vos commandes au transporteur avec bordereaux et numéros de suivi instantanés.",
 
   // Legal pages
   "legal.home": "Accueil",
@@ -660,8 +658,7 @@ const en: Dictionary = {
   "landing.dispatch.badge": "01 · Shipping & Dispatch",
   "landing.dispatch.title": "Turn confirmed orders into ready parcels in seconds",
   "landing.dispatch.desc":
-    "No manual copy-pasting. Dispatch today's confirmed orders in one click directly to your courier with instant waybills.",
-  "landing.dispatch.link": "Connected with 18+ couriers",
+    "No manual copy-pasting. In one click, dispatch today's orders directly to your courier with instant waybills and tracking codes.",
 
   // Legal pages
   "legal.home": "Home",
