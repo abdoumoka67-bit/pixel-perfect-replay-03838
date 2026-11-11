@@ -62,7 +62,9 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
               )}
             </div>
             <Link to="/m/$store" params={{ store: store.slug }} className="flex items-center gap-2">
-              {store.logo && <img src={store.logo} alt="" className="size-8 rounded-full object-cover" />}
+              {store.logo && (
+                <img src={store.logo} alt="" className="size-8 shrink-0 object-contain" />
+              )}
               <span className="text-xl font-normal">{store.name}</span>
             </Link>
             <div className="flex items-center justify-end gap-1">

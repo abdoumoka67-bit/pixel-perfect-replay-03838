@@ -11,7 +11,6 @@ import {
   Lock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Logo } from "@/components/brand/Logo";
 import {
   useDocumentLanguage,
   LanguageMenu,
@@ -27,6 +26,7 @@ import { getFeaturePlanBadge, MEMBER_ROLE_LABELS, PRO_AREAS, canOpen } from "@/l
 import { tr, UiLanguageProvider, useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { ProPill } from "./ProLock";
 import { GuidedTour } from "./GuidedTour";
+import { useSignedUrls } from "@/hooks/use-signed-urls";
 
 function useSignOut() {
   const queryClient = useQueryClient();
@@ -40,6 +40,27 @@ function useSignOut() {
 }
 
 type Tone = "dark" | "light";
+
+function StoreLogo({
+  path,
+  name,
+  className,
+}: {
+  path: string | null | undefined;
+  name: string | undefined;
+  className?: string;
+}) {
+  const urls = useSignedUrls([path]);
+  if (!path || !urls[path]) return null;
+
+  return (
+    <img
+      src={urls[path]}
+      alt={name ?? ""}
+      className={cn("max-h-10 max-w-36 object-contain", className)}
+    />
+  );
+}
 
 const TONES = {
   dark: {
@@ -219,7 +240,7 @@ function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) 
   return (
     <div className={cn("flex h-full flex-col gap-6 p-4", styles.body)}>
       <div className="flex items-center justify-between gap-2 px-2 pt-2">
-        <Logo tone={tone === "dark" ? "light" : "dark"} />
+        <StoreLogo path={store?.logo_url} name={store?.name} />
         <LanguageMenu
           value={language}
           onChange={setLanguage}
@@ -390,7 +411,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           <button onClick={() => setOpen(true)} className="rounded-lg p-2 hover:bg-secondary" aria-label={t("فتح القائمة")}>
             <Menu className="size-5" />
           </button>
-          <Logo />
+          <StoreLogo path={store?.logo_url} name={store?.name} className="max-h-8 max-w-28" />
           <LanguageMenu value={language} onChange={setLanguage} />
         </header>
 
