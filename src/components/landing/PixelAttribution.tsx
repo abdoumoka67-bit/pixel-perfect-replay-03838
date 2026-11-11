@@ -36,47 +36,6 @@ function Tile({
   );
 }
 
-function FacebookGlyph({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 56 56" className={className} aria-hidden>
-      <rect x="12" y="12" width="32" height="32" rx="9" fill="#0866FF" />
-      <path
-        d="M27.5 28.5h-3.2v9.5h-3.9v-9.5h-1.9v-3.4h1.9v-2.2c0-2.6 1.6-4.1 4-4.1 1.1 0 2.3.2 2.3.2v2.5h-1.3c-1.3 0-1.7.8-1.7 1.6v2h3.4l-.5 3.4z"
-        fill="#FFFFFF"
-      />
-    </svg>
-  );
-}
-
-function InstagramGlyph({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden>
-      <defs>
-        <linearGradient id="pixel-ig-chip-gradient" x1="0" y1="1" x2="1" y2="0">
-          <stop stopColor="#FFD600" />
-          <stop offset="0.35" stopColor="#FF7A00" />
-          <stop offset="0.62" stopColor="#FF0069" />
-          <stop offset="0.85" stopColor="#D300C5" />
-          <stop offset="1" stopColor="#7638FA" />
-        </linearGradient>
-      </defs>
-      <rect width="24" height="24" rx="7" fill="url(#pixel-ig-chip-gradient)" />
-      <rect
-        x="4.7"
-        y="4.7"
-        width="14.6"
-        height="14.6"
-        rx="4.7"
-        fill="none"
-        stroke="#FFFFFF"
-        strokeWidth="1.9"
-      />
-      <circle cx="12" cy="12" r="3.8" fill="none" stroke="#FFFFFF" strokeWidth="1.9" />
-      <circle cx="17" cy="7" r="1.2" fill="#FFFFFF" />
-    </svg>
-  );
-}
-
 /**
  * "Every order knows its ad": Instagram and Facebook are shown as two apps
  * that feed one Meta node, and Meta feeds the order card.
@@ -112,31 +71,16 @@ export function PixelAttribution() {
                 <stop stopColor="#0064E0" />
                 <stop offset="1" stopColor="#0082FB" />
               </linearGradient>
-              <linearGradient id="pixel-ig-gradient" x1="0" y1="56" x2="56" y2="0" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#FFD600" />
-                <stop offset="0.35" stopColor="#FF7A00" />
-                <stop offset="0.62" stopColor="#FF0069" />
-                <stop offset="0.85" stopColor="#D300C5" />
-                <stop offset="1" stopColor="#7638FA" />
-              </linearGradient>
             </defs>
 
             {/* Instagram */}
             <Tile x={100} delay={0} label="Instagram">
-              <rect x="12" y="12" width="32" height="32" rx="9" fill="url(#pixel-ig-gradient)" />
-              <path
-                d="M28 17.5c3.4 0 3.8 0 5.2.1 1.2.1 1.9.3 2.3.5.6.2 1 .5 1.5 1 .4.4.7.9 1 1.5.2.4.4 1.1.5 2.3.1 1.3.1 1.7.1 5.2s0 3.8-.1 5.2c-.1 1.2-.3 1.9-.5 2.3-.2.6-.5 1-1 1.5-.4.4-.9.7-1.5 1-.4.2-1.1.4-2.3.5-1.3.1-1.7.1-5.2.1s-3.8 0-5.2-.1c-1.2-.1-1.9-.3-2.3-.5-.6-.2-1-.5-1.5-1-.4-.4-.7-.9-1-1.5-.2-.4-.4-1.1-.5-2.3-.1-1.3-.1-1.7-.1-5.2s0-3.8.1-5.2c.1-1.2.3-1.9.5-2.3.2-.6.5-1 1-1.5.4-.4.9-.7 1.5-1 .4-.2 1.1-.4 2.3-.5 1.4-.1 1.8-.1 5.2-.1zm0-2c-3.5 0-3.9 0-5.3.1-1.4.1-2.4.3-3.2.6-.9.3-1.6.8-2.3 1.5-.7.7-1.2 1.4-1.5 2.3-.3.8-.5 1.8-.6 3.2-.1 1.4-.1 1.8-.1 5.3s0 3.9.1 5.3c.1 1.4.3 2.4.6 3.2.3.9.8 1.6 1.5 2.3.7.7 1.4 1.2 2.3 1.5.8.3 1.8.5 3.2.6 1.4.1 1.8.1 5.3.1s3.9 0 5.3-.1c1.4-.1 2.4-.3 3.2-.6.9-.3 1.6-.8 2.3-1.5.7-.7 1.2-1.4 1.5-2.3.3-.8.5-1.8.6-3.2.1-1.4.1-1.8.1-5.3s0-3.9-.1-5.3c-.1-1.4-.3-2.4-.6-3.2-.3-.9-.8-1.6-1.5-2.3-.7-.7-1.4-1.2-2.3-1.5-.8-.3-1.8-.5-3.2-.6-1.4-.1-1.8-.1-5.3-.1zm0 5.1a7.4 7.4 0 1 0 0 14.8 7.4 7.4 0 0 0 0-14.8zm0 12.2a4.8 4.8 0 1 1 0-9.6 4.8 4.8 0 0 1 0 9.6zm9.4-12.8a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 0 1 3.4 0z"
-                fill="#FFFFFF"
-              />
+              <image href="/logos/instagram.webp" x="12" y="12" width="32" height="32" />
             </Tile>
 
             {/* Facebook */}
             <Tile x={244} delay={-0.7} label="Facebook">
-              <rect x="12" y="12" width="32" height="32" rx="9" fill="#0866FF" />
-              <path
-                d="M27.5 28.5h-3.2v9.5h-3.9v-9.5h-1.9v-3.4h1.9v-2.2c0-2.6 1.6-4.1 4-4.1 1.1 0 2.3.2 2.3.2v2.5h-1.3c-1.3 0-1.7.8-1.7 1.6v2h3.4l-.5 3.4z"
-                fill="#FFFFFF"
-              />
+              <image href="/logos/facebook.webp" x="12" y="12" width="32" height="32" />
             </Tile>
 
             {/* Meta node: both apps report into it. */}
@@ -190,11 +134,11 @@ export function PixelAttribution() {
               <span className="mt-0.5 shrink-0 text-xs text-muted-foreground">{t("landing.pixels.sourcesLabel")}</span>
               <ul className="flex min-w-0 flex-col items-end gap-1.5 text-sm font-medium">
                 <li className="flex max-w-full items-center gap-1.5">
-                  <InstagramGlyph className="size-4 shrink-0" />
+                  <img src="/logos/instagram.webp" className="size-4 shrink-0" alt="" />
                   <span className="truncate">{t("landing.pixels.sourceInstagram")}</span>
                 </li>
                 <li className="flex max-w-full items-center gap-1.5">
-                  <FacebookGlyph className="size-4 shrink-0" />
+                  <img src="/logos/facebook.webp" className="size-4 shrink-0" alt="" />
                   <span className="truncate">{t("landing.pixels.sourceFacebook")}</span>
                 </li>
               </ul>
