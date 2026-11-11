@@ -277,16 +277,24 @@ function StatisticsScreen({ mobile }: { mobile: boolean }) {
   );
 }
 
-function DeliveryScreen({ mobile }: { mobile: boolean }) {
+function DeliveryScreen({
+  mobile,
+  showcaseDash = false,
+}: {
+  mobile: boolean;
+  showcaseDash?: boolean;
+}) {
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${showcaseDash ? "showcase-dash-carriers" : ""}`}>
       {[
         { name: "ZR Express", detail: "Livraison nationale", connected: true },
         { name: "Yalidine", detail: "58 wilayas couvertes", connected: false },
       ].map((carrier) => (
         <div
           key={carrier.name}
-          className="flex items-center justify-between gap-2 rounded-xl border border-border/70 bg-card p-2.5 sm:p-3"
+          className={`flex items-center justify-between gap-2 rounded-xl border border-border/70 bg-card p-2.5 sm:p-3 ${
+            showcaseDash ? "showcase-dash-carrier-card" : ""
+          }`}
         >
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -315,7 +323,7 @@ function DeliveryScreen({ mobile }: { mobile: boolean }) {
         type="button"
         className={`flex w-full items-center justify-center gap-2 rounded-xl bg-[#171717] px-3 font-medium text-white shadow-sm transition-colors hover:bg-[#262626] ${
           mobile ? "py-2.5 text-[10px]" : "py-3 text-xs"
-        }`}
+        } ${showcaseDash ? "showcase-dash-generate" : ""}`}
       >
         <Printer className="size-3.5" aria-hidden />
         Générer des bordereaux A6
@@ -331,13 +339,15 @@ function ScreenContent({
   tab,
   baseStage,
   mobile,
+  showcaseDash = false,
 }: {
   tab: DashboardTab;
   baseStage: OrderStage;
   mobile: boolean;
+  showcaseDash?: boolean;
 }) {
   if (tab === "stats") return <StatisticsScreen mobile={mobile} />;
-  if (tab === "delivery") return <DeliveryScreen mobile={mobile} />;
+  if (tab === "delivery") return <DeliveryScreen mobile={mobile} showcaseDash={showcaseDash} />;
   return <OrdersScreen mobile={mobile} baseStage={baseStage} />;
 }
 
@@ -372,10 +382,18 @@ export function DashboardShowcase() {
   }, [inView]);
 
   const activeTab = tab;
+  const showcaseTabs: { label: string; icon: LucideIcon; tab: DashboardTab }[] = [
+    { label: "Commandes", icon: ShoppingBag, tab: "orders" },
+    { label: "Stats", icon: BarChart3, tab: "stats" },
+    { label: "Livraison", icon: Truck, tab: "delivery" },
+  ];
 
   return (
-    <section ref={ref} className="overflow-hidden border-t bg-background py-16 sm:py-20">
-      <div className="mx-auto w-full max-w-7xl px-5">
+    <section
+      ref={ref}
+      className="showcase-dash-section overflow-hidden border-t bg-background py-16 sm:py-20"
+    >
+      <div className="showcase-dash-container mx-auto w-full max-w-7xl px-5">
         <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-14" dir={isRtl ? "rtl" : "ltr"}>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-card px-3.5 py-1 text-xs text-muted-foreground shadow-2xs">
             <Sparkles className="size-3 text-primary" aria-hidden />
@@ -389,7 +407,11 @@ export function DashboardShowcase() {
           </p>
         </div>
 
-        <div className={revealClasses(inView, "relative mx-auto max-w-6xl")} lang="fr" dir="ltr">
+        <div
+          className={`${revealClasses(inView, "relative mx-auto max-w-6xl")} showcase-dash-panel`}
+          lang="fr"
+          dir="ltr"
+        >
           <div className="min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl">
             <div className="flex h-11 items-center justify-between border-b border-border/60 bg-muted/40 px-4">
               <div className="flex items-center gap-1.5">
@@ -403,8 +425,8 @@ export function DashboardShowcase() {
               <span className="font-mono text-[10px] text-muted-foreground">● LIVE</span>
             </div>
 
-            <div className="grid min-h-[380px] grid-cols-1 sm:min-h-[440px] md:min-h-[530px] md:grid-cols-[210px_minmax(0,1fr)]">
-              <aside className="hidden flex-col bg-[#111113] px-3 py-4 text-white md:flex">
+            <div className="showcase-dash-grid grid min-h-[380px] grid-cols-1 sm:min-h-[440px] md:min-h-[530px] md:grid-cols-[210px_minmax(0,1fr)]">
+              <aside className="showcase-dash-sidebar hidden flex-col bg-[#111113] px-3 py-4 text-white md:flex">
                 <div className="mb-5 h-6 px-2" aria-hidden />
                 <div className="mb-2 px-2 text-[8px] font-semibold tracking-[0.16em] text-zinc-500">
                   MENU PRINCIPAL
@@ -461,7 +483,7 @@ export function DashboardShowcase() {
                 </div>
               </aside>
 
-              <main className="min-w-0 bg-[#F7F7F8] p-3 sm:p-5" dir="ltr">
+              <main className="showcase-dash-main min-w-0 bg-[#F7F7F8] p-3 sm:p-5" dir="ltr">
                 <div className="mb-4 flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <h3 className="truncate text-sm font-semibold text-[#202124] sm:text-base">
@@ -496,7 +518,7 @@ export function DashboardShowcase() {
                   key={tab}
                   className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-500"
                 >
-                  <ScreenContent tab={tab} baseStage={baseStage} mobile={false} />
+                  <ScreenContent tab={tab} baseStage={baseStage} mobile={false} showcaseDash />
                 </div>
                 <div className="mt-4 flex items-center justify-between border-t border-[#E5E5E8] pt-3 text-[9px] text-[#74777B]">
                   <span>Affichage de 1 à 4 sur 25 commandes</span>
@@ -506,11 +528,27 @@ export function DashboardShowcase() {
                 </div>
               </main>
             </div>
+
+            <nav className="showcase-dash-bottom-tabs hidden" aria-label="Dashboard tabs">
+              {showcaseTabs.map(({ label, icon: Icon, tab: tabId }) => {
+                const active = tabId === activeTab;
+                return (
+                  <button
+                    key={tabId}
+                    type="button"
+                    className={`showcase-dash-tab ${active ? "showcase-dash-tab-active" : ""}`}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setTab(tabId)}
+                  >
+                    <Icon className="showcase-dash-tab-icon" aria-hidden />
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
 
-          <div
-            className="absolute right-2 top-1/2 z-20 w-[min(34vw,150px)] -translate-y-1/2 left-auto sm:right-4 sm:w-[190px] md:right-5 md:w-[220px] lg:right-6 lg:w-[240px] xl:w-[260px]"
-          >
+          <div className="showcase-dash-phone absolute right-2 top-1/2 z-20 w-[min(34vw,150px)] -translate-y-1/2 left-auto sm:right-4 sm:w-[190px] md:right-5 md:w-[220px] lg:right-6 lg:w-[240px] xl:w-[260px]">
             <div className="relative aspect-[270/590] w-full rounded-[30px] border-[5px] border-[#1A1A1E] bg-[#1A1A1E] p-[3px] shadow-[0_28px_70px_-24px_rgba(0,0,0,0.65)] ring-1 ring-white/15 sm:rounded-[36px] sm:border-[6px] sm:p-1 md:rounded-[42px] md:border-[7px] md:p-[5px]">
               <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] bg-[#F7F7F8] sm:rounded-[30px] md:rounded-[34px]">
                 <div className="relative flex h-9 shrink-0 items-center justify-between px-3 pt-1 font-mono text-[10px] font-semibold text-[#171719] sm:h-12 sm:px-4 md:h-[58px] md:px-5">
