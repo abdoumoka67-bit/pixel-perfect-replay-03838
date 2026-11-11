@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { translate } from "@/lib/i18n";
 import { useUiLanguage } from "@/lib/ui-i18n";
 
@@ -10,8 +11,22 @@ const DELIVERY_LOGOS = [
   "/logos/delivery-08.png",
 ];
 
+const LOGO_SET_WIDTH = DELIVERY_LOGOS.length * 136;
+
 export function DeliveryLogosMarquee() {
   const language = useUiLanguage();
+  const [logoCopies, setLogoCopies] = useState(3);
+
+  useEffect(() => {
+    const updateCopies = () => {
+      const copies = Math.max(1, Math.ceil(window.innerWidth / LOGO_SET_WIDTH));
+      setLogoCopies((current) => (current === copies ? current : copies));
+    };
+
+    updateCopies();
+    window.addEventListener("resize", updateCopies);
+    return () => window.removeEventListener("resize", updateCopies);
+  }, []);
 
   return (
     <section className="mx-auto w-full max-w-3xl pb-16">
@@ -36,14 +51,16 @@ export function DeliveryLogosMarquee() {
                 aria-hidden="true"
                 dir="ltr"
               >
-                {DELIVERY_LOGOS.map((src, index) => (
-                  <div
-                    key={`${src}-${index}`}
-                    className="flex h-[88px] w-[120px] shrink-0 items-center justify-center rounded-2xl border border-border bg-card p-4"
-                  >
-                    <img src={src} alt="" className="h-12 w-full object-contain" />
-                  </div>
-                ))}
+                {Array.from({ length: logoCopies }, (_, copyIndex) =>
+                  DELIVERY_LOGOS.map((src, index) => (
+                    <div
+                      key={`${copyIndex}-${src}-${index}`}
+                      className="flex h-[88px] w-[120px] shrink-0 items-center justify-center rounded-2xl border border-border bg-card p-4"
+                    >
+                      <img src={src} alt="" className="h-12 w-full object-contain" />
+                    </div>
+                  )),
+                )}
               </div>
             ))}
           </div>
