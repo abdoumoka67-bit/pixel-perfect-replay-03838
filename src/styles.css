@@ -140,6 +140,79 @@
   }
 }
 
+/* Hero: a desktop-style selection dragged over the closing phrase. */
+@keyframes hero-select-marquee {
+  0% {
+    width: 0%;
+    height: 0%;
+    opacity: 0;
+  }
+  15% {
+    width: 0%;
+    height: 0%;
+    opacity: 1;
+  }
+  50%,
+  80% {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+  }
+  90%,
+  100% {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes hero-select-cursor {
+  0% {
+    inset-inline-start: 0%;
+    top: 0%;
+    opacity: 0;
+  }
+  15% {
+    inset-inline-start: 0%;
+    top: 0%;
+    opacity: 1;
+  }
+  50%,
+  80% {
+    inset-inline-start: 100%;
+    top: 100%;
+    opacity: 1;
+  }
+  90%,
+  100% {
+    inset-inline-start: 100%;
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-select-marquee {
+    animation: hero-select-marquee 4.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  .hero-select-cursor {
+    animation: hero-select-cursor 4.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-select-layer {
+    display: none;
+  }
+}
+
+/* Off screen: freeze the selection loop so the hero costs no paint time. */
+.hero-stage[data-active="false"] .hero-select-marquee,
+.hero-stage[data-active="false"] .hero-select-cursor {
+  animation-play-state: paused;
+}
+
 /*
  * oranix design system — warm sand background, charcoal structure,
  * calm terracotta accents. All colors in oklch.

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
 import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
+import { useInView } from "@/hooks/use-in-view";
 import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
 import { DashboardShowcase } from "@/components/landing/DashboardShowcase";
 import { DispatchShowcase } from "@/components/landing/DispatchShowcase";
@@ -107,6 +108,49 @@ function FeaturesAccordion() {
   );
 }
 
+/**
+ * Draws a desktop selection over the closing phrase of the hero: a blue marquee
+ * grows with a mouse pointer dragged from the start corner to the opposite one,
+ * holds so the phrase stays readable, then fades out. Timing and corners live in
+ * styles.css (see `hero-select-*`) and respect `prefers-reduced-motion`.
+ */
+function TextSelectionHighlight({
+  children,
+  isRtl,
+  className,
+}: {
+  children: string;
+  isRtl: boolean;
+  className?: string;
+}) {
+  return (
+    <span className={cn("relative inline-block", className)}>
+      {children}
+      <span aria-hidden className="hero-select-layer pointer-events-none absolute inset-0">
+        <span className="hero-select-marquee absolute start-0 top-0 rounded-[2px] border-[1.5px] border-blue-600/80 bg-blue-500/15" />
+        <span
+          className="hero-select-cursor absolute start-0 top-0 h-[22px] w-[18px]"
+          style={{ transform: isRtl ? "translateX(100%)" : undefined }}
+        >
+          <svg
+            viewBox="0 0 18 22"
+            className="h-full w-full overflow-visible drop-shadow-sm"
+            style={{ transformOrigin: "0 0", transform: isRtl ? "scaleX(-1)" : undefined }}
+          >
+            <path
+              d="M0 0 L0 17 L4.4 12.8 L6.9 18.4 L9.4 17.3 L6.9 11.8 L12.6 11.8 Z"
+              fill="#FFFFFF"
+              stroke="#1F2937"
+              strokeWidth="1.3"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </span>
+    </span>
+  );
+}
+
 function Home() {
   const plans = Route.useLoaderData();
   const navigate = useNavigate();
@@ -117,12 +161,14 @@ function Home() {
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
   const [heroLine1 = "", heroLine2] = t("landing.hero.title").split("\n");
   const [email, setEmail] = useState("");
+  // Pause the selection loop while the hero is off screen.
+  const { ref: heroRef, inView: heroInView } = useInView<HTMLElement>();
 
   function renderHeroLine1() {
     let part1 = "متجرك";
     if (language === "fr") part1 = "Votre boutique";
     else if (language === "en") part1 = "Your store";
-    // Keep the translated remainder (and its capitalization) after the pill.
+    // Keep the translated remainder (and its capitalization) after the lead-in.
     const part2 = heroLine1.startsWith(part1)
       ? heroLine1.slice(part1.length).trimStart().replace(/^,\s*/, "")
       : "";
@@ -155,7 +201,11 @@ function Home() {
           </div>
         </header>
 
-        <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20 lg:max-w-7xl">
+        <section
+          ref={heroRef}
+          data-active={heroInView}
+          className="hero-stage mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20 lg:max-w-7xl"
+        >
           <h1
             className={cn(
               "mx-auto max-w-3xl text-balance break-words text-center font-medium text-[#1D1D20] lg:max-w-none",
@@ -167,12 +217,12 @@ function Home() {
           >
             {renderHeroLine1()}
             {heroLine2 && (
-              <span className={cn(
-                "inline-flex items-center px-4 py-1 sm:px-5 sm:py-1.5 rounded-full bg-neutral-100/80 border border-neutral-200/70 text-[#1D1D20] text-[0.8em] shadow-xs",
-                isRtl && "lg:shrink-0 lg:whitespace-nowrap",
-              )}>
+              <TextSelectionHighlight
+                isRtl={isRtl}
+                className={cn(isRtl && "lg:shrink-0 lg:whitespace-nowrap")}
+              >
                 {heroLine2}
-              </span>
+              </TextSelectionHighlight>
             )}
           </h1>
           <p className="mt-4 mb-8 text-sm text-[#6B6B6B] sm:text-base">
