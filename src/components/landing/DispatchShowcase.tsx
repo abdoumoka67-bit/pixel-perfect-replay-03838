@@ -6,6 +6,7 @@ import maystroLogo from "@/assets/carriers/maystro.svg";
 import tslLogo from "@/assets/carriers/tsl.png";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { useUiLanguage } from "@/lib/ui-i18n";
+import { revealClasses, useInView } from "@/hooks/use-in-view";
 
 const ORDERS: {
   id: string;
@@ -22,24 +23,31 @@ export function DispatchShowcase() {
   const isRtl = language === "ar";
   const [step, setStep] = useState(0);
   const t = (key: TranslationKey) => translate(language, key);
+  // Stop the timed story off screen; replay it from the start when it returns.
+  const { ref, inView } = useInView<HTMLElement>({ settleMs: 150 });
 
   useEffect(() => {
+    if (!inView) {
+      setStep(0);
+      return;
+    }
+
     const delays = [1100, 1100, 1100, 1200, 2600];
     const timer = window.setTimeout(() => {
       setStep((current) => (current >= 4 ? 0 : current + 1));
-    }, delays[step]);
+    }, delays[step] ?? 2600);
 
     return () => window.clearTimeout(timer);
-  }, [step]);
+  }, [step, inView]);
 
   const visibleOrders = step === 0 ? 1 : step === 1 ? 2 : 3;
   const isPressed = step === 3;
   const isDispatched = step === 4;
 
   return (
-    <section className="border-t bg-background">
+    <section ref={ref} className="border-t bg-background">
       <div className="mx-auto w-full max-w-4xl px-5 py-14 sm:py-16">
-        <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-xs sm:p-10">
+        <div className={revealClasses(inView, "relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-xs sm:p-10")}>
           <div className="relative mx-auto max-w-2xl text-center" dir={isRtl ? "rtl" : "ltr"}>
             <span className="inline-flex rounded-full border border-border/70 bg-card px-3.5 py-1 text-xs text-muted-foreground shadow-2xs">
               {t("landing.dispatch.badge")}

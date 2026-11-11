@@ -101,6 +101,14 @@
   animation: pixel-ping 2.4s ease-out infinite;
 }
 
+/* Off screen: freeze every loop so hidden sections cost no paint time. */
+.pixel-stage[data-active="false"] .pixel-connector path,
+.pixel-stage[data-active="false"] .pixel-tile,
+.pixel-stage[data-active="false"] .pixel-card,
+.pixel-stage[data-active="false"] .pixel-ping {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pixel-connector path,
   .pixel-tile,

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { useUiLanguage } from "@/lib/ui-i18n";
+import { revealClasses, useInView } from "@/hooks/use-in-view";
 
 type DashboardTab = "orders" | "stats" | "delivery";
 type OrderStatus = 0 | 1 | 2;
@@ -267,18 +268,21 @@ export function DashboardShowcase() {
   const [tab, setTab] = useState<DashboardTab>("orders");
   const [orderStatus, setOrderStatus] = useState<OrderStatus>(0);
   const t = (key: TranslationKey) => translate(language, key);
+  // Pause the demo the moment it leaves the viewport, resume when it returns.
+  const { ref, inView } = useInView<HTMLElement>({ settleMs: 150 });
 
   useEffect(() => {
+    if (!inView) return;
     const timer = window.setInterval(() => {
       setTab((current) =>
         current === "orders" ? "stats" : current === "stats" ? "delivery" : "orders",
       );
     }, 4000);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [inView]);
 
   useEffect(() => {
-    if (tab !== "orders") {
+    if (!inView || tab !== "orders") {
       setOrderStatus(0);
       return;
     }
@@ -287,12 +291,12 @@ export function DashboardShowcase() {
       setOrderStatus((current) => ((current + 1) % 3) as OrderStatus);
     }, 1400);
     return () => window.clearInterval(timer);
-  }, [tab]);
+  }, [tab, inView]);
 
   const activeTab = tab;
 
   return (
-    <section className="overflow-hidden border-t bg-background py-16 sm:py-20">
+    <section ref={ref} className="overflow-hidden border-t bg-background py-16 sm:py-20">
       <div className="mx-auto w-full max-w-7xl px-5">
         <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-14" dir={isRtl ? "rtl" : "ltr"}>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-card px-3.5 py-1 text-xs text-muted-foreground shadow-2xs">
@@ -307,7 +311,7 @@ export function DashboardShowcase() {
           </p>
         </div>
 
-        <div className="mx-auto max-w-6xl">
+        <div className={revealClasses(inView, "mx-auto max-w-6xl")}>
           <div className="hidden min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl md:block">
             <div className="flex h-11 items-center justify-between border-b border-border/60 bg-muted/40 px-4">
               <div className="flex items-center gap-1.5">
@@ -412,7 +416,7 @@ export function DashboardShowcase() {
                 </div>
                 <div
                   key={tab}
-                  className="animate-in fade-in slide-in-from-bottom-1 duration-500"
+                  className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-500"
                   aria-live="polite"
                 >
                   <ScreenContent tab={tab} status={orderStatus} mobile={false} />
@@ -459,7 +463,7 @@ export function DashboardShowcase() {
 
                 <div
                   key={`${tab}-mobile`}
-                  className="min-h-0 flex-1 overflow-y-auto px-2.5 py-3"
+                  className="min-h-0 flex-1 overflow-y-auto px-2.5 py-3 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-500"
                   aria-live="polite"
                 >
                   <ScreenContent tab={tab} status={orderStatus} mobile />
