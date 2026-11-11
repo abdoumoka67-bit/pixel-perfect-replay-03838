@@ -40,7 +40,7 @@ export function DeliveryLogosMarquee() {
       </div>
       {DELIVERY_LOGOS.length > 0 && (
         <div
-          className="delivery-logos-mask relative left-1/2 w-screen -translate-x-1/2 overflow-hidden"
+          className="carriers-marquee-band delivery-logos-mask relative left-1/2 w-screen -translate-x-1/2 overflow-hidden"
           dir="ltr"
         >
           <div className="delivery-logos-track flex w-max py-1" dir="ltr">
