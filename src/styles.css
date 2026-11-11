@@ -564,17 +564,6 @@ html[lang="en"] {
   will-change: transform;
 }
 
-@media (min-width: 1024px) {
-  .carriers-marquee-band {
-    position: relative;
-    left: 50%;
-    width: 100vw;
-    margin-left: -50vw;
-    overflow: hidden;
-    translate: none !important;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .animate-delivery-marquee {
     animation: none !important;
