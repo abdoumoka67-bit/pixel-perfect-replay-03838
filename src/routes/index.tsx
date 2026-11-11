@@ -10,6 +10,7 @@ import { translate, type TranslationKey } from "@/lib/i18n";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
 import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
 import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
+import { DashboardShowcase } from "@/components/landing/DashboardShowcase";
 import { DispatchShowcase } from "@/components/landing/DispatchShowcase";
 import { PixelAttribution } from "@/components/landing/PixelAttribution";
 
@@ -203,6 +204,7 @@ function Home() {
 
         <DeliveryLogosMarquee />
 
+        <DashboardShowcase />
         <DispatchShowcase />
         <PixelAttribution />
 
