@@ -204,15 +204,19 @@ function Home() {
         <section
           ref={heroRef}
           data-active={heroInView}
-          className="hero-stage mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20 lg:max-w-7xl"
+          className={cn(
+            "hero-stage mx-auto w-full max-w-3xl px-5 text-center lg:max-w-7xl",
+            isRtl ? "pb-10 pt-4 sm:pb-10 sm:pt-8" : "pb-16 pt-12 sm:pt-20",
+          )}
         >
           <h1
             className={cn(
               "mx-auto max-w-3xl text-balance break-words text-center font-cairo font-medium text-[#1D1D20] lg:max-w-none",
-              "text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl flex flex-col items-center gap-3 sm:gap-4",
-              isRtl && "font-medium text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl 2xl:text-9xl",
+              "flex flex-col items-center",
+              isRtl ? "text-hero-ar gap-2" : "text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl gap-3 sm:gap-4",
               isRtl && "lg:flex-row lg:flex-nowrap lg:justify-center lg:gap-3",
-              isRtl ? "leading-[1.4] tracking-normal" : "leading-[1.06] tracking-tight",
+              !isRtl && "leading-[1.06] tracking-tight",
+              isRtl && "tracking-normal",
             )}
           >
             {renderHeroLine1()}
@@ -225,7 +229,7 @@ function Home() {
               </TextSelectionHighlight>
             )}
           </h1>
-          <p className="mt-4 mb-8 text-sm text-[#6B6B6B] sm:text-base">
+          <p className={cn("text-sm text-[#6B6B6B] sm:text-base", isRtl ? "mt-2 mb-5" : "mt-4 mb-8")}>
             {t("landing.hero.sub")}
           </p>
           <form
