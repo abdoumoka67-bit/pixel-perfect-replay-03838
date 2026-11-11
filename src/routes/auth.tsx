@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -33,7 +34,11 @@ export const Route = createFileRoute("/auth")({
 });
 
 function safePath(p?: string) {
-  return p && p.startsWith("/") && !p.startsWith("//") ? p : "/dashboard";
+  // Never send a signed-in person back to marketing or the sign-in page.
+  if (!p || p === "/" || p === "/auth" || !p.startsWith("/") || p.startsWith("//")) {
+    return "/dashboard";
+  }
+  return p;
 }
 
 const RESEND_SECONDS = 60;
@@ -41,6 +46,7 @@ const RESEND_SECONDS = 60;
 function AuthPage() {
   const { redirect, mode: initialMode, email: initialEmail } = Route.useSearch();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   // Public pages open in French by default; the visitor can switch language.
   const { language, setLanguage } = usePublicLanguage("fr");
   const isRtl = language === "ar";
@@ -78,10 +84,11 @@ function AuthPage() {
       if ((event !== "SIGNED_IN" && event !== "INITIAL_SESSION") || !session || resetting.current) return;
       if (!stored || !justStarted) return;
       clearMarker();
+      void qc.invalidateQueries({ queryKey: ["my-store"] });
       navigate({ to: target, replace: true });
     });
     return () => sub.subscription.unsubscribe();
-  }, [navigate, redirect]);
+  }, [navigate, qc, redirect]);
 
   // Only offer Google when it is switched on for this project.
   useEffect(() => {
@@ -152,6 +159,8 @@ function AuthPage() {
       }
       throw error;
     }
+    // Fresh session: drop the cached store so the dashboard loads the right one.
+    await qc.invalidateQueries({ queryKey: ["my-store"] });
     navigate({ to: safePath(redirect), replace: true });
   }
 
@@ -174,8 +183,10 @@ function AuthPage() {
           }
           throw error;
         }
-        if (data.session) navigate({ to: "/dashboard", replace: true });
-        else if (data.user?.identities?.length === 0) {
+        if (data.session) {
+          await qc.invalidateQueries({ queryKey: ["my-store"] });
+          await navigate({ to: "/dashboard", replace: true });
+        } else if (data.user?.identities?.length === 0) {
           setMode("signin");
           await signInWithEmail();
         } else if (data.user) openCodeStep("confirm");
@@ -208,7 +219,9 @@ function AuthPage() {
         const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
         if (error) throw error;
         toast.success(t("auth.ok.confirmed"));
-        navigate({ to: safePath(redirect), replace: true });
+        await qc.invalidateQueries({ queryKey: ["my-store"] });
+        await navigate({ to: "/dashboard", replace: true });
+        return;
       } else {
         resetting.current = true;
         const { error } = await supabase.auth.verifyOtp({ email, token, type: "recovery" });
@@ -217,7 +230,9 @@ function AuthPage() {
         if (updateError) throw updateError;
         resetting.current = false;
         toast.success(t("auth.ok.passwordUpdated"));
-        navigate({ to: safePath(redirect), replace: true });
+        await qc.invalidateQueries({ queryKey: ["my-store"] });
+        await navigate({ to: "/dashboard", replace: true });
+        return;
       }
     } catch (err) {
       resetting.current = false;

@@ -14,9 +14,14 @@ export type StoreContext = {
 /** The store the signed-in person works on: their own, or one they joined as a team member. */
 export const myStoreQuery = queryOptions({
   queryKey: ["my-store"],
+  staleTime: 5 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
   queryFn: async (): Promise<StoreContext | null> => {
-    const { data: auth } = await supabase.auth.getUser();
-    if (!auth.user) return null;
+    // getSession reads the cached session straight from local storage, so the
+    // dashboard does not wait on an auth network request just to render.
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData?.session?.user;
+    if (!user) return null;
     const { data: access, error: accessError } = await supabase.rpc("my_store_access");
     if (accessError) throw accessError;
     const row = access?.[0];
