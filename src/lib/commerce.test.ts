@@ -253,7 +253,7 @@ describe("Start and Pro plans", () => {
   });
 });
 
-import { areaForPath, isValidMetaPixelId, isValidTiktokPixelId } from "./commerce";
+import { areaForPath, isValidMetaPixelId } from "./commerce";
 
 describe("Ad pixel IDs", () => {
   it("accepts a Meta Pixel ID of 10 to 20 digits", () => {
@@ -263,12 +263,6 @@ describe("Ad pixel IDs", () => {
   it("rejects a Meta Pixel ID with letters or too short", () => {
     expect(isValidMetaPixelId("12345abc90")).toBe(false);
     expect(isValidMetaPixelId("123456789")).toBe(false);
-  });
-  it("accepts a TikTok Pixel ID of Latin letters and digits", () => {
-    expect(isValidTiktokPixelId("cabc12345defg678")).toBe(true);
-  });
-  it("rejects a TikTok Pixel ID with symbols", () => {
-    expect(isValidTiktokPixelId("<script>alert1</script>")).toBe(false);
   });
 });
 

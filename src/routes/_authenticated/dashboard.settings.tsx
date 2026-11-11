@@ -21,13 +21,11 @@ import { Badge } from "@/components/ui/badge";
 import {
   cleanDomainName,
   cleanMetaPixelId,
-  cleanTiktokPixelId,
   CUSTOM_DOMAIN_CNAME_TARGET,
   friendlyError,
   isValidDomainName,
   isValidMetaPixelId,
   isValidStoreSlug,
-  isValidTiktokPixelId,
 } from "@/lib/commerce";
 import { RestartTourButton } from "@/components/dashboard/GuidedTour";
 import { tr, useTranslatedMessage, useTr, useUiLanguage } from "@/lib/ui-i18n";
@@ -51,7 +49,6 @@ function SettingsPage() {
   const [origin, setOrigin] = useState("16");
   const [logo, setLogo] = useState<string | null>(null);
   const [metaPixel, setMetaPixel] = useState("");
-  const [tiktokPixel, setTiktokPixel] = useState("");
   const urls = useSignedUrls([logo]);
 
   useEffect(() => {
@@ -63,17 +60,15 @@ function SettingsPage() {
     setOrigin(String(store.origin_wilaya_code));
     setLogo(store.logo_url);
     setMetaPixel(store.meta_pixel_id ?? "");
-    setTiktokPixel(store.tiktok_pixel_id ?? "");
   }, [store]);
 
   const savePixels = useMutation({
     mutationFn: async () => {
       if (!isValidMetaPixelId(metaPixel)) throw new Error("INVALID_META_PIXEL");
-      if (!isValidTiktokPixelId(tiktokPixel)) throw new Error("INVALID_TIKTOK_PIXEL");
       const { error } = await supabase.rpc("set_store_pixels", {
         _store_id: store!.id,
         _meta: cleanMetaPixelId(metaPixel),
-        _tiktok: cleanTiktokPixelId(tiktokPixel),
+        _tiktok: "",
       });
       if (error) throw error;
     },
@@ -208,9 +203,7 @@ function SettingsPage() {
             isPro={isPro}
             disabled={readOnly}
             meta={metaPixel}
-            tiktok={tiktokPixel}
             onMeta={setMetaPixel}
-            onTiktok={setTiktokPixel}
             saving={savePixels.isPending}
             onSave={() => savePixels.mutate()}
             storeUrl={storeUrl}
@@ -248,9 +241,7 @@ function PixelCard(props: {
   isPro: boolean;
   disabled: boolean;
   meta: string;
-  tiktok: string;
   onMeta: (v: string) => void;
-  onTiktok: (v: string) => void;
   saving: boolean;
   onSave: () => void;
   storeUrl: string;
@@ -285,17 +276,6 @@ function PixelCard(props: {
           onChange={(e) => props.onMeta(e.target.value)}
         />
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="tt-pixel">TikTok Pixel ID</Label>
-        <Input
-          id="tt-pixel"
-          dir="ltr"
-          placeholder="C1A2B3C4D5E6F7G8H9"
-          value={props.tiktok}
-          disabled={locked}
-          onChange={(e) => props.onTiktok(e.target.value)}
-        />
-      </div>
       {locked ? (
         <Button asChild variant="outline" className="w-full">
           <Link to="/dashboard/billing">{t("الترقية إلى Pro لتفعيل البيكسل")}</Link>
@@ -313,7 +293,7 @@ function PixelCard(props: {
               </a>
             </Button>
             <p className="px-2 text-[11px] leading-5 text-muted-foreground">
-              {t("سجّل في Meta Events Manager ← Test Events أو TikTok Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.")}
+              {t("سجّل في Meta Events Manager ← Test Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.")}
             </p>
           </div>
         </>

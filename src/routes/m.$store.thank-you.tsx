@@ -22,7 +22,7 @@ export const Route = createFileRoute("/m/$store/thank-you")({
       return await getStorePixelIds({ data: { slug: params.store } });
     } catch {
       // The confirmation page must render even when Supabase is unreachable.
-      return { meta_pixel_id: null, tiktok_pixel_id: null };
+      return { meta_pixel_id: null };
     }
   },
   head: ({ match }) => {

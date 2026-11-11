@@ -206,8 +206,8 @@ const en: Record<string, string> = {
   "اربط شركة التوصيل الخاصة بك لإرسال الطلبات المؤكدة والحصول على أرقام التتبع تلقائياً.":
     "Connect your delivery company to send confirmed orders and get tracking numbers automatically.",
   "الميزات المتقدمة": "Advanced features",
-  "مظهر متجرك المخصص، أكواد البيكسل (Meta & TikTok)، والإحصائيات المتقدمة كلها مفعلة مجاناً في تجربتك.":
-    "Your custom storefront, ad pixels (Meta & TikTok) and advanced analytics are all enabled for free during your trial.",
+  "مظهر متجرك المخصص، بيكسل Meta (فيسبوك وإنستغرام)، والإحصائيات المتقدمة كلها مفعلة مجاناً في تجربتك.":
+    "Your custom storefront, Meta pixel (Facebook and Instagram) and advanced analytics are all enabled for free during your trial.",
   "معاينة متجرك": "Preview your store",
   "اضغط هنا في أي وقت لترى متجرك كما يراه زبائنك تماماً وتجربة الطلب بنفسك.":
     "Click here anytime to see your store exactly as customers do and try the order flow yourself.",
@@ -564,8 +564,8 @@ const en: Record<string, string> = {
   "حفظ الإعدادات": "Save settings",
   "حفظ البيكسل": "Save pixel",
   "افتح المتجر في وضع فحص البيكسل": "Open the store in pixel test mode",
-  "سجّل في Meta Events Manager ← Test Events أو TikTok Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.":
-    "Create a Test Events session in Meta Events Manager (or TikTok Events), then open the link above to watch each event fire live.",
+  "سجّل في Meta Events Manager ← Test Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.":
+    "Create a Test Events session in Meta Events Manager, then open the link above to watch each event fire live.",
   "حفظ التغييرات": "Save changes",
   "حفظ الدومين": "Save domain",
   "حفظ الربط": "Save integration",
@@ -737,7 +737,6 @@ const en: Record<string, string> = {
   "البريد الإلكتروني غير صحيح.": "Invalid email address.",
   "هذا العضو غير موجود في فريقك.": "This member is not in your team.",
   "رقم Meta Pixel غير صحيح (أرقام فقط).": "Invalid Meta Pixel ID (digits only).",
-  "رقم TikTok Pixel غير صحيح (حروف لاتينية وأرقام).": "Invalid TikTok Pixel ID (Latin letters and digits).",
   "حسابك في وضع القراءة فقط. جدّد اشتراكك لمتابعة التعديل.": "Your account is read-only. Renew your subscription to keep editing.",
   "ليست لديك صلاحية لهذا الإجراء.": "You do not have permission for this action.",
   "هذا العضو مضاف مسبقاً.": "This member is already added.",
@@ -1018,8 +1017,8 @@ const fr: Record<string, string> = {
   "اربط شركة التوصيل الخاصة بك لإرسال الطلبات المؤكدة والحصول على أرقام التتبع تلقائياً.":
     "Connectez votre transporteur pour envoyer les commandes confirmées et obtenir des numéros de suivi automatiquement.",
   "الميزات المتقدمة": "Fonctionnalités avancées",
-  "مظهر متجرك المخصص، أكواد البيكسل (Meta & TikTok)، والإحصائيات المتقدمة كلها مفعلة مجاناً في تجربتك.":
-    "Votre vitrine personnalisée, les pixels publicitaires (Meta et TikTok) et les statistiques avancées sont tous activés gratuitement pendant votre essai.",
+  "مظهر متجرك المخصص، بيكسل Meta (فيسبوك وإنستغرام)، والإحصائيات المتقدمة كلها مفعلة مجاناً في تجربتك.":
+    "Votre vitrine personnalisée, le pixel Meta (Facebook et Instagram) et les statistiques avancées sont tous activés gratuitement pendant votre essai.",
   "معاينة متجرك": "Aperçu de votre boutique",
   "اضغط هنا في أي وقت لترى متجرك كما يراه زبائنك تماماً وتجربة الطلب بنفسك.":
     "Cliquez ici à tout moment pour voir votre boutique exactement comme vos clients et tester le parcours de commande.",
@@ -1376,8 +1375,8 @@ const fr: Record<string, string> = {
   "حفظ الإعدادات": "Enregistrer les paramètres",
   "حفظ البيكسل": "Enregistrer le pixel",
   "افتح المتجر في وضع فحص البيكسل": "Ouvrir la boutique en mode test pixel",
-  "سجّل في Meta Events Manager ← Test Events أو TikTok Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.":
-    "Ouvrez une session Test Events dans Meta Events Manager (ou TikTok Events), puis cliquez sur le lien ci-dessus pour voir chaque événement en direct.",
+  "سجّل في Meta Events Manager ← Test Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.":
+    "Ouvrez une session Test Events dans Meta Events Manager, puis cliquez sur le lien ci-dessus pour voir chaque événement en direct.",
   "حفظ التغييرات": "Enregistrer les modifications",
   "حفظ الدومين": "Enregistrer le domaine",
   "حفظ الربط": "Enregistrer la connexion",
@@ -1549,7 +1548,6 @@ const fr: Record<string, string> = {
   "البريد الإلكتروني غير صحيح.": "Adresse e-mail invalide.",
   "هذا العضو غير موجود في فريقك.": "Ce membre ne fait pas partie de votre équipe.",
   "رقم Meta Pixel غير صحيح (أرقام فقط).": "ID Meta Pixel invalide (chiffres uniquement).",
-  "رقم TikTok Pixel غير صحيح (حروف لاتينية وأرقام).": "ID TikTok Pixel invalide (lettres latines et chiffres).",
   "حسابك في وضع القراءة فقط. جدّد اشتراكك لمتابعة التعديل.": "Votre compte est en lecture seule. Renouvelez votre abonnement pour continuer à modifier.",
   "ليست لديك صلاحية لهذا الإجراء.": "Vous n'avez pas la permission pour cette action.",
   "هذا العضو مضاف مسبقاً.": "Ce membre est déjà ajouté.",

@@ -267,7 +267,6 @@ const ORDER_ERRORS: Record<string, string> = {
   INVALID_EMAIL: "البريد الإلكتروني غير صحيح.",
   INVALID_MEMBER: "هذا العضو غير موجود في فريقك.",
   INVALID_META_PIXEL: "رقم Meta Pixel غير صحيح (أرقام فقط).",
-  INVALID_TIKTOK_PIXEL: "رقم TikTok Pixel غير صحيح (حروف لاتينية وأرقام).",
   READ_ONLY: "حسابك في وضع القراءة فقط. جدّد اشتراكك لمتابعة التعديل.",
   FORBIDDEN: "ليست لديك صلاحية لهذا الإجراء.",
 };
@@ -484,18 +483,10 @@ export function getFeaturePlanBadge(area: string): "Start" | "Pro" {
 export function cleanMetaPixelId(input: string): string {
   return input.replace(/\s/g, "");
 }
-export function cleanTiktokPixelId(input: string): string {
-  return input.replace(/\s/g, "").toUpperCase();
-}
 /** Meta Pixel ID: 10 to 20 digits. Empty means "no pixel". */
 export function isValidMetaPixelId(input: string): boolean {
   const v = cleanMetaPixelId(input);
   return v === "" || /^[0-9]{10,20}$/.test(v);
-}
-/** TikTok Pixel ID: 10 to 30 Latin letters/digits. Empty means "no pixel". */
-export function isValidTiktokPixelId(input: string): boolean {
-  const v = cleanTiktokPixelId(input);
-  return v === "" || /^[A-Z0-9]{10,30}$/.test(v);
 }
 
 export const ACTIVITY_LABELS: Record<string, string> = {

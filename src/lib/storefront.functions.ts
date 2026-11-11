@@ -166,11 +166,10 @@ export const getStorePixelIds = createServerFn({ method: "GET" })
       const s = await loadStore(publicClient(), data.slug);
       return {
         meta_pixel_id: s?.meta_pixel_id ?? null,
-        tiktok_pixel_id: s?.tiktok_pixel_id ?? null,
       };
     } catch (error) {
       console.error("store pixel ids load failed", error);
-      return { meta_pixel_id: null, tiktok_pixel_id: null };
+      return { meta_pixel_id: null };
     }
   });
 

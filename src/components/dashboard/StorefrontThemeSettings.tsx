@@ -630,13 +630,13 @@ export function StorefrontThemeSettings({
                 <div className="space-y-1.5">
                   <Label htmlFor="title-size">{t("حجم العنوان")}</Label>
                   <select id="title-size" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" value={titleSize} disabled={readOnly} onChange={(event) => setTitleSize(event.target.value)}>
-                    {[
+                    {([
                       ["sm", "صغير"],
                       ["base", "أساسي"],
                       ["lg", "متوسط"],
                       ["xl", "كبير"],
                       ["2xl", "كبير جداً"],
-                    ].map(([size, label]) => <option key={size} value={size}>{t(label)}</option>)}
+                    ] as const).map(([size, label]) => <option key={size} value={size}>{t(label)}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1.5">
