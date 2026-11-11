@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Almarai:wght@400;700&family=Cairo:wght@400;600;700&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Almarai:wght@400;700&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800;900&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -491,6 +491,10 @@ html[lang="en"] {
 
 @utility font-display {
   font-family: var(--font-display);
+}
+
+@utility font-cairo {
+  font-family: "Cairo", system-ui, sans-serif;
 }
 
 @utility bg-gradient-brand {

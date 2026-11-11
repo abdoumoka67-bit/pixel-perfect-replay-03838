@@ -208,7 +208,7 @@ function Home() {
         >
           <h1
             className={cn(
-              "mx-auto max-w-3xl text-balance break-words text-center font-medium text-[#1D1D20] lg:max-w-none",
+              "mx-auto max-w-3xl text-balance break-words text-center font-cairo font-medium text-[#1D1D20] lg:max-w-none",
               "text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl flex flex-col items-center gap-3 sm:gap-4",
               isRtl && "font-medium text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl 2xl:text-9xl",
               isRtl && "lg:flex-row lg:flex-nowrap lg:justify-center lg:gap-3",
