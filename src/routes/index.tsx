@@ -203,6 +203,9 @@ function Home() {
 
         <DeliveryLogosMarquee />
 
+        <DispatchShowcase />
+        <PixelAttribution />
+
         <section className="mx-auto w-full max-w-3xl px-5 pb-16">
           <div className="mb-8 text-center">
             <span className="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground">
@@ -214,9 +217,6 @@ function Home() {
           </div>
           <FeaturesAccordion />
         </section>
-
-        <DispatchShowcase />
-        <PixelAttribution />
 
         {plans.length > 0 && (
           <section className="border-t bg-background">
