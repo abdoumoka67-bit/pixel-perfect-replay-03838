@@ -629,7 +629,11 @@ html[lang="en"] {
   }
 
   .showcase-dash-phone {
-    display: none;
+    /* Show the same floating phone as the desktop preview, sized in the
+       1152px canvas so it keeps the exact desktop composition when scaled. */
+    display: block;
+    right: 24px;
+    width: 240px;
   }
 
   .showcase-dash-url {
