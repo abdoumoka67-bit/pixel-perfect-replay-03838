@@ -389,7 +389,7 @@ export function DashboardShowcase() {
           </p>
         </div>
 
-        <div className={revealClasses(inView, "relative mx-auto max-w-6xl")}>
+        <div className={revealClasses(inView, "relative mx-auto max-w-6xl")} lang="fr" dir="ltr">
           <div className="min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl">
             <div className="flex h-11 items-center justify-between border-b border-border/60 bg-muted/40 px-4">
               <div className="flex items-center gap-1.5">
