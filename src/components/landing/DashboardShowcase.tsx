@@ -307,8 +307,8 @@ export function DashboardShowcase() {
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-6xl items-center gap-8 xl:grid-cols-[minmax(0,1fr)_290px] xl:gap-10">
-          <div className="min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl">
+        <div className="mx-auto max-w-6xl">
+          <div className="hidden min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl md:block">
             <div className="flex h-11 items-center justify-between border-b border-border/60 bg-muted/40 px-4">
               <div className="flex items-center gap-1.5">
                 <span className="size-2.5 rounded-full bg-red-400/80" />
@@ -427,7 +427,7 @@ export function DashboardShowcase() {
             </div>
           </div>
 
-          <div className="mx-auto w-[270px] max-w-full">
+          <div className="mx-auto w-[270px] max-w-full md:hidden">
             <div className="relative h-[590px] w-full rounded-[42px] border-[7px] border-[#1A1A1E] bg-[#1A1A1E] p-[5px] shadow-[0_28px_70px_-24px_rgba(0,0,0,0.65)] ring-1 ring-white/15">
               <div className="relative flex h-full flex-col overflow-hidden rounded-[34px] bg-[#F7F7F8]">
                 <div className="relative flex h-[58px] shrink-0 items-center justify-between px-5 pt-1 font-mono text-[10px] font-semibold text-[#171719]">
