@@ -389,8 +389,8 @@ export function DashboardShowcase() {
           </p>
         </div>
 
-        <div className={revealClasses(inView, "mx-auto max-w-6xl")}>
-          <div className="hidden min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl md:block">
+        <div className={revealClasses(inView, "relative mx-auto max-w-6xl")}>
+          <div className="min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl">
             <div className="flex h-11 items-center justify-between border-b border-border/60 bg-muted/40 px-4">
               <div className="flex items-center gap-1.5">
                 <span className="size-2.5 rounded-full bg-red-400/80" />
@@ -403,7 +403,7 @@ export function DashboardShowcase() {
               <span className="font-mono text-[10px] text-muted-foreground">● LIVE</span>
             </div>
 
-            <div className="grid min-h-[530px] grid-cols-1 md:grid-cols-[210px_minmax(0,1fr)]">
+            <div className="grid min-h-[380px] grid-cols-1 sm:min-h-[440px] md:min-h-[530px] md:grid-cols-[210px_minmax(0,1fr)]">
               <aside className="hidden flex-col bg-[#111113] px-3 py-4 text-white md:flex">
                 <div className="mb-5 h-6 px-2" aria-hidden />
                 <div className="mb-2 px-2 text-[8px] font-semibold tracking-[0.16em] text-zinc-500">
@@ -508,12 +508,12 @@ export function DashboardShowcase() {
             </div>
           </div>
 
-          <div className="mx-auto w-[270px] max-w-full md:hidden">
-            <div className="relative h-[590px] w-full rounded-[42px] border-[7px] border-[#1A1A1E] bg-[#1A1A1E] p-[5px] shadow-[0_28px_70px_-24px_rgba(0,0,0,0.65)] ring-1 ring-white/15">
-              <div className="relative flex h-full flex-col overflow-hidden rounded-[34px] bg-[#F7F7F8]">
-                <div className="relative flex h-[58px] shrink-0 items-center justify-between px-5 pt-1 font-mono text-[10px] font-semibold text-[#171719]">
+          <div className="absolute right-2 top-1/2 z-20 w-[min(34vw,150px)] -translate-y-1/2 sm:right-4 sm:w-[190px] md:right-5 md:w-[220px] lg:right-6 lg:w-[240px] xl:w-[260px]">
+            <div className="relative aspect-[270/590] w-full rounded-[30px] border-[5px] border-[#1A1A1E] bg-[#1A1A1E] p-[3px] shadow-[0_28px_70px_-24px_rgba(0,0,0,0.65)] ring-1 ring-white/15 sm:rounded-[36px] sm:border-[6px] sm:p-1 md:rounded-[42px] md:border-[7px] md:p-[5px]">
+              <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] bg-[#F7F7F8] sm:rounded-[30px] md:rounded-[34px]">
+                <div className="relative flex h-9 shrink-0 items-center justify-between px-3 pt-1 font-mono text-[10px] font-semibold text-[#171719] sm:h-12 sm:px-4 md:h-[58px] md:px-5">
                   <span>9:41</span>
-                  <div className="absolute left-1/2 top-[9px] h-[25px] w-[88px] -translate-x-1/2 rounded-full bg-black" />
+                  <div className="absolute left-1/2 top-2 h-4 w-[50px] -translate-x-1/2 rounded-full bg-black sm:top-[9px] sm:h-5 sm:w-[68px] md:h-[25px] md:w-[88px]" />
                   <span className="flex items-center gap-1.5">
                     <span className="text-[9px]">5G</span>
                     <span className="h-2.5 w-4 rounded-[3px] border border-[#171719] p-[1px]">
