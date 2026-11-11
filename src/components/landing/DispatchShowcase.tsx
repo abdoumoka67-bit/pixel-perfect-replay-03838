@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, PackageCheck, Truck } from "lucide-react";
+import { Check, PackageCheck, Sparkles, Truck } from "lucide-react";
 import type { LanguageCode } from "@/lib/commerce";
 import zrExpressLogo from "@/assets/carriers/zr-express.png";
 import maystroLogo from "@/assets/carriers/maystro.svg";
@@ -18,6 +18,21 @@ const ORDERS: {
   { id: "#00001044", city: { ar: "قسنطينة", fr: "Constantine", en: "Constantine" }, wilaya: "25" },
 ];
 
+type DispatchOrderStatus = "new" | "confirmed" | "shipping" | "delivered";
+
+const ORDER_STATUS_LABELS: Record<LanguageCode, Record<DispatchOrderStatus, string>> = {
+  ar: { new: "جديدة", confirmed: "مؤكدة", shipping: "قيد التوصيل", delivered: "تم التوصيل" },
+  fr: { new: "Nouvelle", confirmed: "Confirmée", shipping: "En livraison", delivered: "Livrée" },
+  en: { new: "New", confirmed: "Confirmed", shipping: "Shipping", delivered: "Delivered" },
+};
+
+const ORDER_STATUS_STYLES: Record<DispatchOrderStatus, string> = {
+  new: "bg-info-soft text-info",
+  confirmed: "bg-warning-soft text-warning",
+  shipping: "bg-brand-soft text-brand",
+  delivered: "bg-success-soft text-success",
+};
+
 export function DispatchShowcase() {
   const language = useUiLanguage();
   const isRtl = language === "ar";
@@ -32,9 +47,9 @@ export function DispatchShowcase() {
       return;
     }
 
-    const delays = [1100, 1100, 1100, 1200, 2600];
+    const delays = [1100, 1100, 1100, 1200, 2600, 1800];
     const timer = window.setTimeout(() => {
-      setStep((current) => (current >= 4 ? 0 : current + 1));
+      setStep((current) => (current >= 5 ? 0 : current + 1));
     }, delays[step] ?? 2600);
 
     return () => window.clearTimeout(timer);
@@ -43,11 +58,29 @@ export function DispatchShowcase() {
   const visibleOrders = step === 0 ? 1 : step === 1 ? 2 : 3;
   const isPressed = step === 3;
   const isDispatched = step === 4;
+  const isDelivered = step === 5;
+  const orderStatuses: DispatchOrderStatus[] =
+    step === 0
+      ? ["new", "new", "new"]
+      : step === 1
+        ? ["confirmed", "new", "new"]
+        : step === 2
+          ? ["confirmed", "confirmed", "new"]
+          : step === 3
+            ? ["confirmed", "confirmed", "confirmed"]
+            : step === 4
+              ? ["shipping", "shipping", "shipping"]
+              : ["delivered", "delivered", "delivered"];
 
   return (
     <section ref={ref} className="border-t bg-background">
       <div className="mx-auto w-full max-w-4xl px-5 py-14 sm:py-16">
-        <div className={revealClasses(inView, "relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-xs sm:p-10")}>
+        <div
+          className={revealClasses(
+            inView,
+            "relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-xs sm:p-10",
+          )}
+        >
           <div className="relative mx-auto max-w-2xl text-center" dir={isRtl ? "rtl" : "ltr"}>
             <span className="inline-flex rounded-full border border-border/70 bg-card px-3.5 py-1 text-xs text-muted-foreground shadow-2xs">
               {t("landing.dispatch.badge")}
@@ -90,6 +123,15 @@ export function DispatchShowcase() {
               <div className="mb-[18px] min-h-[162px] space-y-2">
                 {ORDERS.map((order, index) => {
                   const isVisible = index < visibleOrders;
+                  const status = orderStatuses[index];
+                  const StatusIcon =
+                    status === "new"
+                      ? Sparkles
+                      : status === "confirmed"
+                        ? Check
+                        : status === "shipping"
+                          ? Truck
+                          : PackageCheck;
 
                   return (
                     <div
@@ -101,8 +143,10 @@ export function DispatchShowcase() {
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <span className="flex size-[22px] shrink-0 items-center justify-center rounded-full bg-[#111111] text-white shadow-2xs">
-                          <Check className="size-3.5 stroke-[2.5]" aria-hidden />
+                        <span
+                          className={`flex size-[22px] shrink-0 items-center justify-center rounded-full ${ORDER_STATUS_STYLES[status]}`}
+                        >
+                          <StatusIcon className="size-3.5 stroke-[2.5]" aria-hidden />
                         </span>
                         <div>
                           <div className="font-mono text-xs font-medium text-foreground sm:text-sm">
@@ -113,8 +157,10 @@ export function DispatchShowcase() {
                           </div>
                         </div>
                       </div>
-                      <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                        {isRtl ? "مؤكدة" : language === "fr" ? "Confirmée" : "Confirmed"}
+                      <span
+                        className={`rounded-md px-2 py-0.5 text-[10px] font-medium ${ORDER_STATUS_STYLES[status]}`}
+                      >
+                        {ORDER_STATUS_LABELS[language][status]}
                       </span>
                     </div>
                   );
@@ -125,14 +171,25 @@ export function DispatchShowcase() {
                 type="button"
                 aria-live="polite"
                 className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-medium text-white shadow-xs transition-all duration-300 sm:text-sm ${
-                  isDispatched
+                  isDispatched || isDelivered
                     ? "bg-emerald-600"
                     : isPressed
                       ? "scale-[0.98] bg-[#171717]"
                       : "bg-[#171717] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.16)] hover:bg-[#262626]"
                 }`}
               >
-                {isDispatched ? (
+                {isDelivered ? (
+                  <>
+                    <PackageCheck className="size-4" aria-hidden />
+                    <span>
+                      {isRtl
+                        ? "تم تحديث حالات التوصيل ✓"
+                        : language === "fr"
+                          ? "Suivi de livraison mis à jour ✓"
+                          : "Delivery statuses updated ✓"}
+                    </span>
+                  </>
+                ) : isDispatched ? (
                   <>
                     <PackageCheck className="size-4 animate-bounce" aria-hidden />
                     <span>
