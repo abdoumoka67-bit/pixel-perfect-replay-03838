@@ -14,11 +14,8 @@
   }
 }
 
-.delivery-logos-mask {
-  -webkit-mask-image: linear-gradient(to right, transparent, black 64px, black calc(100% - 64px), transparent);
-  mask-image: linear-gradient(to right, transparent, black 64px, black calc(100% - 64px), transparent);
-}
-
+/* The band clips with overflow only: a logo leaves exactly at one screen edge
+   and the next enters at the other, with identical spacing on both sides. */
 .delivery-logos-track {
   animation: delivery-logos-scroll 28s linear infinite;
   touch-action: pan-y;

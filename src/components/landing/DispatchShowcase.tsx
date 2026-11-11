@@ -123,7 +123,7 @@ export function DispatchShowcase() {
               <div className="mb-[18px] min-h-[162px] space-y-2">
                 {ORDERS.map((order, index) => {
                   const isVisible = index < visibleOrders;
-                  const status = orderStatuses[index];
+                  const status = orderStatuses[index] ?? "new";
                   const StatusIcon =
                     status === "new"
                       ? Sparkles
