@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
 import { useDocumentLanguage } from "@/components/LanguageSwitcher";
+import { useAccountTheme } from "@/hooks/use-account-theme";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/reset-password")({
 function ResetPassword() {
   const navigate = useNavigate();
   useDocumentLanguage("en");
+  useAccountTheme();
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -41,7 +43,7 @@ function ResetPassword() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6">
+    <div className="theme-forest flex min-h-screen items-center justify-center px-6">
       <form onSubmit={submit} className="w-full max-w-sm space-y-5 rounded-2xl bg-card p-8 shadow-card">
         <Logo />
         <h1 className="text-2xl font-medium">New password</h1>

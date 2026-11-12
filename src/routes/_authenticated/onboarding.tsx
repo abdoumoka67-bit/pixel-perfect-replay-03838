@@ -18,6 +18,7 @@ import {
   suggestedStoreSlug,
 } from "@/lib/commerce";
 import { isAdminQuery, myStoreQuery } from "@/hooks/use-my-store";
+import { useAccountTheme } from "@/hooks/use-account-theme";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   beforeLoad: async ({ context }) => {
@@ -86,6 +87,7 @@ function Onboarding() {
   const [step, setStep] = useState(0);
   // Store setup happens before the store exists, so it stays English-only.
   useDocumentLanguage("en");
+  useAccountTheme();
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate("en", key, vars);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -310,7 +312,7 @@ function Onboarding() {
   const isLast = step === stepCount - 1;
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-background px-4 py-8">
+    <div className="theme-forest flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-background px-4 py-8">
       <div className="w-full min-w-0 max-w-xl rounded-[28px] border border-border bg-white p-5 shadow-[0_0_0_1px_rgba(17,17,17,0.02),0_18px_50px_-20px_rgba(0,0,0,0.25)] sm:p-9">
         <div className="flex justify-center">
           <Logo />

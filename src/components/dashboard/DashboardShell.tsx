@@ -27,6 +27,7 @@ import { tr, UiLanguageProvider, useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { ProPill } from "./ProLock";
 import { GuidedTour } from "./GuidedTour";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
+import { useAccountTheme } from "@/hooks/use-account-theme";
 import { InstallPwaPrompt } from "@/components/InstallPwaPrompt";
 
 function useSignOut() {
@@ -365,6 +366,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const { language, setLanguage } = useDashboardLanguage(storeLanguage);
   const isRtl = language === "ar";
   useDocumentLanguage(language);
+  useAccountTheme();
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
   const trialLink = useMemo(() =>
     sub && sub.isTrial && sub.daysLeft > 0
@@ -394,7 +396,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
   return (
     <UiLanguageProvider language={language}>
-    <div className="min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="theme-forest min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
       <GuidedTour />
       <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 lg:block">
         <SidebarBody />

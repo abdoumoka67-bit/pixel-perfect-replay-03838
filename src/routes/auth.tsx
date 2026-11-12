@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
 import { translate, type TranslationKey } from "@/lib/i18n";
+import { useAccountTheme } from "@/hooks/use-account-theme";
 
 const search = z.object({
   redirect: z.string().optional(),
@@ -54,6 +55,7 @@ function AuthPage() {
   const { language, setLanguage } = usePublicLanguage("fr");
   const isRtl = language === "ar";
   useDocumentLanguage(language);
+  useAccountTheme();
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode ?? "signin");
   const [email, setEmail] = useState(initialEmail ?? "");
@@ -312,7 +314,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col px-6 py-8 sm:px-12" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="theme-forest flex min-h-screen flex-col px-6 py-8 sm:px-12" dir={isRtl ? "rtl" : "ltr"}>
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <Link

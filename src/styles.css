@@ -249,6 +249,7 @@
 
   --color-table-header: var(--table-header);
   --color-notify: var(--notify);
+  --color-primary-hover: var(--primary-hover);
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
   --color-brand-foreground: var(--brand-foreground);
@@ -309,6 +310,12 @@ html[lang="en"] {
   /* Primary Action (Solid Crisp Dark) */
   --primary: #232326;
   --primary-foreground: #FFFFFF;
+  --primary-hover: #3A3A3D;
+
+  /* Solid neutral button (public scope) */
+  --solid: #171717;
+  --solid-hover: #262626;
+  --solid-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 
   /* Secondary & Surfaces */
   --secondary: #F1F2F4;
@@ -387,6 +394,10 @@ html[lang="en"] {
   --muted-foreground: #8C9196;
   --primary: #FFFFFF;
   --primary-foreground: #0B0C0D;
+  --primary-hover: #E3E5E8;
+  --solid: #FFFFFF;
+  --solid-hover: #E3E5E8;
+  --solid-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   --secondary: #1A1C1E;
   --secondary-foreground: #E3E5E8;
   --accent: #1A1C1E;
@@ -429,6 +440,49 @@ html[lang="en"] {
   --gradient-brand: linear-gradient(135deg, var(--brand), var(--brand-strong));
   --gradient-hero: linear-gradient(var(--card), var(--card));
   --gradient-dark: linear-gradient(135deg, #0B0C0D 0%, #141517 60%, #1A1C1E 100%);
+}
+
+/*
+ * Account scope — forest green identity for /auth, /reset-password,
+ * /onboarding and /dashboard. The public landing page and the storefronts
+ * keep the neutral palette from :root.
+ *
+ * Four tones, all derived from #04342C:
+ *   base  #04342C   hover #0A4F42   focus ring 25%   soft wash #E6F0ED
+ */
+.theme-forest {
+  --primary: #04342C;
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #0A4F42;
+
+  --solid: #04342C;
+  --solid-hover: #0A4F42;
+  --solid-shadow: 0 1px 2px rgba(4, 52, 44, 0.18), 0 4px 12px -4px rgba(4, 52, 44, 0.45);
+
+  --ring: rgba(4, 52, 44, 0.25);
+
+  --brand: #04342C;
+  --brand-strong: #02231D;
+  --brand-foreground: #FFFFFF;
+  --brand-soft: #E6F0ED;
+}
+
+.dark.theme-forest,
+.dark .theme-forest {
+  --primary: #34D399;
+  --primary-foreground: #04342C;
+  --primary-hover: #6EE7B7;
+
+  --solid: #34D399;
+  --solid-hover: #6EE7B7;
+  --solid-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+
+  --ring: rgba(52, 211, 153, 0.35);
+
+  --brand: #6EE7B7;
+  --brand-strong: #34D399;
+  --brand-foreground: #04342C;
+  --brand-soft: rgba(52, 211, 153, 0.14);
 }
 
 @layer base {

@@ -19,6 +19,7 @@ import { formatDZD, subscriptionState, type LanguageCode } from "@/lib/commerce"
 import { parseStorefrontConfig } from "@/lib/storefront-theme";
 import { LanguageMenu, useDashboardLanguage, useDocumentLanguage } from "@/components/LanguageSwitcher";
 import { tr, UiLanguageProvider, useTr, useUiLanguage } from "@/lib/ui-i18n";
+import { useAccountTheme } from "@/hooks/use-account-theme";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -42,6 +43,7 @@ function AdminPage() {
   const storeLanguage = parseStorefrontConfig(store?.storefront_config, store?.name ?? "").language;
   const { language, setLanguage } = useDashboardLanguage(storeLanguage);
   useDocumentLanguage(language);
+  useAccountTheme();
   if (isAdmin.isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -72,7 +74,7 @@ function AdminContent({ setLanguage }: { setLanguage: (lang: LanguageCode) => vo
   const language = useUiLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
   return (
-    <div className="min-h-screen" dir={dir}>
+    <div className="theme-forest min-h-screen" dir={dir}>
       <header className="bg-sidebar text-sidebar-foreground">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
