@@ -142,6 +142,8 @@ function OrdersPage() {
     queryKey: ["orders", store?.id, page, q, status],
     enabled: !!store,
     placeholderData: keepPreviousData,
+    // Poll while the page is visible so new orders arrive on their own.
+    refetchInterval: 20_000,
     queryFn: async () => {
       const from = (page - 1) * PAGE_SIZE;
       const { data, count, error } = await buildQuery("*", true).range(from, from + PAGE_SIZE - 1);

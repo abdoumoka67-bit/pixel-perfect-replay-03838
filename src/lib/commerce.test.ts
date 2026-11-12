@@ -2,11 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   MAX_TEAM_MEMBERS,
   MAX_TEAM_USERS,
+  ORDER_NETWORK_ERROR,
+  ORDER_TECHNICAL_ERROR,
+  SESSION_EXPIRED_ERROR,
   calculateSubscriptionPrice,
   canOpen,
   cleanDomainName,
   effectiveTier,
   evaluateCustomerTrust,
+  friendlyError,
   isValidDomainName,
   isValidDzPhone,
   languageDocumentAttributes,
@@ -283,5 +287,38 @@ describe("Team page access by address", () => {
     expect(canOpen("agent", areaForPath("/dashboard/orders"))).toBe(true);
     expect(canOpen("manager", areaForPath("/dashboard/activity"))).toBe(true);
     expect(canOpen("manager", areaForPath("/dashboard/billing"))).toBe(false);
+  });
+});
+
+describe("checkout error messages", () => {
+  it("keeps the known business errors unchanged", () => {
+    expect(friendlyError("STORE_INACTIVE")).toBe("المتجر متوقف مؤقتاً عن استقبال الطلبات.");
+    expect(friendlyError("INVALID_PHONE")).toBe(
+      "رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.",
+    );
+    expect(friendlyError("duplicate key value violates unique constraint \"store_members_store_id_email_key\"")).toBe(
+      "هذا العضو مضاف مسبقاً.",
+    );
+  });
+  it("explains a technical checkout failure instead of showing a generic error", () => {
+    expect(friendlyError("function public.normalize_dz_phone(text) does not exist")).toBe(ORDER_TECHNICAL_ERROR);
+    expect(friendlyError("42883")).toBe(ORDER_TECHNICAL_ERROR);
+    expect(friendlyError("Could not find the function public.place_order in the schema cache (PGRST202)")).toBe(
+      ORDER_TECHNICAL_ERROR,
+    );
+    expect(
+      friendlyError('duplicate key value violates unique constraint "orders_order_number_key"'),
+    ).toBe(ORDER_TECHNICAL_ERROR);
+  });
+  it("reports network, timeout and expired sessions clearly", () => {
+    expect(friendlyError("Failed to fetch")).toBe(ORDER_NETWORK_ERROR);
+    expect(friendlyError("TypeError: Load failed")).toBe(ORDER_NETWORK_ERROR);
+    expect(friendlyError("network timeout")).toBe(ORDER_NETWORK_ERROR);
+    expect(friendlyError(ORDER_NETWORK_ERROR)).toBe(ORDER_NETWORK_ERROR);
+    expect(friendlyError("JWT expired")).toBe(SESSION_EXPIRED_ERROR);
+  });
+  it("falls back for unknown messages", () => {
+    expect(friendlyError("something strange")).toBe("حدث خطأ، حاول مرة أخرى.");
+    expect(friendlyError(null)).toBe("حدث خطأ، حاول مرة أخرى.");
   });
 });

@@ -29,6 +29,8 @@ function Overview() {
   const stats = useQuery({
     queryKey: ["order-stats", store?.id],
     enabled: !!store,
+    // New storefront orders must show up without a manual refresh.
+    refetchInterval: 15_000,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("order_stats", { _store_id: store!.id });
       if (error) throw error;
@@ -38,6 +40,7 @@ function Overview() {
   const recent = useQuery({
     queryKey: ["recent-orders", store?.id],
     enabled: !!store,
+    refetchInterval: 15_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")

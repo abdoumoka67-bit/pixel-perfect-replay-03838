@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Check, Loader2, Lock, Minus, Plus, ShieldCheck, Truck, Banknote, Home, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,12 +10,35 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StoreChrome, StoreFaq } from "@/components/store/StoreChrome";
-import { formatDZD, friendlyError, isValidDzPhone, normalizeDzPhone, orderTotal, shippingPrice, type DeliveryType } from "@/lib/commerce";
+import {
+  formatDZD,
+  friendlyError,
+  isValidDzPhone,
+  normalizeDzPhone,
+  orderTotal,
+  shippingPrice,
+  ORDER_NETWORK_ERROR,
+  ORDER_TECHNICAL_ERROR,
+  type DeliveryType,
+} from "@/lib/commerce";
 import { cn } from "@/lib/utils";
 import { identifyPixelCustomer, trackPixel } from "@/lib/pixels";
 import { readAttribution } from "@/lib/attribution";
 import { useStorefrontLanguage } from "@/components/LanguageSwitcher";
 import { tr } from "@/lib/ui-i18n";
+
+/** A submit that never answers must not leave the buyer stuck on a spinner. */
+const ORDER_TIMEOUT_MS = 20_000;
+
+function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return Promise.race([
+    Promise.resolve(promise).finally(() => clearTimeout(timer)),
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(ORDER_NETWORK_ERROR)), ms);
+    }),
+  ]);
+}
 
 export const Route = createFileRoute("/m/$store/p/$product")({
   loader: async ({ params }) => {
@@ -78,6 +101,7 @@ function ProductLanding() {
   const [communes, setCommunes] = useState<Communes | null>(null);
   const [busy, setBusy] = useState(false);
   const [touched, setTouched] = useState(false);
+  const submitLock = useRef(false);
 
   const [checkoutTracked, setCheckoutTracked] = useState(false);
   useEffect(() => {
@@ -116,50 +140,78 @@ function ProductLanding() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (submitLock.current) return;
     setTouched(true);
     if (name.trim().length < 3) { toast.error(t("يرجى كتابة الاسم واللقب.")); return; }
     if (!phoneOk) { toast.error(t("رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")); return; }
     if (!wCode) { toast.error(t("يرجى اختيار الولاية.")); return; }
     if (!commune) { toast.error(t("يرجى اختيار البلدية.")); return; }
     if (currentShip == null) { toast.error(t("نوع التوصيل هذا غير متوفر في ولايتك.")); return; }
+
+    submitLock.current = true;
     setBusy(true);
-    const args = {
-      _product_id: product.id,
-      _quantity: qty,
-      _customer_name: name.trim(),
-      _phone: normalizeDzPhone(phone),
-      _wilaya_code: wCode,
-      _wilaya_name: wilayaByCode(wCode)?.ar ?? "",
-      _commune: commune,
-      _address: address,
-      _delivery_type: delivery,
-      ...(product.sizes.length ? { _size: size } : {}),
-      ...(product.colors.length ? { _color: color } : {}),
-      _attribution: readAttribution(),
-    };
-    let { data, error } = await supabase.rpc("place_order", args);
-    if (error && /_attribution|PGRST202|schema cache|Could not find the function/i.test(`${error.code} ${error.message}`)) {
-      // Migration not applied yet: place the order without attribution instead of failing.
-      const { _attribution: _unused, ...legacy } = args;
-      ({ data, error } = await supabase.rpc("place_order", legacy));
+    try {
+      const args = {
+        _product_id: product.id,
+        _quantity: qty,
+        _customer_name: name.trim(),
+        _phone: normalizeDzPhone(phone),
+        _wilaya_code: wCode,
+        _wilaya_name: wilayaByCode(wCode)?.ar ?? "",
+        _commune: commune,
+        _address: address,
+        _delivery_type: delivery,
+        ...(product.sizes.length ? { _size: size } : {}),
+        ...(product.colors.length ? { _color: color } : {}),
+        _attribution: readAttribution(),
+      };
+      let { data, error } = await withTimeout(supabase.rpc("place_order", args), ORDER_TIMEOUT_MS);
+      if (error && /_attribution|PGRST202|schema cache|Could not find the function/i.test(`${error.code} ${error.message}`)) {
+        // Migration not applied yet: place the order without attribution instead of failing.
+        const { _attribution: _unused, ...legacy } = args;
+        ({ data, error } = await withTimeout(supabase.rpc("place_order", legacy), ORDER_TIMEOUT_MS));
+      }
+      if (error) {
+        if (error.message.includes("DUPLICATE_ORDER")) {
+          // The previous tap / retry already created it: the merchant has the order.
+          navigate({
+            to: "/m/$store/thank-you",
+            params: { store: store.slug },
+            search: { n: 0, t: total, p: product.name, pid: product.id, l: language },
+          });
+          return;
+        }
+        toast.error(t(friendlyError(error.message)));
+        return;
+      }
+      const row = data?.[0];
+      if (!row) {
+        toast.error(t(ORDER_TECHNICAL_ERROR));
+        return;
+      }
+      // Advanced matching: send hashed buyer data so Meta/TikTok can match the order
+      // to the ad click. Never let a slow pixel call block the confirmation page.
+      await Promise.race([
+        identifyPixelCustomer({ phone: normalizeDzPhone(phone), name }).catch(() => undefined),
+        new Promise<void>((resolve) => setTimeout(resolve, 1500)),
+      ]);
+      navigate({
+        to: "/m/$store/thank-you",
+        params: { store: store.slug },
+        search: {
+          n: Number(row.order_number ?? 0),
+          t: Number(row.total ?? total),
+          p: product.name,
+          pid: product.id,
+          l: language,
+        },
+      });
+    } catch (err) {
+      toast.error(t(friendlyError(err instanceof Error ? err.message : ORDER_NETWORK_ERROR)));
+    } finally {
+      submitLock.current = false;
+      setBusy(false);
     }
-    setBusy(false);
-    if (error) { toast.error(t(friendlyError(error.message))); return; }
-    const row = data?.[0];
-    // Advanced matching: send hashed buyer data so Meta/TikTok can match the order
-    // to the ad click. Must run before the Purchase event on the thank-you page.
-    await identifyPixelCustomer({ phone: normalizeDzPhone(phone), name });
-    navigate({
-      to: "/m/$store/thank-you",
-      params: { store: store.slug },
-      search: {
-        n: Number(row?.order_number ?? 0),
-        t: Number(row?.total ?? total),
-        p: product.name,
-        pid: product.id,
-        l: language,
-      },
-    });
   }
 
   return (

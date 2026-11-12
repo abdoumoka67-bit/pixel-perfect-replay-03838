@@ -271,11 +271,30 @@ const ORDER_ERRORS: Record<string, string> = {
   FORBIDDEN: "ليست لديك صلاحية لهذا الإجراء.",
 };
 
+/** Shown when the request never reaches the server (offline, timeout, aborted). */
+export const ORDER_NETWORK_ERROR = "تعذر الاتصال بالخادم. تحقق من اتصالك بالإنترنت وأعد المحاولة.";
+/** Shown when checkout fails for a technical reason the buyer cannot fix. */
+export const ORDER_TECHNICAL_ERROR = "تعذر إتمام الطلب الآن. أعد المحاولة بعد لحظات.";
+export const SESSION_EXPIRED_ERROR = "انتهت صلاحية الجلسة. أعد تحميل الصفحة وحاول مرة أخرى.";
+
 export function friendlyError(message: string | undefined | null, fallback = "حدث خطأ، حاول مرة أخرى."): string {
   if (!message) return fallback;
+  // Already a user-facing text (e.g. thrown by the storefront timeout guard).
+  if (message === ORDER_NETWORK_ERROR || message === ORDER_TECHNICAL_ERROR || message === SESSION_EXPIRED_ERROR) {
+    return message;
+  }
   for (const [key, text] of Object.entries(ORDER_ERRORS)) {
     if (message.includes(key)) return text;
   }
+  const technical = message.toLowerCase();
+  if (/network|timeout|timed out|aborted|abort|failed to fetch|load failed|fetch failed|econnreset|etimedout|offline/.test(technical)) {
+    return ORDER_NETWORK_ERROR;
+  }
+  if (/42883|normalize_dz_phone|pgrst202|schema cache|could not find the function/.test(technical)) {
+    return ORDER_TECHNICAL_ERROR;
+  }
+  if (/jwt|pgrst301|invalid claim|\b401\b/.test(technical)) return SESSION_EXPIRED_ERROR;
+  if (/duplicate key.*orders|orders_order_number/.test(technical)) return ORDER_TECHNICAL_ERROR;
   if (message.includes("INVALID_SLUG")) return "الرابط يجب أن يحتوي على حروف لاتينية صغيرة وأرقام وشرطات فقط.";
   if (message.includes("duplicate key") && message.includes("store_members")) return "هذا العضو مضاف مسبقاً.";
   if (message.includes("duplicate key") && message.includes("slug")) return "هذا الرابط مستعمل، اختر رابطاً آخر.";

@@ -720,6 +720,7 @@ export type Database = {
       place_order: {
         Args: {
           _address: string
+          _attribution?: Json | null
           _color?: string
           _commune: string
           _customer_name: string
