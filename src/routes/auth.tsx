@@ -88,7 +88,6 @@ function AuthPage() {
 
     const hasAuthParams =
       window.location.hash.includes("access_token") || window.location.search.includes("code=");
-    const hasPendingRedirect = Boolean(sessionStorage.getItem(AUTH_REDIRECT_KEY));
 
     void supabase.auth.getSession().then(({ data }) => {
       if (data.session) finish();
@@ -96,7 +95,13 @@ function AuthPage() {
 
     // Only listen while an OAuth round trip is pending, so a normal password or
     // OTP sign-in does not race the redirect it already performs itself.
-    if (!hasAuthParams && !hasPendingRedirect) return;
+    if (!hasAuthParams) {
+      // A marker left over from an abandoned provider attempt (Google lands on
+      // /dashboard, so /auth never consumes it) would hijack the next email or
+      // OTP sign-in, so drop it once we know no exchange is in flight.
+      sessionStorage.removeItem(AUTH_REDIRECT_KEY);
+      return;
+    }
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) finish();
