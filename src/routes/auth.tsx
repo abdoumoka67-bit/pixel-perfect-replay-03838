@@ -43,6 +43,9 @@ function safePath(p?: string) {
 
 const RESEND_SECONDS = 60;
 
+// Where an OAuth round trip should land after Supabase sends the visitor back.
+const AUTH_REDIRECT_KEY = "oranix_auth_redirect";
+
 function AuthPage() {
   const { redirect, mode: initialMode, email: initialEmail } = Route.useSearch();
   const navigate = useNavigate();
@@ -67,27 +70,41 @@ function AuthPage() {
   const resetting = useRef(false);
 
   useEffect(() => {
-    // Never enter the dashboard just because a session is already stored.
-    // Resume only when this tab started a Google sign-in and the provider sent us back.
-    const stored = sessionStorage.getItem("oranix:after-login") ?? undefined;
-    const startedAt = Number(sessionStorage.getItem("oranix:after-login-at") ?? 0);
-    const justStarted = startedAt > 0 && Date.now() - startedAt < 10 * 60 * 1000;
-    const target = safePath(redirect || stored || undefined);
-    const clearMarker = () => {
-      sessionStorage.removeItem("oranix:after-login");
-      sessionStorage.removeItem("oranix:after-login-at");
-    };
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      // INITIAL_SESSION matters here: after the Google redirect the client can
-      // report the restored session before this page subscribes, so the sign-in
-      // arrives as the initial session instead of a fresh SIGNED_IN event.
-      if ((event !== "SIGNED_IN" && event !== "INITIAL_SESSION") || !session || resetting.current) return;
-      if (!stored || !justStarted) return;
-      clearMarker();
+    // Supabase puts the session in the URL (access_token) or hands back a code,
+    // and the client finishes restoring it a moment later. Check the stored
+    // session first, then wait for the sign-in event while the exchange is in flight.
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const query = new URLSearchParams(window.location.search);
+    if (hash.get("error") || query.get("error")) return;
+
+    let active = true;
+    const finish = () => {
+      if (!active) return;
+      const savedTarget = sessionStorage.getItem(AUTH_REDIRECT_KEY);
+      sessionStorage.removeItem(AUTH_REDIRECT_KEY);
       void qc.invalidateQueries({ queryKey: ["my-store"] });
-      navigate({ to: target, replace: true });
+      void navigate({ to: safePath(savedTarget || redirect), replace: true });
+    };
+
+    const hasAuthParams =
+      window.location.hash.includes("access_token") || window.location.search.includes("code=");
+    const hasPendingRedirect = Boolean(sessionStorage.getItem(AUTH_REDIRECT_KEY));
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (data.session) finish();
     });
-    return () => sub.subscription.unsubscribe();
+
+    // Only listen while an OAuth round trip is pending, so a normal password or
+    // OTP sign-in does not race the redirect it already performs itself.
+    if (!hasAuthParams && !hasPendingRedirect) return;
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) finish();
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, [navigate, qc, redirect]);
 
   // Only offer Google when it is switched on for this project.
@@ -115,8 +132,7 @@ function AuthPage() {
     if (!error) return;
     const description = hash.get("error_description") || query.get("error_description");
     // A cancelled/failed Google attempt must not leave a pending sign-in marker.
-    sessionStorage.removeItem("oranix:after-login");
-    sessionStorage.removeItem("oranix:after-login-at");
+    sessionStorage.removeItem(AUTH_REDIRECT_KEY);
     toast.error(description?.replace(/\+/g, " ") || translate(language, "auth.err.google"));
     window.history.replaceState({}, "", window.location.pathname);
   }, [language]);
@@ -219,8 +235,17 @@ function AuthPage() {
         const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
         if (error) throw error;
         toast.success(t("auth.ok.confirmed"));
-        await qc.invalidateQueries({ queryKey: ["my-store"] });
-        await navigate({ to: "/dashboard", replace: true });
+
+        // Check the fresh session directly: a registered account goes straight to
+        // the dashboard, while a brand-new account continues to store setup.
+        const { data: storeAccess, error: accessError } = await supabase.rpc("my_store_access");
+        if (accessError) throw accessError;
+        if (storeAccess && storeAccess.length > 0) {
+          await qc.invalidateQueries({ queryKey: ["my-store"] });
+          await navigate({ to: "/dashboard", replace: true });
+        } else {
+          await navigate({ to: "/onboarding", replace: true });
+        }
         return;
       } else {
         resetting.current = true;
@@ -261,19 +286,22 @@ function AuthPage() {
   }
 
   async function google() {
-    sessionStorage.setItem("oranix:after-login", safePath(redirect));
-    sessionStorage.setItem("oranix:after-login-at", String(Date.now()));
+    // Remember where the provider should land, and send Supabase back to the
+    // dashboard: the guarded route restores the session before it renders.
+    const redirectTo = `${window.location.origin}/dashboard`;
+    sessionStorage.setItem(AUTH_REDIRECT_KEY, "/dashboard");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth`,
-        // Always let the visitor pick which Google account to use.
-        queryParams: { prompt: "select_account" },
+        redirectTo,
+        queryParams: {
+          access_type: "offline",
+          prompt: "select_account",
+        },
       },
     });
     if (error) {
-      sessionStorage.removeItem("oranix:after-login");
-      sessionStorage.removeItem("oranix:after-login-at");
+      sessionStorage.removeItem(AUTH_REDIRECT_KEY);
       toast.error(t("auth.err.google"));
     }
   }

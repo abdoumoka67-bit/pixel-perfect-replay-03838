@@ -513,12 +513,7 @@ export const DEFAULT_ONBOARDING_INDUSTRIES = [
   "منتجات عامة / أخرى",
 ];
 
-export const DEFAULT_PRODUCT_TYPES = [
-  { value: "physical", label: "منتجات مادية (Tangible / COD)" },
-  { value: "digital", label: "منتجات رقمية (Digital)" },
-] as const;
-
-export type ProductTypeValue = (typeof DEFAULT_PRODUCT_TYPES)[number]["value"];
+export type ProductTypeValue = "physical";
 
 export function isProductInGracePeriod(store: { trial_ends_at: string; paid_until: string | null }, now: Date = new Date()): boolean {
   const trial = new Date(store.trial_ends_at);

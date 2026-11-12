@@ -9,7 +9,12 @@ import { useTr } from "@/lib/ui-i18n";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   beforeLoad: async ({ context }) => {
     const store = await context.queryClient.ensureQueryData(myStoreQuery);
-    if (!store) throw redirect({ to: "/onboarding" });
+    if (!store?.store) {
+      // The store may have just been created and the first read can miss it, so
+      // retry once with a forced fetch before deciding the account has no store.
+      const refreshed = await context.queryClient.fetchQuery({ ...myStoreQuery, staleTime: 0 });
+      if (!refreshed?.store) throw redirect({ to: "/onboarding" });
+    }
   },
   head: () => ({
     meta: [

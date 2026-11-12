@@ -12,7 +12,6 @@ import { useDocumentLanguage } from "@/components/LanguageSwitcher";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import {
   DEFAULT_ONBOARDING_INDUSTRIES,
-  DEFAULT_PRODUCT_TYPES,
   isValidDzPhone,
   isValidStoreSlug,
   normalizeDzPhone,
@@ -93,7 +92,6 @@ function Onboarding() {
   const [slugTouched, setSlugTouched] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [productType, setProductType] = useState<(typeof DEFAULT_PRODUCT_TYPES)[number]["value"]>("physical");
   const [industry, setIndustry] = useState<string>(DEFAULT_ONBOARDING_INDUSTRIES[0] ?? "");
   const [busy, setBusy] = useState(false);
 
@@ -110,7 +108,7 @@ function Onboarding() {
     if (step === 0) return Boolean(user?.email || user?.phone);
     if (step === 1) return Boolean(fullName.trim() && name.trim() && isValidStoreSlug(effectiveSlug));
     if (step === 2) return isValidDzPhone(phone);
-    return Boolean(productType && industry);
+    return Boolean(industry);
   };
 
   const nextStep = () => {
@@ -139,6 +137,8 @@ function Onboarding() {
       return;
     }
     setBusy(true);
+    // Every store sells physical products paid on delivery, so the product type is
+    // fixed and the industry is kept with the storefront settings.
     const payload = {
       owner_id: user.id,
       name: name.trim(),
@@ -146,8 +146,9 @@ function Onboarding() {
       phone: normalizedPhone || null,
       whatsapp: normalizedPhone || null,
       storefront_config: {
-        product_type: productType,
+        product_type: "physical",
         industry,
+        currency: "DZD",
       },
     };
 
@@ -156,6 +157,18 @@ function Onboarding() {
       const { error } = await supabase.from("stores").insert(payload);
       if (error) {
         console.error("Store creation failed", error);
+        const diagnostic = `${error.message} ${error.details ?? ""}`.toLowerCase();
+        // A uniqueness clash on owner_id means the store already exists (for
+        // example after a double submit or a retry): open it instead of getting stuck.
+        const alreadyOwnsStore =
+          error.message?.includes("owner_id") ||
+          (error.code === "23505" && !diagnostic.includes("slug"));
+        if (alreadyOwnsStore) {
+          toast.info(t("onb.alreadyHave"));
+          await qc.fetchQuery({ ...myStoreQuery, staleTime: 0 });
+          await navigate({ to: "/dashboard", replace: true });
+          return;
+        }
         toast.error(storeCreationErrorMessage(error));
         return;
       }
@@ -169,7 +182,9 @@ function Onboarding() {
         toast.error(t("onb.profileFail"));
       }
 
-      await qc.invalidateQueries({ queryKey: ["my-store"] });
+      // Prime the cache with the new store before leaving so the dashboard guard
+      // does not mistake a slow read for "no store" and bounce back here.
+      await qc.fetchQuery({ ...myStoreQuery, staleTime: 0 });
       toast.success(t("onb.created"));
       await navigate({ to: "/dashboard", replace: true });
     } catch (error) {
@@ -266,25 +281,6 @@ function Onboarding() {
 
     return (
       <div className="space-y-6">
-        <div className="space-y-3">
-          <Label className="text-base">{t("onb.productType")}</Label>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {DEFAULT_PRODUCT_TYPES.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setProductType(option.value)}
-                className={[
-                  "rounded-2xl border p-4 text-right transition-all",
-                  productType === option.value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-white text-foreground",
-                ].join(" ")}
-              >
-                <div className="font-medium">{t(`onb.type.${option.value}` as TranslationKey)}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div className="space-y-2">
           <Label>{t("onb.industry")}</Label>
           <div className="grid gap-2 sm:grid-cols-2">

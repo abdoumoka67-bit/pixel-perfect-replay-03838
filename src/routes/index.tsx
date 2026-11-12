@@ -133,9 +133,16 @@ function TextSelectionHighlight({
           style={{ transform: isRtl ? "translateX(100%)" : undefined }}
         >
           <svg
+            width={18}
+            height={22}
             viewBox="0 0 18 22"
-            className="h-full w-full overflow-visible drop-shadow-sm"
-            style={{ transformOrigin: "0 0", transform: isRtl ? "scaleX(-1)" : undefined }}
+            className="h-full w-full overflow-visible drop-shadow-sm pointer-events-none select-none"
+            style={{
+              width: "18px",
+              height: "22px",
+              transformOrigin: "0 0",
+              transform: isRtl ? "scaleX(-1)" : undefined,
+            }}
           >
             <path
               d="M0 0 L0 17 L4.4 12.8 L6.9 18.4 L9.4 17.3 L6.9 11.8 L12.6 11.8 Z"
