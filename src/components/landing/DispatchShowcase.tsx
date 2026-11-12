@@ -174,8 +174,8 @@ export function DispatchShowcase() {
                   isDispatched || isDelivered
                     ? "bg-emerald-600"
                     : isPressed
-                      ? "scale-[0.98] bg-[#171717]"
-                      : "bg-[#171717] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.16)] hover:bg-[#262626]"
+                      ? "scale-[0.98] bg-primary-hover"
+                      : "bg-primary shadow-[0_2px_8px_-2px_rgba(0,128,96,0.35)] hover:bg-primary-hover"
                 }`}
               >
                 {isDelivered ? (

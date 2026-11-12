@@ -301,7 +301,7 @@ function Home() {
             />
             <Button
               type="submit"
-              className="h-10 shrink-0 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all px-5 text-sm font-medium"
+              className="h-10 shrink-0 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-[0_1px_2px_rgba(0,128,96,0.18),0_3px_10px_-3px_rgba(0,128,96,0.4)] transition-all hover:bg-primary-hover active:scale-[0.98]"
             >
               {t("landing.hero.emailCta")}
             </Button>
