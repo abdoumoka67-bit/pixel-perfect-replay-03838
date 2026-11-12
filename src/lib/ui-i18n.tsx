@@ -222,6 +222,13 @@ const en: Record<string, string> = {
   "مؤكدة": "Confirmed",
   "ملغاة": "Cancelled",
   "حسابك في وضع القراءة فقط": "Your account is in read-only mode",
+  "وصول مدير المنصة — جميع الميزات مفتوحة دائمًا":
+    "Platform admin access — every feature stays unlocked",
+  "وصول مدير المنصة: كل الميزات مفتوحة بلا حدود":
+    "Platform admin access: every feature unlocked without limits",
+  "حساب مدير المنصة لا ينتهي ولا يحتاج إلى تجديد.":
+    "A platform admin account never expires and never needs renewal.",
+  "مدى الحياة": "Lifetime",
   "اشتراكك فعّال حتى {date}": "Your subscription is active until {date}",
   "منتج جديد": "New product",
   "آخر الطلبات": "Recent orders",
@@ -308,6 +315,7 @@ const en: Record<string, string> = {
   "الطلبات اليومية": "Daily orders",
   "اليوم": "Today",
   "الطلبات": "Orders",
+  "المبيعات": "Sales",
   "المداخيل": "Revenue",
   "توزيع الحالات": "Status breakdown",
   "{orders} طلب · {delivered} مُسلّم": "{orders} orders · {delivered} delivered",
@@ -1035,6 +1043,13 @@ const fr: Record<string, string> = {
   "مؤكدة": "Confirmée",
   "ملغاة": "Annulée",
   "حسابك في وضع القراءة فقط": "Votre compte est en lecture seule",
+  "وصول مدير المنصة — جميع الميزات مفتوحة دائمًا":
+    "Accès administrateur — toutes les fonctionnalités restent déverrouillées",
+  "وصول مدير المنصة: كل الميزات مفتوحة بلا حدود":
+    "Accès administrateur : toutes les fonctionnalités ouvertes sans limite",
+  "حساب مدير المنصة لا ينتهي ولا يحتاج إلى تجديد.":
+    "Un compte administrateur n'expire jamais et n'a pas besoin d'être renouvelé.",
+  "مدى الحياة": "À vie",
   "اشتراكك فعّال حتى {date}": "Votre abonnement est actif jusqu'au {date}",
   "منتج جديد": "Nouveau produit",
   "آخر الطلبات": "Dernières commandes",
@@ -1121,6 +1136,7 @@ const fr: Record<string, string> = {
   "الطلبات اليومية": "Commandes quotidiennes",
   "اليوم": "Aujourd'hui",
   "الطلبات": "Commandes",
+  "المبيعات": "Ventes",
   "المداخيل": "Revenus",
   "توزيع الحالات": "Répartition des statuts",
   "{orders} طلب · {delivered} مُسلّم": "{orders} commandes · {delivered} livrées",

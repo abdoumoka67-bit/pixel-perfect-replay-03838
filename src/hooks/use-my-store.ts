@@ -37,7 +37,7 @@ export const myStoreQuery = queryOptions({
 export function useMyStore() {
   const q = useQuery(myStoreQuery);
   const store = q.data?.store ?? null;
-  const access: StoreAccess = q.data?.access ?? "owner";
+  const rawAccess: StoreAccess = q.data?.access ?? "owner";
   // Platform admin: no limits, no trial banners, every Pro feature open.
   const { data: isAdmin = false } = useQuery(isAdminQuery);
   const rawSub = store ? subscriptionState(store) : null;
@@ -45,18 +45,21 @@ export function useMyStore() {
     ? { ...rawSub, isActive: true, isTrial: false, showWarning: false, isGracePeriod: false, graceEndsAt: null }
     : rawSub;
   const tier = isAdmin ? "pro" : store ? effectiveTier(store) : "start";
+  // An admin owns every screen: the DB helpers already let them manage any
+  // store, and the dashboard should not gate areas or disable controls.
+  const access: StoreAccess = isAdmin ? "owner" : rawAccess;
   return {
     ...q,
     store,
     sub,
     isAdmin,
-    readOnly: sub ? !sub.isActive : false,
+    readOnly: isAdmin ? false : sub ? !sub.isActive : false,
     tier,
-    isPro: tier === "pro",
+    isPro: isAdmin || tier === "pro",
     access,
     memberId: q.data?.memberId ?? null,
-    isOwner: access === "owner",
-    canManage: access !== "agent",
+    isOwner: isAdmin || access === "owner",
+    canManage: isAdmin || access !== "agent",
   };
 }
 

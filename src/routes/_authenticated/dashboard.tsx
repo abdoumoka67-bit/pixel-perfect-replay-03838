@@ -33,8 +33,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function DashboardLayout() {
   const t = useTr();
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { access } = useMyStore();
-  const allowed = canOpen(access, areaForPath(path));
+  const { access, isAdmin } = useMyStore();
+  // Platform admins can open every dashboard area, including the Pro ones.
+  const allowed = isAdmin || canOpen(access, areaForPath(path));
   return (
     <DashboardShell>
       {allowed ? (

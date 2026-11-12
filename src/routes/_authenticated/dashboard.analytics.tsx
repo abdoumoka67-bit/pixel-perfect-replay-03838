@@ -114,8 +114,8 @@ function AnalyticsPro() {
             >
               <defs>
                 <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#10B981" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
@@ -128,31 +128,34 @@ function AnalyticsPro() {
                 axisLine={false}
                 width={28}
               />
+              {/* Dashed cursor follows the pointer on both mouse and touch. */}
               <Tooltip
-                cursor={{ stroke: "var(--brand)", strokeDasharray: "4 4", strokeWidth: 1.5 }}
+                cursor={{ stroke: "#10B981", strokeDasharray: "4 4", strokeWidth: 1.5 }}
                 content={({ active, payload, label }) => {
-                  const point = payload?.[0]?.payload as
-                    | { orders: number; revenue: number }
+                  if (!active || !payload?.length) return null;
+                  const point = payload[0]?.payload as
+                    | { label: string; orders: number; revenue: number }
                     | undefined;
-                  if (!active || !point) return null;
+                  if (!point) return null;
                   return (
                     <div
-                      className="rounded-xl border border-border bg-card/95 p-3 text-xs shadow-lg backdrop-blur-xs"
+                      className="min-w-[130px] rounded-xl border border-border bg-card/95 p-3 text-xs shadow-lg backdrop-blur-xs"
                       dir="auto"
                     >
-                      <p className="font-medium text-foreground">{label}</p>
-                      <p className="mt-1 text-muted-foreground">
-                        {t("الطلبات")}:{" "}
+                      <p className="border-b border-border/50 pb-1 font-medium text-foreground">
+                        {label}
+                      </p>
+                      <p className="mt-1.5 flex items-center justify-between gap-3 text-muted-foreground">
+                        <span>{t("الطلبات")}:</span>
                         <span className="font-semibold text-foreground num">{point.orders}</span>
                       </p>
-                      {point.revenue > 0 && (
-                        <p className="text-muted-foreground">
-                          {t("المداخيل")}:{" "}
-                          <span className="font-semibold text-brand num">
-                            {formatDZD(point.revenue, language)}
-                          </span>
-                        </p>
-                      )}
+                      {/* Sales always render, even when the day totals zero. */}
+                      <p className="mt-1 flex items-center justify-between gap-3 text-muted-foreground">
+                        <span>{t("المبيعات")}:</span>
+                        <span className="font-semibold text-[#10B981] num">
+                          {formatDZD(Number(point.revenue ?? 0), language)}
+                        </span>
+                      </p>
                     </div>
                   );
                 }}
@@ -161,11 +164,11 @@ function AnalyticsPro() {
                 type="monotone"
                 dataKey="orders"
                 name={t("الطلبات")}
-                stroke="var(--chart-1)"
+                stroke="#10B981"
                 strokeWidth={2.5}
                 fill="url(#g1)"
-                dot={{ r: 2, fill: "var(--chart-1)", stroke: "var(--card)", strokeWidth: 1 }}
-                activeDot={{ r: 5, fill: "var(--chart-1)", stroke: "var(--card)", strokeWidth: 2 }}
+                dot={{ r: 2, fill: "#10B981", stroke: "var(--card)", strokeWidth: 1 }}
+                activeDot={{ r: 5, fill: "#10B981", stroke: "var(--card)", strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>

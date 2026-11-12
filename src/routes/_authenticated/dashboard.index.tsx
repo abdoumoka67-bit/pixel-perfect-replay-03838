@@ -22,7 +22,7 @@ const CARDS: { status: OrderStatus; label: string; icon: typeof Clock; tone: str
 ];
 
 function Overview() {
-  const { store, sub } = useMyStore();
+  const { store, sub, isAdmin } = useMyStore();
   const t = useTr();
   const language = useUiLanguage();
   const dateLocale = language === "ar" ? "ar-DZ" : language === "fr" ? "fr-DZ" : "en-GB";
@@ -59,11 +59,13 @@ function Overview() {
       <PageHeader
         title={t("أهلاً، {store}", { store: store?.name ?? "" })}
         description={
-          sub?.isActive
-            ? sub.isTrial
-              ? t("تجربتك المجانية: {n} أيام متبقية", { n: sub.daysLeft })
-              : t("اشتراكك فعّال حتى {date}", { date: sub.endsAt.toLocaleDateString(dateLocale) })
-            : t("حسابك في وضع القراءة فقط")
+          isAdmin
+            ? t("وصول مدير المنصة — جميع الميزات مفتوحة دائمًا")
+            : sub?.isActive
+              ? sub.isTrial
+                ? t("تجربتك المجانية: {n} أيام متبقية", { n: sub.daysLeft })
+                : t("اشتراكك فعّال حتى {date}", { date: sub.endsAt.toLocaleDateString(dateLocale) })
+              : t("حسابك في وضع القراءة فقط")
         }
         actions={
           <Button asChild variant="brand">
