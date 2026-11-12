@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { MapPin } from "lucide-react";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { ProLock } from "@/components/dashboard/ProLock";
@@ -89,7 +90,6 @@ function AnalyticsPro() {
     { label: t("نسبة التأكيد"), value: `${m.confirmRate}%` },
     { label: t("نسبة التوصيل"), value: `${m.deliveryRate}%` },
   ];
-  const latestDay = m.daily[m.daily.length - 1]?.label;
 
   return (
     <>
@@ -107,7 +107,11 @@ function AnalyticsPro() {
         <h2 className="mb-4 font-medium">{t("الطلبات اليومية")}</h2>
         <div className="h-64" dir="ltr">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={m.daily}>
+            <AreaChart
+              data={m.daily}
+              accessibilityLayer
+              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
@@ -125,18 +129,34 @@ function AnalyticsPro() {
                 width={28}
               />
               <Tooltip
-                cursor={{ stroke: "var(--chart-1)", strokeDasharray: "4 4", strokeWidth: 1.5 }}
-                contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }}
+                cursor={{ stroke: "var(--brand)", strokeDasharray: "4 4", strokeWidth: 1.5 }}
+                content={({ active, payload, label }) => {
+                  const point = payload?.[0]?.payload as
+                    | { orders: number; revenue: number }
+                    | undefined;
+                  if (!active || !point) return null;
+                  return (
+                    <div
+                      className="rounded-xl border border-border bg-card/95 p-3 text-xs shadow-lg backdrop-blur-xs"
+                      dir="auto"
+                    >
+                      <p className="font-medium text-foreground">{label}</p>
+                      <p className="mt-1 text-muted-foreground">
+                        {t("الطلبات")}:{" "}
+                        <span className="font-semibold text-foreground num">{point.orders}</span>
+                      </p>
+                      {point.revenue > 0 && (
+                        <p className="text-muted-foreground">
+                          {t("المداخيل")}:{" "}
+                          <span className="font-semibold text-brand num">
+                            {formatDZD(point.revenue, language)}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  );
+                }}
               />
-              {latestDay && (
-                <ReferenceLine
-                  x={latestDay}
-                  stroke="var(--chart-1)"
-                  strokeDasharray="3 3"
-                  strokeWidth={1.5}
-                  label={{ value: t("اليوم"), position: "insideTopRight", fill: "var(--chart-1)", fontSize: 11 }}
-                />
-              )}
               <Area
                 type="monotone"
                 dataKey="orders"
@@ -155,16 +175,47 @@ function AnalyticsPro() {
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl bg-card p-5 shadow-card lg:col-span-2">
           <h2 className="mb-4 font-medium">{t("أكثر الولايات طلباً")}</h2>
-          <div className="h-64" dir="ltr">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={m.wilayas}>
-                <CartesianGrid stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} width={28} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }} />
-                <Bar dataKey="count" name={t("الطلبات")} fill="var(--chart-2)" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="flex h-64 items-center justify-center" dir="ltr">
+            {m.wilayas.length > 0 ? (
+              <div className="h-full w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={m.wilayas} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid stroke="var(--border)" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={28}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "var(--muted)/30" }}
+                      contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }}
+                    />
+                    <Bar
+                      dataKey="count"
+                      name={t("الطلبات")}
+                      fill="var(--primary)"
+                      maxBarSize={32}
+                      radius={[6, 6, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-6 text-center text-sm text-muted-foreground">
+                <div className="mb-2 flex size-10 items-center justify-center rounded-full bg-muted/50">
+                  <MapPin className="size-5 text-muted-foreground" />
+                </div>
+                <p>{t("لا توجد بيانات كافية لعرض توزيع الولايات بعد.")}</p>
+              </div>
+            )}
           </div>
         </div>
         <div className="space-y-6">

@@ -308,9 +308,11 @@ const en: Record<string, string> = {
   "الطلبات اليومية": "Daily orders",
   "اليوم": "Today",
   "الطلبات": "Orders",
+  "المداخيل": "Revenue",
   "توزيع الحالات": "Status breakdown",
   "{orders} طلب · {delivered} مُسلّم": "{orders} orders · {delivered} delivered",
   "لا توجد بيانات بعد.": "No data yet.",
+  "لا توجد بيانات كافية لعرض توزيع الولايات بعد.": "Not enough data to show the wilaya breakdown yet.",
 
   // Activity log
   "كل ما يحدث في متجرك.": "Everything happening in your store.",
@@ -1119,9 +1121,12 @@ const fr: Record<string, string> = {
   "الطلبات اليومية": "Commandes quotidiennes",
   "اليوم": "Aujourd'hui",
   "الطلبات": "Commandes",
+  "المداخيل": "Revenus",
   "توزيع الحالات": "Répartition des statuts",
   "{orders} طلب · {delivered} مُسلّم": "{orders} commandes · {delivered} livrées",
   "لا توجد بيانات بعد.": "Aucune donnée pour le moment.",
+  "لا توجد بيانات كافية لعرض توزيع الولايات بعد.":
+    "Pas encore assez de données pour afficher la répartition par wilaya.",
 
   // Activity log
   "كل ما يحدث في متجرك.": "Tout ce qui se passe dans votre boutique.",

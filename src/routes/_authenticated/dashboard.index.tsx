@@ -74,17 +74,31 @@ function Overview() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-5 gap-2 sm:gap-2.5 md:gap-3">
         {CARDS.map((c) => {
           const row = byStatus(c.status);
           return (
-            <div key={c.status} className="rounded-2xl bg-card p-4 shadow-card md:p-5">
-              <div className={`inline-flex size-9 items-center justify-center rounded-xl ${c.tone}`}>
-                <c.icon className="size-[18px]" />
+            <div
+              key={c.status}
+              className="flex flex-col justify-between rounded-xl border border-border/50 bg-card p-2.5 shadow-xs transition-all hover:border-border sm:p-3"
+            >
+              <div className="flex items-center justify-between gap-1.5">
+                <p className="min-w-0 truncate text-xs font-medium text-muted-foreground">{t(c.label)}</p>
+                <div
+                  className={`inline-flex size-6 shrink-0 items-center justify-center rounded-lg sm:size-7 ${c.tone}`}
+                >
+                  <c.icon className="size-3 sm:size-3.5" />
+                </div>
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">{t(c.label)}</p>
-              <p className="mt-0.5 font-display text-2xl font-medium num">{Number(row?.orders_count ?? 0)}</p>
-              <p className="text-xs text-muted-foreground num">{formatDZD(Number(row?.orders_total ?? 0), language)}</p>
+
+              <div className="mt-2">
+                <p className="font-display text-base leading-none font-medium num sm:text-lg md:text-xl">
+                  {Number(row?.orders_count ?? 0)}
+                </p>
+                <p className="mt-1 truncate text-[11px] text-muted-foreground num">
+                  {formatDZD(Number(row?.orders_total ?? 0), language)}
+                </p>
+              </div>
             </div>
           );
         })}
