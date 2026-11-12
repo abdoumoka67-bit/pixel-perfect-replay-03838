@@ -254,8 +254,6 @@
   --color-brand-foreground: var(--brand-foreground);
   --color-brand-soft: var(--brand-soft);
   --color-primary-hover: var(--primary-hover);
-  --color-graphite: var(--graphite);
-  --color-graphite-hover: var(--graphite-hover);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
@@ -309,14 +307,10 @@ html[lang="en"] {
   --muted: #F1F2F4;
   --muted-foreground: #6D7175;
 
-  /* Primary Action (Brand Green — action hierarchy: green = primary, graphite = neutral) */
-  --primary: #008060;
+  /* Ink & Paper: one solid ink action per screen, paper for everything else */
+  --primary: #16181A;
   --primary-foreground: #FFFFFF;
-  --primary-hover: #006B50;
-
-  /* Neutral solid (near-black softened: keeps contrast readable without the "hole" effect) */
-  --graphite: #2A2D31;
-  --graphite-hover: #34383D;
+  --primary-hover: #2C3034;
 
   /* Secondary & Surfaces */
   --secondary: #F1F2F4;
@@ -328,7 +322,7 @@ html[lang="en"] {
   --table-header: #F7F7F8;
   --border: #E1E3E5;
   --input: #E1E3E5;
-  --ring: rgba(0, 128, 96, 0.28);
+  --ring: rgba(22, 24, 26, 0.2);
 
   /* Shopify Subdued Status Badges */
   /* Success / Delivered / Paid */
@@ -348,11 +342,11 @@ html[lang="en"] {
   --info: #1A428A;
   --info-soft: #EBF2FF;
 
-  /* Shopify Official Signature Brand Accent */
-  --brand: #008060;
-  --brand-strong: #004C3F;
+  /* Monochrome accent (links, selections, small marks) */
+  --brand: #16181A;
+  --brand-strong: #000000;
   --brand-foreground: #FFFFFF;
-  --brand-soft: #E3F1EC;
+  --brand-soft: #F1F2F4;
 
   --notify: #EF4444;
 
@@ -393,11 +387,9 @@ html[lang="en"] {
   --foreground: #E3E5E8;
   --muted: #1A1C1E;
   --muted-foreground: #8C9196;
-  --primary: #10B981;
-  --primary-foreground: #06231A;
-  --primary-hover: #34D399;
-  --graphite: #2A2D31;
-  --graphite-hover: #383D42;
+  --primary: #FAFAFA;
+  --primary-foreground: #0B0C0D;
+  --primary-hover: #E3E5E8;
   --secondary: #1A1C1E;
   --secondary-foreground: #E3E5E8;
   --accent: #1A1C1E;
@@ -405,7 +397,7 @@ html[lang="en"] {
   --table-header: #141517;
   --border: #2E3033;
   --input: #2E3033;
-  --ring: rgba(16, 185, 129, 0.35);
+  --ring: rgba(250, 250, 250, 0.28);
   --success: #22C55E;
   --success-soft: rgba(34, 197, 94, 0.12);
   --warning: #EAB308;
@@ -415,10 +407,10 @@ html[lang="en"] {
   --danger-soft: rgba(239, 68, 68, 0.12);
   --info: #3B82F6;
   --info-soft: rgba(59, 130, 246, 0.12);
-  --brand: #10B981;
-  --brand-strong: #059669;
+  --brand: #FAFAFA;
+  --brand-strong: #FFFFFF;
   --brand-foreground: #0B0C0D;
-  --brand-soft: rgba(16, 185, 129, 0.14);
+  --brand-soft: rgba(255, 255, 255, 0.1);
   --notify: #EF4444;
   --chart-1: #10B981;
   --chart-2: #E3E5E8;

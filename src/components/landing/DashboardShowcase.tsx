@@ -325,7 +325,7 @@ function DeliveryScreen({
       ))}
       <button
         type="button"
-        className={`flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 font-medium text-primary-foreground shadow-[0_2px_8px_-2px_rgba(0,128,96,0.35)] transition-colors hover:bg-primary-hover ${
+        className={`flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 font-medium text-primary-foreground shadow-[0_2px_8px_-2px_rgba(16,24,40,0.4)] transition-colors hover:bg-primary-hover ${
           mobile ? "py-2.5 text-[10px]" : "py-3 text-xs"
         } ${showcaseDash ? "showcase-dash-generate" : ""}`}
       >

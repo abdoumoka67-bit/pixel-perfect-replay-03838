@@ -301,7 +301,7 @@ function Home() {
             />
             <Button
               type="submit"
-              className="h-10 shrink-0 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-[0_1px_2px_rgba(0,128,96,0.18),0_3px_10px_-3px_rgba(0,128,96,0.4)] transition-all hover:bg-primary-hover active:scale-[0.98]"
+              className="h-10 shrink-0 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-[0_1px_2px_rgba(16,24,40,0.18),0_4px_12px_-4px_rgba(16,24,40,0.35)] transition-all hover:bg-primary-hover active:scale-[0.98]"
             >
               {t("landing.hero.emailCta")}
             </Button>
@@ -336,7 +336,7 @@ function Home() {
                   plans={plans}
                   language={language}
                   action={(p) => (
-                    <Button asChild size="xl" variant={p.tier === "pro" ? "outline" : "default"} className={p.tier === "pro" ? "w-full border-transparent text-foreground" : "w-full"}>
+                    <Button asChild size="xl" variant={p.tier === "pro" ? "outline" : "brand"} className={p.tier === "pro" ? "w-full border-transparent text-foreground" : "w-full"}>
                       <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
                     </Button>
                   )}

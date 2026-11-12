@@ -9,17 +9,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Neutral solid: softened charcoal, no glossy inner highlight.
+        // Neutral default: paper with a hairline border. Ink is reserved for `brand`.
         default:
-          "bg-graphite text-white shadow-[0_1px_2px_rgba(16,24,40,0.1),0_2px_8px_-2px_rgba(16,24,40,0.14)] hover:bg-graphite-hover",
-        // Primary action: brand green with a tinted elevation.
+          "border border-border bg-card text-foreground shadow-[0_1px_2px_rgba(16,24,40,0.05)] hover:border-border hover:bg-muted",
+        // The one solid ink action on the screen.
         brand:
-          "bg-primary text-primary-foreground shadow-[0_1px_2px_rgba(0,128,96,0.18),0_3px_10px_-3px_rgba(0,128,96,0.4)] hover:bg-primary-hover",
+          "bg-primary text-primary-foreground shadow-[0_1px_2px_rgba(16,24,40,0.18),0_4px_12px_-4px_rgba(16,24,40,0.35)] hover:bg-primary-hover",
         destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
-          "border border-border/80 bg-background text-foreground hover:bg-[#F5F5F7] hover:text-foreground active:scale-[0.98] transition-all duration-150",
+          "border border-border/80 bg-background text-foreground hover:bg-muted hover:text-foreground active:scale-[0.98] transition-all duration-150",
         secondary:
-          "bg-[#F5F5F7] text-[#171717] border border-black/[0.06] hover:bg-[#EAEAEA] hover:border-black/10 active:scale-[0.98] shadow-sm transition-all duration-150",
+          "bg-secondary text-secondary-foreground border border-border hover:bg-muted active:scale-[0.98] shadow-sm transition-all duration-150",
         ghost: "hover:bg-secondary hover:text-secondary-foreground",
         link: "text-brand underline-offset-4 hover:underline",
         success: "bg-success text-primary-foreground hover:bg-success/90",
