@@ -14,6 +14,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+// Imported for its side effect: capture Android's install prompt before any
+// route (and the dashboard banner) mounts. See src/lib/pwa-install.ts.
+import "@/lib/pwa-install";
 
 function NotFoundComponent() {
   return (
@@ -74,7 +77,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#0F172A" },
+      { name: "theme-color", content: "#111111" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "oranix" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -89,6 +96,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "manifest", href: "/manifest.json" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -131,6 +140,19 @@ function RootComponent() {
     });
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
+
+  useEffect(() => {
+    // Register the pass-through worker that lets Android offer "Install app".
+    if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
+    const register = () => {
+      void navigator.serviceWorker.register("/sw.js").catch(() => {
+        // Installation still works from the browser menu without the worker.
+      });
+    };
+    if (document.readyState === "complete") register();
+    else window.addEventListener("load", register, { once: true });
+    return () => window.removeEventListener("load", register);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -27,6 +27,7 @@ import { tr, UiLanguageProvider, useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { ProPill } from "./ProLock";
 import { GuidedTour } from "./GuidedTour";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
+import { InstallPwaPrompt } from "@/components/InstallPwaPrompt";
 
 function useSignOut() {
   const queryClient = useQueryClient();
@@ -455,6 +456,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </main>
       </div>
       <BottomNav />
+      <InstallPwaPrompt />
     </div>
     </UiLanguageProvider>
   );

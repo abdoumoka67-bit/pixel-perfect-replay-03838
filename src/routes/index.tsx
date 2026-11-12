@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
@@ -170,6 +171,50 @@ function Home() {
   const [email, setEmail] = useState("");
   // Pause the selection loop while the hero is off screen.
   const { ref: heroRef, inView: heroInView } = useInView<HTMLElement>();
+
+  useEffect(() => {
+    // A merchant coming back from Google lands on the hash/code URL, and anyone
+    // with a stored session should never see the marketing page again.
+    const hash = window.location.hash;
+    const search = window.location.search;
+    const isAuthReturn = hash.includes("access_token") || search.includes("code=");
+    // A provider error must be shown, not swallowed by a redirect loop.
+    if (hash.includes("error") || search.includes("error")) return;
+
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let attempts = 0;
+
+    const goDashboard = () => {
+      if (!active) return;
+      void navigate({ to: "/dashboard", replace: true });
+    };
+
+    const check = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!active) return;
+      if (data.session) {
+        goDashboard();
+        return;
+      }
+      // The client may still be exchanging the OAuth code, so retry briefly.
+      if (isAuthReturn && attempts < 10) {
+        attempts += 1;
+        timer = setTimeout(() => void check(), 400);
+      }
+    };
+    void check();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) goDashboard();
+    });
+
+    return () => {
+      active = false;
+      if (timer) clearTimeout(timer);
+      authListener.subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   function renderHeroLine1() {
     let part1 = "متجرك";

@@ -836,6 +836,18 @@ const en: Record<string, string> = {
     "Copy the connection token (Token / Clé API) from your account settings in the carrier dashboard and paste it here.",
   "لا يحتاج إلى API أو إنترنت. أدخل اسم السائق ورقم هاتفه لتتمكن من إسناد الشحنات إليه مباشرة وطباعة قائمة التوصيل اليدوية.":
     "No API or internet connection is needed. Enter the driver's name and phone number so you can assign parcels to them directly and print the manual delivery list.",
+
+  // PWA install prompt
+  "تثبيت التطبيق": "Install app",
+  "تطبيق oranix": "oranix app",
+  "ثبّت التطبيق على شاشتك للوصول السريع": "Install the app on your home screen for quick access",
+  "تثبيت": "Install",
+  "التثبيت على شاشة iPhone": "Install on your iPhone",
+  "1. اضغط على زر المشاركة في شريط Safari السفلي.":
+    "1. Tap the Share button in Safari's bottom bar.",
+  "2. اختر «إضافة إلى الشاشة الرئيسية».": "2. Choose “Add to Home Screen”.",
+  "3. اضغط «إضافة» في الزاوية العلوية.": "3. Tap “Add” in the top corner.",
+  "فهمت ذلك": "Got it",
 };
 
 const fr: Record<string, string> = {
@@ -1659,6 +1671,19 @@ const fr: Record<string, string> = {
     "Copiez le jeton de connexion (Token / Clé API) depuis les paramètres de votre compte dans le tableau de bord du transporteur et collez-le ici.",
   "لا يحتاج إلى API أو إنترنت. أدخل اسم السائق ورقم هاتفه لتتمكن من إسناد الشحنات إليه مباشرة وطباعة قائمة التوصيل اليدوية.":
     "Aucune API ni connexion internet n'est nécessaire. Saisissez le nom et le numéro de téléphone du chauffeur pour lui attribuer directement les colis et imprimer la liste de livraison manuelle.",
+
+  // PWA install prompt
+  "تثبيت التطبيق": "Installer l'application",
+  "تطبيق oranix": "Application oranix",
+  "ثبّت التطبيق على شاشتك للوصول السريع":
+    "Installez l'application sur votre écran d'accueil pour un accès rapide",
+  "تثبيت": "Installer",
+  "التثبيت على شاشة iPhone": "Installer sur votre iPhone",
+  "1. اضغط على زر المشاركة في شريط Safari السفلي.":
+    "1. Touchez le bouton Partager dans la barre inférieure de Safari.",
+  "2. اختر «إضافة إلى الشاشة الرئيسية».": "2. Choisissez « Sur l'écran d'accueil ».",
+  "3. اضغط «إضافة» في الزاوية العلوية.": "3. Touchez « Ajouter » dans le coin supérieur.",
+  "فهمت ذلك": "Compris",
 };
 
 /** Translates an Arabic UI string into `language`, falling back to Arabic. */
