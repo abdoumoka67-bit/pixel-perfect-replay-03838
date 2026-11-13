@@ -468,52 +468,42 @@ function OrdersPage() {
       {/* Mobile cards */}
       <div className="space-y-3 md:hidden">
         {rows.map((o) => (
-          <div key={o.id} className="rounded-2xl bg-card p-4 shadow-card">
-            <div className="flex items-start justify-between gap-2">
-              <button className="min-w-0 text-start" onClick={() => setOpenId(o.id)}>
-                <p className="truncate font-medium">{o.customer_name}</p>
-                <p className="text-xs text-muted-foreground">
-                  <span className="num">ORX-{o.order_number}</span> · {new Date(o.created_at).toLocaleDateString("ar-DZ")}
-                </p>
-                <TrustRadarBadge trust={trustOf(o)} className="mt-1" />
-              </button>
-              <div className="flex items-center gap-1">
-                <StatusBadge status={o.status} />
-                <ActionsMenu o={o} />
-              </div>
-            </div>
-            <button className="mt-3 block w-full text-start" onClick={() => setOpenId(o.id)}>
-              <p className="truncate text-sm">
-                {o.product_name} × <span className="num">{o.quantity}</span>
+          <div
+            key={o.id}
+            className="flex items-center justify-between gap-3 rounded-2xl border border-[#EEEEEE] bg-card px-4 py-3 shadow-card"
+          >
+            {/* Right: Customer Full Name (Clicking opens details drawer) */}
+            <button
+              type="button"
+              onClick={() => setOpenId(o.id)}
+              className="min-w-0 flex-1 text-start"
+            >
+              <p className="truncate text-sm font-bold text-[#111111]">{o.customer_name}</p>
+              <p className="text-[11px] text-muted-foreground num">
+                ORX-{o.order_number} · {formatDZD(o.total, language)}
               </p>
-              <div className="mt-1 flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {o.commune}، {o.wilaya_name}
-                </span>
-                <span className="font-medium num">{formatDZD(o.total, language)}</span>
-              </div>
             </button>
-            {memberEmail(o.assigned_member_id) && (
-              <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                <UserCheck className="size-3" /> <span dir="ltr">{memberEmail(o.assigned_member_id)}</span>
-              </p>
-            )}
-            {o.call_attempts > 0 && (
-              <p className="mt-2 text-xs text-brand">
-                <span className="num">{o.call_attempts}</span> {t("محاولات اتصال")}
-              </p>
-            )}
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <Button asChild size="sm" variant="default">
-                <a href={`tel:${o.phone}`}>
-                  <Phone /> {t("اتصال")}
-                </a>
-              </Button>
-              <Button asChild size="sm" variant="success">
-                <a href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))} target="_blank" rel="noreferrer">
-                  <MessageCircle /> {t("واتساب")}
-                </a>
-              </Button>
+
+            {/* Left: Status badge + Quick Actions (Call, WhatsApp, Menu) */}
+            <div className="flex shrink-0 items-center gap-1.5">
+              <StatusBadge status={o.status} />
+              <a
+                href={`tel:${o.phone}`}
+                className="flex size-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 transition-colors hover:bg-emerald-100"
+                title={t("اتصال")}
+              >
+                <Phone className="size-4" />
+              </a>
+              <a
+                href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))}
+                target="_blank"
+                rel="noreferrer"
+                className="flex size-8 items-center justify-center rounded-full bg-green-50 text-green-600 transition-colors hover:bg-green-100"
+                title={t("واتساب")}
+              >
+                <MessageCircle className="size-4" />
+              </a>
+              <ActionsMenu o={o} />
             </div>
           </div>
         ))}
