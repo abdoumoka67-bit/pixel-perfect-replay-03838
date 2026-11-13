@@ -8,7 +8,55 @@ export const STOREFRONT_LANGUAGES = ["ar", "fr", "en"] as const;
 export type StorefrontLanguage = (typeof STOREFRONT_LANGUAGES)[number];
 export const STOREFRONT_LANGUAGE_DEFAULT: StorefrontLanguage = "en";
 
-export const STOREFRONT_FONTS = ["Tajawal", "Cairo", "Almarai", "Readex Pro", "Outfit", "Plus Jakarta Sans"] as const;
+export const ARABIC_FONTS = [
+  { id: "tajawal", name: "Tajawal", family: "'Tajawal', sans-serif" },
+  { id: "cairo", name: "Cairo", family: "'Cairo', sans-serif" },
+  { id: "almarai", name: "Almarai", family: "'Almarai', sans-serif" },
+  { id: "readex", name: "Readex Pro", family: "'Readex Pro', sans-serif" },
+  { id: "alexandria", name: "Alexandria", family: "'Alexandria', sans-serif" },
+  { id: "changa", name: "Changa", family: "'Changa', sans-serif" },
+  { id: "noto-arabic", name: "Noto Sans Arabic", family: "'Noto Sans Arabic', sans-serif" },
+  { id: "rubik", name: "Rubik", family: "'Rubik', sans-serif" },
+  { id: "ibm-arabic", name: "IBM Plex Sans Arabic", family: "'IBM Plex Sans Arabic', sans-serif" },
+  { id: "amiri", name: "Amiri", family: "'Amiri', serif" },
+] as const;
+
+export const LATIN_FONTS = [
+  { id: "inter", name: "Inter", family: "'Inter', sans-serif" },
+  { id: "jakarta", name: "Plus Jakarta Sans", family: "'Plus Jakarta Sans', sans-serif" },
+  { id: "outfit", name: "Outfit", family: "'Outfit', sans-serif" },
+  { id: "poppins", name: "Poppins", family: "'Poppins', sans-serif" },
+  { id: "montserrat", name: "Montserrat", family: "'Montserrat', sans-serif" },
+  { id: "space-grotesk", name: "Space Grotesk", family: "'Space Grotesk', sans-serif" },
+  { id: "syne", name: "Syne", family: "'Syne', sans-serif" },
+  { id: "playfair", name: "Playfair Display", family: "'Playfair Display', serif" },
+  { id: "dm-sans", name: "DM Sans", family: "'DM Sans', sans-serif" },
+  { id: "manrope", name: "Manrope", family: "'Manrope', sans-serif" },
+] as const;
+
+/** Every font a storefront may store in `font_family` (Arabic first, then Latin). */
+export const STOREFRONT_FONTS = [
+  "Tajawal",
+  "Cairo",
+  "Almarai",
+  "Readex Pro",
+  "Alexandria",
+  "Changa",
+  "Noto Sans Arabic",
+  "Rubik",
+  "IBM Plex Sans Arabic",
+  "Amiri",
+  "Inter",
+  "Plus Jakarta Sans",
+  "Outfit",
+  "Poppins",
+  "Montserrat",
+  "Space Grotesk",
+  "Syne",
+  "Playfair Display",
+  "DM Sans",
+  "Manrope",
+] as const;
 export const HERO_TITLE_SIZES = ["sm", "base", "lg", "xl", "2xl"] as const;
 export const ELEMENT_ALIGNMENTS = ["start", "center", "end"] as const;
 export const BUTTON_SIZES = ["sm", "md", "lg"] as const;

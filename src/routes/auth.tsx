@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
@@ -57,19 +57,17 @@ function AuthPage() {
   useDocumentLanguage(language);
   useAccountTheme();
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode ?? "signin");
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode === "signup" ? "signup" : "signin");
   const [email, setEmail] = useState(initialEmail ?? "");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  // Which code the user is entering: account confirmation or password reset.
-  const [step, setStep] = useState<null | "confirm" | "reset">(null);
+  // The user is entering the account-confirmation code.
+  const [step, setStep] = useState<null | "confirm">(null);
   const [code, setCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [cooldown, setCooldown] = useState(0);
   // Render the Google button with the page from the first paint so the form
   // never shifts, then hide it only if Supabase explicitly reports Google is off.
   const [googleEnabled, setGoogleEnabled] = useState(true);
-  const resetting = useRef(false);
 
   useEffect(() => {
     // Supabase puts the session in the URL (access_token) or hands back a code,
@@ -150,10 +148,9 @@ function AuthPage() {
     return () => clearTimeout(t);
   }, [cooldown]);
 
-  function openCodeStep(kind: "confirm" | "reset") {
+  function openCodeStep() {
     setCode("");
-    setNewPassword("");
-    setStep(kind);
+    setStep("confirm");
     setCooldown(RESEND_SECONDS);
   }
 
@@ -177,7 +174,7 @@ function AuthPage() {
         const { error: resendError } = await supabase.auth.resend({ type: "signup", email: normalizedEmail });
         if (resendError) throw resendError;
         toast.info(t("auth.ok.unconfirmed"));
-        openCodeStep("confirm");
+        openCodeStep();
         return;
       }
       throw error;
@@ -212,14 +209,8 @@ function AuthPage() {
         } else if (data.user?.identities?.length === 0) {
           setMode("signin");
           await signInWithEmail();
-        } else if (data.user) openCodeStep("confirm");
+        } else if (data.user) openCodeStep();
         else throw new Error("Sign-up did not return a user.");
-      } else {
-        const normalizedEmail = email.trim();
-        setEmail(normalizedEmail);
-        const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail);
-        if (error) throw error;
-        openCodeStep("reset");
       }
     } catch (err) {
       showError(err);
@@ -235,39 +226,23 @@ function AuthPage() {
       toast.error(t("auth.err.codeEmail"));
       return;
     }
-    if (step === "reset" && newPassword.length < 8) { toast.error(t("auth.err.password")); return; }
     setBusy(true);
     try {
-      if (step === "confirm") {
-        const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
-        if (error) throw error;
-        toast.success(t("auth.ok.confirmed"));
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+      if (error) throw error;
+      toast.success(t("auth.ok.confirmed"));
 
-        // Check the fresh session directly: a registered account goes straight to
-        // the dashboard, while a brand-new account continues to store setup.
-        const { data: storeAccess, error: accessError } = await supabase.rpc("my_store_access");
-        if (accessError) throw accessError;
-        if (storeAccess && storeAccess.length > 0) {
-          await qc.invalidateQueries({ queryKey: ["my-store"] });
-          await navigate({ to: "/dashboard", replace: true });
-        } else {
-          await navigate({ to: "/onboarding", replace: true });
-        }
-        return;
-      } else {
-        resetting.current = true;
-        const { error } = await supabase.auth.verifyOtp({ email, token, type: "recovery" });
-        if (error) throw error;
-        const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
-        if (updateError) throw updateError;
-        resetting.current = false;
-        toast.success(t("auth.ok.passwordUpdated"));
+      // Check the fresh session directly: a registered account goes straight to
+      // the dashboard, while a brand-new account continues to store setup.
+      const { data: storeAccess, error: accessError } = await supabase.rpc("my_store_access");
+      if (accessError) throw accessError;
+      if (storeAccess && storeAccess.length > 0) {
         await qc.invalidateQueries({ queryKey: ["my-store"] });
         await navigate({ to: "/dashboard", replace: true });
-        return;
+      } else {
+        await navigate({ to: "/onboarding", replace: true });
       }
     } catch (err) {
-      resetting.current = false;
       showError(err);
     } finally {
       setBusy(false);
@@ -278,10 +253,7 @@ function AuthPage() {
     if (cooldown > 0) return;
     setBusy(true);
     try {
-      const { error } =
-        step === "confirm"
-          ? await supabase.auth.resend({ type: "signup", email })
-          : await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.resend({ type: "signup", email });
       if (error) throw error;
       toast.success(t("auth.ok.resent"));
       setCooldown(RESEND_SECONDS);
@@ -336,9 +308,7 @@ function AuthPage() {
             <div className="flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand">
               <MailCheck className="size-7" />
             </div>
-            <h1 className="mt-5 text-2xl font-medium">
-              {step === "confirm" ? t("auth.code.titleConfirm") : t("auth.code.titleReset")}
-            </h1>
+            <h1 className="mt-5 text-2xl font-medium">{t("auth.code.titleConfirm")}</h1>
             <p className="mt-2 text-muted-foreground">
               {t("auth.code.sentEmail")} <span dir="ltr" className="font-medium text-foreground">{email}</span>. {t("auth.code.spam")}
             </p>
@@ -359,15 +329,9 @@ function AuthPage() {
                   className="h-14 text-center text-2xl tracking-[0.5em]"
                 />
               </div>
-              {step === "reset" && (
-                <div className="space-y-1.5">
-                  <Label htmlFor="new-password">{t("auth.code.newPassword")}</Label>
-                  <Input id="new-password" type="password" dir="ltr" required minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="h-11" />
-                </div>
-              )}
               <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
                 {busy && <Loader2 className="animate-spin" />}
-                {step === "reset" ? t("auth.code.savePassword") : t("auth.code.confirm")}
+                {t("auth.code.confirm")}
               </Button>
             </form>
 
@@ -387,18 +351,14 @@ function AuthPage() {
           </div>
         ) : (
           <>
-            {mode !== "signup" && (
+            {mode === "signin" && (
               <div>
-                <h1 className="text-3xl font-medium">
-                  {mode === "signin" ? t("auth.title.signin") : t("auth.title.forgot")}
-                </h1>
-                <p className="mt-2 text-muted-foreground">
-                  {mode === "signin" ? t("auth.sub.signin") : t("auth.sub.forgot")}
-                </p>
+                <h1 className="text-3xl font-medium">{t("auth.title.signin")}</h1>
+                <p className="mt-2 text-muted-foreground">{t("auth.sub.signin")}</p>
               </div>
             )}
 
-            {mode !== "forgot" && googleEnabled && (
+            {googleEnabled && (
               <>
                 <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
                   <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
@@ -415,31 +375,18 @@ function AuthPage() {
               </>
             )}
 
-            <form onSubmit={submit} className={mode !== "forgot" && googleEnabled ? "mt-6 space-y-4" : "mt-8 space-y-4"}>
+            <form onSubmit={submit} className={googleEnabled ? "mt-6 space-y-4" : "mt-8 space-y-4"}>
               <div className="space-y-1.5">
                 <Label htmlFor="email">{t("auth.email")}</Label>
                 <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
               </div>
-              {mode !== "forgot" && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">{t("auth.password")}</Label>
-                    {mode === "signin" && (
-                      <button type="button" className="text-xs text-brand hover:underline" onClick={() => setMode("forgot")}>
-                        {t("auth.forgotLink")}
-                      </button>
-                    )}
-                  </div>
-                  <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} autoFocus={Boolean(initialEmail)} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
-                </div>
-              )}
+              <div className="space-y-1.5">
+                <Label htmlFor="password">{t("auth.password")}</Label>
+                <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} autoFocus={Boolean(initialEmail)} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
+              </div>
               <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
                 {busy && <Loader2 className="animate-spin" />}
-                {mode === "forgot"
-                  ? t("auth.sendResetCode")
-                  : mode === "signin"
-                    ? t("auth.signin")
-                    : t("auth.signup")}
+                {mode === "signin" ? t("auth.signin") : t("auth.signup")}
               </Button>
             </form>
 
@@ -450,11 +397,6 @@ function AuthPage() {
                 <>{t("auth.haveAccount")} <button className="font-medium text-brand hover:underline" onClick={() => setMode("signin")}>{t("auth.signinLink")}</button></>
               )}
             </p>
-            {mode === "forgot" && (
-              <button type="button" className="mt-4 w-full text-center text-sm text-brand hover:underline" onClick={() => setMode("signin")}>
-                {t("auth.backToSignin")}
-              </button>
-            )}
           </>
         )}
       </div>

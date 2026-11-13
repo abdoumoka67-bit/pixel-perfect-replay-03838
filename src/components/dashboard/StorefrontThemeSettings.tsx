@@ -10,8 +10,10 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { friendlyError } from "@/lib/commerce";
 import {
+  ARABIC_FONTS,
   DEFAULT_FAQ_BY_LANGUAGE,
   HERO_PRESETS,
+  LATIN_FONTS,
   PRESET_KEYS,
   STOREFRONT_DEFAULTS,
   STOREFRONT_LANGUAGE_DEFAULT,
@@ -624,9 +626,16 @@ export function StorefrontThemeSettings({
                 <div className="space-y-1.5">
                   <Label htmlFor="font-family">{t("نوع الخط")}</Label>
                   <select id="font-family" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" value={fontFamily} disabled={readOnly} onChange={(event) => setFontFamily(event.target.value)}>
-                    {["Tajawal", "Cairo", "Almarai", "Readex Pro", "Outfit", "Plus Jakarta Sans"].map((font) => (
-                      <option key={font} value={font} style={{ fontFamily: font }}>{font}</option>
-                    ))}
+                    <optgroup label={t("العربية")}>
+                      {ARABIC_FONTS.map((font) => (
+                        <option key={font.id} value={font.name} style={{ fontFamily: font.family }}>{font.name}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label={t("اللاتينية")}>
+                      {LATIN_FONTS.map((font) => (
+                        <option key={font.id} value={font.name} style={{ fontFamily: font.family }}>{font.name}</option>
+                      ))}
+                    </optgroup>
                   </select>
                 </div>
                 <div className="space-y-1.5">
