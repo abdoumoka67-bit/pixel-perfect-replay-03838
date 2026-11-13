@@ -147,12 +147,12 @@ function AnalyticsPro() {
                       </p>
                       <p className="mt-1.5 flex items-center justify-between gap-3 text-muted-foreground">
                         <span>{t("الطلبات")}:</span>
-                        <span className="font-semibold text-foreground num">{point.orders}</span>
+                        <span className="font-bold text-foreground num">{point.orders}</span>
                       </p>
                       {/* Sales always render, even when the day totals zero. */}
                       <p className="mt-1 flex items-center justify-between gap-3 text-muted-foreground">
                         <span>{t("المبيعات")}:</span>
-                        <span className="font-semibold text-[#10B981] num">
+                        <span className="font-bold text-[#10B981] num">
                           {formatDZD(Number(point.revenue ?? 0), language)}
                         </span>
                       </p>

@@ -249,6 +249,8 @@
 
   --color-table-header: var(--table-header);
   --color-notify: var(--notify);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-orange-soft: var(--accent-orange-soft);
   --color-primary-hover: var(--primary-hover);
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
@@ -355,6 +357,10 @@ html[lang="en"] {
 
   --notify: #EF4444;
 
+  /* Accent — soft orange for icon circles and small badges */
+  --accent-orange: #EA580C;
+  --accent-orange-soft: #FDF0E7;
+
   /* Charts — remapped to the Polaris palette */
   --chart-1: #EA580C;
   --chart-2: #202223;
@@ -420,6 +426,8 @@ html[lang="en"] {
   --brand-foreground: #0B0C0D;
   --brand-soft: rgba(16, 185, 129, 0.14);
   --notify: #EF4444;
+  --accent-orange: #FB923C;
+  --accent-orange-soft: rgba(251, 146, 60, 0.16);
   --chart-1: #10B981;
   --chart-2: #E3E5E8;
   --chart-3: #22C55E;
@@ -573,6 +581,14 @@ html[lang="en"] {
 
 @utility pb-safe {
   padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ---------- A6 thermal shipping labels (100x150mm, pure B/W) ---------- */

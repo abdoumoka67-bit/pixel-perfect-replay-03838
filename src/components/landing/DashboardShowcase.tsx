@@ -168,7 +168,7 @@ function OrdersScreen({ mobile, baseStage }: { mobile: boolean; baseStage: Order
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex min-w-0 items-start gap-2.5">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-mono text-[10px] font-semibold text-primary">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-mono text-[10px] font-bold text-primary">
                   {order.id.slice(1)}
                 </span>
                 <div className="min-w-0">
@@ -184,7 +184,7 @@ function OrdersScreen({ mobile, baseStage }: { mobile: boolean; baseStage: Order
                 </div>
               </div>
               <div className="shrink-0 text-end">
-                <div className="text-[10px] font-semibold text-foreground">{order.amount}</div>
+                <div className="text-[10px] font-bold text-foreground">{order.amount}</div>
                 <span
                   className={`showcase-dash-order-status mt-1 ms-auto flex w-fit items-center gap-1 whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[8px] font-medium sm:px-2 sm:text-[9px] ${meta.tone}`}
                 >
@@ -247,14 +247,14 @@ function StatisticsScreen({ mobile }: { mobile: boolean }) {
     <div className={`grid gap-2 ${mobile ? "grid-cols-1" : "grid-cols-2"}`}>
       <div className="rounded-xl border border-border/70 bg-card p-3">
         <div className="text-[10px] text-muted-foreground">Revenu du jour</div>
-        <div className="showcase-dash-stat-value mt-1 text-base font-semibold text-foreground sm:text-xl">
+        <div className="showcase-dash-stat-value mt-1 text-base font-bold text-foreground sm:text-xl">
           84 500 DA
         </div>
         <div className="mt-1 text-[9px] font-medium text-emerald-600">+12,8 % cette semaine</div>
       </div>
       <div className="rounded-xl border border-border/70 bg-card p-3">
         <div className="text-[10px] text-muted-foreground">Taux de confirmation</div>
-        <div className="showcase-dash-stat-value mt-1 text-base font-semibold text-foreground sm:text-xl">
+        <div className="showcase-dash-stat-value mt-1 text-base font-bold text-foreground sm:text-xl">
           88 %
         </div>
         <div className="mt-1 flex h-1.5 overflow-hidden rounded-full bg-muted">
@@ -305,7 +305,7 @@ function DeliveryScreen({
               <Truck className="size-4 text-foreground" aria-hidden />
             </span>
             <div className="min-w-0">
-              <div className="truncate text-[11px] font-semibold text-foreground">
+              <div className="truncate text-[11px] font-bold text-foreground">
                 {carrier.name}
               </div>
               <div className="truncate text-[9px] text-muted-foreground">{carrier.detail}</div>
@@ -481,7 +481,7 @@ export function DashboardShowcase() {
                 <div className="showcase-dash-grid grid min-h-[380px] grid-cols-1 sm:min-h-[440px] md:min-h-[530px] md:grid-cols-[210px_minmax(0,1fr)]">
                   <aside className="showcase-dash-sidebar hidden flex-col bg-[#111113] px-3 py-4 text-white md:flex">
                     <div className="mb-5 h-6 px-2" aria-hidden />
-                    <div className="mb-2 px-2 text-[8px] font-semibold tracking-[0.16em] text-zinc-500">
+                    <div className="mb-2 px-2 text-[8px] font-bold tracking-[0.16em] text-zinc-500">
                       MENU PRINCIPAL
                     </div>
                     <nav className="space-y-1">
@@ -510,7 +510,7 @@ export function DashboardShowcase() {
                       })}
                     </nav>
 
-                    <div className="mb-2 mt-6 px-2 text-[8px] font-semibold tracking-[0.16em] text-zinc-500">
+                    <div className="mb-2 mt-6 px-2 text-[8px] font-bold tracking-[0.16em] text-zinc-500">
                       PARAMÈTRES
                     </div>
                     <nav className="space-y-1">
@@ -532,14 +532,14 @@ export function DashboardShowcase() {
 
                     <div className="mt-auto rounded-xl border border-white/10 bg-white/5 p-2.5">
                       <div className="text-[9px] text-zinc-400">Revenu du jour</div>
-                      <div className="mt-1 text-xs font-semibold">84 500 DA</div>
+                      <div className="mt-1 text-xs font-bold">84 500 DA</div>
                     </div>
                   </aside>
 
                   <main className="showcase-dash-main min-w-0 bg-[#F7F7F8] p-3 sm:p-5" dir="ltr">
                     <div className="mb-4 flex items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <h3 className="showcase-dash-title truncate text-sm font-semibold text-[#202124] sm:text-base">
+                        <h3 className="showcase-dash-title truncate text-sm font-bold text-[#202124] sm:text-base">
                           {tab === "orders"
                             ? "Commandes récentes"
                             : tab === "stats"
@@ -605,7 +605,7 @@ export function DashboardShowcase() {
               <div className="showcase-dash-phone absolute right-2 top-1/2 z-20 w-[min(34vw,150px)] -translate-y-1/2 left-auto sm:right-4 sm:w-[190px] md:right-5 md:w-[220px] lg:right-6 lg:w-[240px] xl:w-[260px]">
                 <div className="relative aspect-[270/590] w-full rounded-[30px] border-[5px] border-[#1A1A1E] bg-[#1A1A1E] p-[3px] shadow-[0_28px_70px_-24px_rgba(0,0,0,0.65)] ring-1 ring-white/15 sm:rounded-[36px] sm:border-[6px] sm:p-1 md:rounded-[42px] md:border-[7px] md:p-[5px]">
                   <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] bg-[#F7F7F8] sm:rounded-[30px] md:rounded-[34px]">
-                    <div className="relative flex h-9 shrink-0 items-center justify-between px-3 pt-1 font-mono text-[10px] font-semibold text-[#171719] sm:h-12 sm:px-4 md:h-[58px] md:px-5">
+                    <div className="relative flex h-9 shrink-0 items-center justify-between px-3 pt-1 font-mono text-[10px] font-bold text-[#171719] sm:h-12 sm:px-4 md:h-[58px] md:px-5">
                       <span>9:41</span>
                       <div className="absolute left-1/2 top-2 h-4 w-[50px] -translate-x-1/2 rounded-full bg-black sm:top-[9px] sm:h-5 sm:w-[68px] md:h-[25px] md:w-[88px]" />
                       <span className="flex items-center gap-1.5">
@@ -618,7 +618,7 @@ export function DashboardShowcase() {
 
                     <div className="flex items-center justify-between border-b border-[#E5E5E8] px-3 pb-3">
                       <div className="min-w-0">
-                        <div className="truncate text-[13px] font-semibold text-[#202124]">
+                        <div className="truncate text-[13px] font-bold text-[#202124]">
                           {tab === "orders"
                             ? "Mes commandes"
                             : tab === "stats"
@@ -648,7 +648,7 @@ export function DashboardShowcase() {
                         <div
                           key={label}
                           className={`flex flex-col items-center justify-center gap-0.5 text-[8px] ${
-                            active ? "font-semibold text-[#171719]" : "text-[#96979A]"
+                            active ? "font-bold text-[#171719]" : "text-[#96979A]"
                           }`}
                         >
                           <Icon className="size-3.5" aria-hidden />

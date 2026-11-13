@@ -79,13 +79,13 @@ function Overview() {
         }
       />
 
-      <div className="grid grid-cols-5 gap-2 sm:gap-2.5 md:gap-3">
+      <div className="no-scrollbar flex snap-x gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-5 sm:gap-2.5 sm:overflow-visible md:gap-3">
         {CARDS.map((c) => {
           const row = byStatus(c.status);
           return (
             <div
               key={c.status}
-              className="flex flex-col justify-between rounded-xl border border-border/50 bg-card p-2.5 shadow-xs transition-all hover:border-border sm:p-3"
+              className="flex min-w-[125px] shrink-0 snap-start flex-col justify-between rounded-xl border border-border/50 bg-card p-2.5 shadow-xs transition-all hover:border-border hover:shadow-md sm:min-w-0 sm:flex-1 sm:p-3"
             >
               <div className="flex items-center justify-between gap-1.5">
                 <p className="min-w-0 truncate text-xs font-medium text-muted-foreground">{t(c.label)}</p>

@@ -131,7 +131,7 @@ export function PixelAttribution() {
                   #00001042
                 </p>
                 <p className="mt-0.5 truncate text-sm font-medium">{t("landing.pixels.product")}</p>
-                <p className="mt-2 text-lg font-semibold tracking-tight">{t("landing.pixels.amount")}</p>
+                <p className="mt-2 text-lg font-bold tracking-tight">{t("landing.pixels.amount")}</p>
               </div>
               <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
                 <Shirt className="size-6 text-neutral-500 dark:text-neutral-300" strokeWidth={1.6} aria-hidden />

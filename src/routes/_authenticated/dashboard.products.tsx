@@ -115,22 +115,27 @@ function ProductsPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {products.data?.map((p) => (
-          <div key={p.id} className="overflow-hidden rounded-2xl bg-card shadow-card">
-            <div className="relative aspect-[4/3] bg-muted">
+          <div key={p.id} className="flex flex-row items-center gap-3 rounded-2xl bg-card p-3 shadow-card sm:flex-col sm:items-stretch sm:gap-0 sm:overflow-hidden sm:p-0">
+            <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-muted sm:h-auto sm:w-full sm:rounded-none sm:aspect-[4/3]">
               {p.images[0] && urls[p.images[0]] ? (
                 <img src={urls[p.images[0]]} alt={p.name} className="size-full object-cover" loading="lazy" />
               ) : (
                 <div className="flex size-full items-center justify-center text-muted-foreground">
-                  <Package className="size-10" />
+                  <Package className="size-6 sm:size-10" />
                 </div>
               )}
-              <div className="absolute start-3 top-3 flex gap-1.5">
+              <div className="absolute start-3 top-3 hidden gap-1.5 sm:flex">
                 {p.is_active ? <Badge variant="success">{t("معروض")}</Badge> : <Badge variant="neutral">{t("مخفي")}</Badge>}
                 {p.stock === 0 && <Badge variant="danger">{t("نفدت الكمية")}</Badge>}
               </div>
             </div>
-            <div className="p-4">
-              <p className="truncate font-medium">{p.name}</p>
+            <div className="min-w-0 flex-1 sm:p-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate font-medium">{p.name}</p>
+                <span className="shrink-0 sm:hidden">
+                  {p.is_active ? <Badge variant="success">{t("معروض")}</Badge> : <Badge variant="neutral">{t("مخفي")}</Badge>}
+                </span>
+              </div>
               {(p.category || p.stock != null) && (
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {p.category}
@@ -148,17 +153,17 @@ function ProductsPage() {
                   <span className="text-sm text-muted-foreground line-through num">{formatDZD(p.compare_at_price, language)}</span>
                 ) : null}
               </div>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-2 flex gap-1.5 sm:mt-4 sm:gap-2">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex-1"
+                  className="h-8 flex-1 px-2 text-xs sm:px-3"
                   onClick={() => {
                     navigator.clipboard.writeText(landingUrl(p));
                     toast.success(t("تم نسخ رابط صفحة الهبوط"));
                   }}
                 >
-                  <Copy /> {t("نسخ الرابط")}
+                  <Copy className="size-3.5" /> <span className="hidden sm:inline">{t("نسخ الرابط")}</span>
                 </Button>
                 <Button size="icon" variant="outline" className="size-8" asChild>
                   <a href={`/m/${store?.slug}/p/${p.slug}`} target="_blank" rel="noreferrer" aria-label={t("فتح الصفحة")}>

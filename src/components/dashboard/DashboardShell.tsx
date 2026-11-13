@@ -155,7 +155,7 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
         <span>{t(item.label)}</span>
         <span className="ms-auto flex items-center gap-2">
           {item.to === "/dashboard/orders" && newOrders > 0 && (
-            <span className="flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-medium text-primary-foreground num">
+            <span className="flex min-w-5 items-center justify-center rounded-full bg-accent-orange px-1.5 text-[10px] font-medium text-primary-foreground num">
               {newOrders}
             </span>
           )}

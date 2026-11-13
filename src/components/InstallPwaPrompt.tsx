@@ -88,7 +88,7 @@ export function InstallPwaPrompt() {
               Ox
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-foreground">{t("تطبيق oranix")}</p>
+              <p className="text-xs font-bold text-foreground">{t("تطبيق oranix")}</p>
               <p className="truncate text-[11px] text-muted-foreground">
                 {t("ثبّت التطبيق على شاشتك للوصول السريع")}
               </p>
