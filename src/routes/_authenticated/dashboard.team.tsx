@@ -167,7 +167,7 @@ function TeamPro() {
             </li>
             {members.data?.map((m) => (
               <li key={m.id} className="flex flex-wrap items-center gap-3 p-4">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange">
                   <Users className="size-4" />
                 </span>
                 <div className="min-w-0 flex-1">

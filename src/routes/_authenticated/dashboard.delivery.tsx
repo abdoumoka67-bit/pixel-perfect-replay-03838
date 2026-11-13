@@ -470,7 +470,7 @@ function CarrierHub({
   return (
     <section className="mb-10">
       <div className="mb-3 flex items-center gap-2">
-        <span className="flex size-9 items-center justify-center rounded-xl bg-brand-soft text-brand">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-accent-orange-soft text-accent-orange">
           <Truck className="size-5" strokeWidth={1.6} />
         </span>
         <div className="flex-1">

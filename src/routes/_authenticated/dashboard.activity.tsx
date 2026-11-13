@@ -106,7 +106,7 @@ function ActivityPro() {
               const who = l.actor_email ?? t("النظام");
               return (
                 <li key={l.id} className="flex items-start gap-3 p-4">
-                  <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+                  <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange">
                     <History className="size-4" strokeWidth={1.6} />
                   </span>
                   <div className="min-w-0 flex-1">

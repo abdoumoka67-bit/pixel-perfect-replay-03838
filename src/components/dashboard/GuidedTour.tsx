@@ -135,7 +135,7 @@ export function GuidedTour() {
       )}
       <div className="absolute z-20 w-[min(360px,calc(100vw-32px))] rounded-2xl border border-border bg-white p-4 shadow-float" style={tooltipStyle}>
         <div className="mb-3 flex items-center justify-between">
-          <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-2 py-1 text-[11px] font-medium text-brand">
+          <span className="inline-flex items-center gap-2 rounded-full bg-accent-orange-soft px-2 py-1 text-[11px] font-medium text-accent-orange">
             <Sparkles className="size-3.5" /> {t("{n} من 5", { n: stepIndex + 1 })}
           </span>
           <button type="button" onClick={closeTour} className="rounded-full p-1.5 text-muted-foreground hover:bg-background" aria-label={t("إغلاق")}>

@@ -102,7 +102,7 @@ function ProductsPage() {
 
       {products.data?.length === 0 && (
         <div className="rounded-2xl border-2 border-dashed bg-card p-12 text-center">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-brand-soft text-brand">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-accent-orange-soft text-accent-orange">
             <Package className="size-7" />
           </div>
           <h2 className="mt-4 text-lg font-medium">{t("أضف منتجك الأول")}</h2>

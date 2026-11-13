@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/")({
 const CARDS: { status: OrderStatus; label: string; icon: typeof Clock; tone: string }[] = [
   { status: "new", label: "طلبات جديدة", icon: Sparkles, tone: "bg-info-soft text-info" },
   { status: "confirmed", label: "مؤكدة", icon: CheckCircle2, tone: "bg-warning-soft text-warning" },
-  { status: "shipping", label: "قيد التوصيل", icon: Truck, tone: "bg-brand-soft text-brand" },
+  { status: "shipping", label: "قيد التوصيل", icon: Truck, tone: "bg-accent-orange-soft text-accent-orange" },
   { status: "delivered", label: "تم التوصيل", icon: PackageCheck, tone: "bg-success-soft text-success" },
   { status: "cancelled", label: "ملغاة", icon: XCircle, tone: "bg-danger-soft text-danger" },
 ];

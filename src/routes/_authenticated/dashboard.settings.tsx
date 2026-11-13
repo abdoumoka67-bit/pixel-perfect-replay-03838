@@ -214,7 +214,7 @@ function SettingsPage() {
       <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange">
               <Palette className="size-5" strokeWidth={1.7} />
             </span>
             <div>
@@ -251,7 +251,7 @@ function PixelCard(props: {
   return (
     <div className="space-y-4 rounded-2xl bg-card p-6 shadow-card">
       <div className="flex items-start gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange">
           <Target className="size-5" strokeWidth={1.6} />
         </span>
         <div className="min-w-0 flex-1">
@@ -377,7 +377,7 @@ function CustomDomainSection({
   return (
     <div className="rounded-2xl bg-card p-6 shadow-card">
       <div className="flex items-start gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange">
           <Globe className="size-5" strokeWidth={1.6} />
         </span>
         <div className="min-w-0 flex-1">

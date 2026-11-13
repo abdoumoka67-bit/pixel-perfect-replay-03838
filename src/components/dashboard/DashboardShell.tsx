@@ -99,7 +99,7 @@ function PlanBadge({ plan }: { plan: "Start" | "Pro" }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
-        isPro ? "bg-brand-soft text-brand" : "border border-current/30 text-muted-foreground",
+        isPro ? "bg-accent-orange-soft text-accent-orange" : "border border-current/30 text-muted-foreground",
       )}
     >
       {plan}

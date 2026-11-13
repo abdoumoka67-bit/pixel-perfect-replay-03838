@@ -305,7 +305,7 @@ function AuthPage() {
       <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
         {step ? (
           <div>
-            <div className="flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand">
+            <div className="flex size-14 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange">
               <MailCheck className="size-7" />
             </div>
             <h1 className="mt-5 text-2xl font-medium">{t("auth.code.titleConfirm")}</h1>

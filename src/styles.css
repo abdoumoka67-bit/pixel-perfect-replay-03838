@@ -451,46 +451,62 @@ html[lang="en"] {
 }
 
 /*
- * Account scope — forest green identity for /auth, /reset-password,
+ * Account scope — ink & orange identity for /auth, /reset-password,
  * /onboarding and /dashboard. The public landing page and the storefronts
  * keep the neutral palette from :root.
  *
- * Four tones, all derived from #04342C:
- *   base  #04342C   hover #0A4F42   focus ring 25%   soft wash #E6F0ED
+ * Primary #111111 pill, accent #EA580C, background #F5F5F5,
+ * white cards with #EEEEEE borders, focus ring 25% ink.
  */
 .theme-forest {
-  --primary: #04342C;
+  --background: #F5F5F5;
+  --sand: #F5F5F5;
+  --card: #FFFFFF;
+  --border: #EEEEEE;
+  --input: #EEEEEE;
+
+  --primary: #111111;
   --primary-foreground: #FFFFFF;
-  --primary-hover: #0A4F42;
+  --primary-hover: #000000;
 
-  --solid: #04342C;
-  --solid-hover: #0A4F42;
-  --solid-shadow: 0 1px 2px rgba(4, 52, 44, 0.18), 0 4px 12px -4px rgba(4, 52, 44, 0.45);
+  --solid: #111111;
+  --solid-hover: #000000;
+  --solid-shadow: 0 1px 2px rgba(17, 17, 17, 0.18), 0 4px 12px -4px rgba(17, 17, 17, 0.35);
 
-  --ring: rgba(4, 52, 44, 0.25);
+  --ring: rgba(17, 17, 17, 0.25);
 
-  --brand: #04342C;
-  --brand-strong: #02231D;
+  --brand: #111111;
+  --brand-strong: #000000;
   --brand-foreground: #FFFFFF;
-  --brand-soft: #E6F0ED;
+  --brand-soft: #F5F5F5;
+
+  --accent-orange: #EA580C;
+  --accent-orange-soft: #FDF0E7;
 }
 
 .dark.theme-forest,
 .dark .theme-forest {
-  --primary: #34D399;
-  --primary-foreground: #04342C;
-  --primary-hover: #6EE7B7;
+  --background: #0B0C0D;
+  --card: #141517;
+  --border: #262626;
 
-  --solid: #34D399;
-  --solid-hover: #6EE7B7;
+  --primary: #F5F5F5;
+  --primary-foreground: #111111;
+  --primary-hover: #FFFFFF;
+
+  --solid: #F5F5F5;
+  --solid-hover: #FFFFFF;
   --solid-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 
-  --ring: rgba(52, 211, 153, 0.35);
+  --ring: rgba(245, 245, 245, 0.3);
 
-  --brand: #6EE7B7;
-  --brand-strong: #34D399;
-  --brand-foreground: #04342C;
-  --brand-soft: rgba(52, 211, 153, 0.14);
+  --brand: #F5F5F5;
+  --brand-strong: #FFFFFF;
+  --brand-foreground: #111111;
+  --brand-soft: rgba(245, 245, 245, 0.08);
+
+  --accent-orange: #FB923C;
+  --accent-orange-soft: rgba(251, 146, 60, 0.16);
 }
 
 @layer base {
