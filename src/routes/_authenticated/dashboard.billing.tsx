@@ -65,21 +65,20 @@ function Billing() {
   const settings = useQuery({
     queryKey: ["platform-settings"],
     queryFn: async () => {
-      // Try direct read from platform_settings first
-      const direct = await supabase
+      // 1. Try RPC first
+      const rpcRes = await supabase.rpc("get_platform_payment_info");
+      if (!rpcRes.error && rpcRes.data?.[0]) return rpcRes.data[0];
+
+      // 2. Fallback to direct table query on platform_settings
+      const tableRes = await supabase
         .from("platform_settings")
         .select("ccp_number, ccp_key, ccp_holder, rip")
-        .eq("id", 1)
+        .limit(1)
         .maybeSingle();
 
-      if (direct.data && !direct.error) {
-        return direct.data;
-      }
-
-      // Fallback to RPC if available
-      const rpcRes = await supabase.rpc("get_platform_payment_info");
-      if (rpcRes.error) throw rpcRes.error;
-      return rpcRes.data?.[0] ?? null;
+      if (tableRes.data) return tableRes.data;
+      if (rpcRes.error && tableRes.error) throw rpcRes.error;
+      return null;
     },
   });
   const receipts = useQuery({

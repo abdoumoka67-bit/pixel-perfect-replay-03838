@@ -9,54 +9,17 @@ export type StorefrontLanguage = (typeof STOREFRONT_LANGUAGES)[number];
 export const STOREFRONT_LANGUAGE_DEFAULT: StorefrontLanguage = "en";
 
 export const ARABIC_FONTS = [
-  { id: "tajawal", name: "Tajawal", family: "'Tajawal', sans-serif" },
-  { id: "cairo", name: "Cairo", family: "'Cairo', sans-serif" },
-  { id: "almarai", name: "Almarai", family: "'Almarai', sans-serif" },
-  { id: "readex", name: "Readex Pro", family: "'Readex Pro', sans-serif" },
-  { id: "alexandria", name: "Alexandria", family: "'Alexandria', sans-serif" },
-  { id: "changa", name: "Changa", family: "'Changa', sans-serif" },
-  { id: "noto-arabic", name: "Noto Sans Arabic", family: "'Noto Sans Arabic', sans-serif" },
-  { id: "rubik", name: "Rubik", family: "'Rubik', sans-serif" },
-  { id: "ibm-arabic", name: "IBM Plex Sans Arabic", family: "'IBM Plex Sans Arabic', sans-serif" },
-  { id: "amiri", name: "Amiri", family: "'Amiri', serif" },
+  "Tajawal", "Cairo", "Almarai", "Readex Pro", "Alexandria",
+  "Changa", "Noto Sans Arabic", "Rubik", "IBM Plex Sans Arabic", "Amiri",
 ] as const;
 
 export const LATIN_FONTS = [
-  { id: "inter", name: "Inter", family: "'Inter', sans-serif" },
-  { id: "jakarta", name: "Plus Jakarta Sans", family: "'Plus Jakarta Sans', sans-serif" },
-  { id: "outfit", name: "Outfit", family: "'Outfit', sans-serif" },
-  { id: "poppins", name: "Poppins", family: "'Poppins', sans-serif" },
-  { id: "montserrat", name: "Montserrat", family: "'Montserrat', sans-serif" },
-  { id: "space-grotesk", name: "Space Grotesk", family: "'Space Grotesk', sans-serif" },
-  { id: "syne", name: "Syne", family: "'Syne', sans-serif" },
-  { id: "playfair", name: "Playfair Display", family: "'Playfair Display', serif" },
-  { id: "dm-sans", name: "DM Sans", family: "'DM Sans', sans-serif" },
-  { id: "manrope", name: "Manrope", family: "'Manrope', sans-serif" },
+  "Inter", "Plus Jakarta Sans", "Outfit", "Poppins", "Montserrat",
+  "Space Grotesk", "Syne", "Playfair Display", "DM Sans", "Manrope",
 ] as const;
 
 /** Every font a storefront may store in `font_family` (Arabic first, then Latin). */
-export const STOREFRONT_FONTS = [
-  "Tajawal",
-  "Cairo",
-  "Almarai",
-  "Readex Pro",
-  "Alexandria",
-  "Changa",
-  "Noto Sans Arabic",
-  "Rubik",
-  "IBM Plex Sans Arabic",
-  "Amiri",
-  "Inter",
-  "Plus Jakarta Sans",
-  "Outfit",
-  "Poppins",
-  "Montserrat",
-  "Space Grotesk",
-  "Syne",
-  "Playfair Display",
-  "DM Sans",
-  "Manrope",
-] as const;
+export const STOREFRONT_FONTS = [...ARABIC_FONTS, ...LATIN_FONTS] as const;
 export const HERO_TITLE_SIZES = ["sm", "base", "lg", "xl", "2xl"] as const;
 export const ELEMENT_ALIGNMENTS = ["start", "center", "end"] as const;
 export const BUTTON_SIZES = ["sm", "md", "lg"] as const;
@@ -274,48 +237,26 @@ export const socialLinksSchema = z.object({
   tiktok: z.string().trim().optional().or(z.literal("")),
 });
 
-/** Button radii accepted by the order form config (no `lg`, per the form contract). */
-export const FORM_BUTTON_RADII = ["none", "md", "full"] as const;
-
-/** Field that can be hidden and/or made optional from the order form. */
-export const formFieldSchema = z.object({
-  enabled: z.boolean().default(true),
-  required: z.boolean().default(true),
-});
-
-/** Field that can only be hidden (the value is optional whenever shown). */
-export const formOptionalFieldSchema = z.object({
-  enabled: z.boolean().default(true),
-});
-
-/**
- * Order-form overrides stored inside `storefront_config.form_config`.
- * Colors and texts stay optional so an unset config keeps the storefront theme.
- */
-export const formConfigSchema = z
-  .object({
-    card_bg: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    card_border: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    input_bg: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    button_bg: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    button_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    button_radius: z.enum(FORM_BUTTON_RADII).optional(),
-    button_label: z.string().trim().max(50).optional(),
-    guarantee_text: z.string().trim().max(100).optional(),
-    fields: z
-      .object({
-        full_name: formFieldSchema.default({}),
-        phone: formFieldSchema.default({}),
-        confirm_phone: formOptionalFieldSchema.default({ enabled: false }),
-        backup_phone: formOptionalFieldSchema.default({ enabled: false }),
-        wilaya_commune: formFieldSchema.default({}),
-        address: formOptionalFieldSchema.default({ enabled: true }),
-        delivery_type: formOptionalFieldSchema.default({ enabled: true }),
-        notes: formOptionalFieldSchema.default({ enabled: false }),
-      })
-      .default({}),
-  })
-  .default({});
+export const formConfigSchema = z.object({
+  bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
+  border_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#EEEEEE"),
+  input_focus_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
+  button_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
+  button_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
+  button_text: z.string().trim().max(50).default("تأكيد الطلب الآن"),
+  button_radius: z.enum(["none", "md", "lg", "full"]).default("full"),
+  guarantee_text: z.string().trim().max(100).default("الدفع عند الاستلام · ضمان الفحص قبل الدفع"),
+  fields: z.object({
+    full_name: z.boolean().default(true),
+    phone: z.boolean().default(true),
+    confirm_phone: z.boolean().default(false), // Re-enter phone verification
+    backup_phone: z.boolean().default(false),  // Secondary phone
+    wilaya_commune: z.boolean().default(true),
+    address: z.boolean().default(true),        // Detailed street/neighborhood
+    delivery_type: z.boolean().default(true),   // Home vs Office/Stopdesk
+    notes: z.boolean().default(false),          // Customer notes
+  }).default({}),
+}).default({});
 
 export type FormConfig = z.infer<typeof formConfigSchema>;
 

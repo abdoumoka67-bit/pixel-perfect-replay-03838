@@ -85,7 +85,7 @@ function Overview() {
           return (
             <div
               key={c.status}
-              className="flex min-w-[125px] shrink-0 snap-start flex-col justify-between rounded-xl border border-border/50 bg-card p-2.5 shadow-xs transition-all hover:border-border hover:shadow-md sm:min-w-0 sm:flex-1 sm:p-3"
+              className="flex min-w-[125px] shrink-0 snap-start flex-col justify-between rounded-2xl bg-card p-3 shadow-card transition-all hover:shadow-md sm:min-w-0 sm:flex-1"
             >
               <div className="flex items-center justify-between gap-1.5">
                 <p className="min-w-0 truncate text-xs font-medium text-muted-foreground">{t(c.label)}</p>

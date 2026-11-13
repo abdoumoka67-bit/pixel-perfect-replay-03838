@@ -43,7 +43,7 @@ function ResetPassword() {
   }
 
   return (
-    <div className="theme-forest flex min-h-screen items-center justify-center px-6">
+    <div className="theme-forest flex min-h-screen items-center justify-center bg-background px-6">
       <form onSubmit={submit} className="w-full max-w-sm space-y-5 rounded-2xl bg-card p-8 shadow-card">
         <Logo />
         <h1 className="text-2xl font-medium">New password</h1>

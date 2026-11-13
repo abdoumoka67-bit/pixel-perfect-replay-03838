@@ -74,7 +74,7 @@ function AdminContent({ setLanguage }: { setLanguage: (lang: LanguageCode) => vo
   const language = useUiLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
   return (
-    <div className="theme-forest min-h-screen" dir={dir}>
+    <div className="theme-forest min-h-screen bg-background" dir={dir}>
       <header className="bg-sidebar text-sidebar-foreground">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">

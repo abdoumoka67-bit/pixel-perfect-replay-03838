@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 import { Check, Loader2, Lock, Minus, Plus, ShieldCheck, Truck, Banknote, Home, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,23 +89,25 @@ function ProductLanding() {
   const isRtl = language === "ar";
   const formConfig = store.storefront_config?.form_config;
   const formFields = formConfig?.fields;
-  const showName = formFields?.full_name.enabled !== false;
-  const requireName = formFields?.full_name.required !== false;
-  const showPhone = formFields?.phone.enabled !== false;
-  const requirePhone = formFields?.phone.required !== false;
-  const showLocation = formFields?.wilaya_commune.enabled !== false;
-  const requireLocation = formFields?.wilaya_commune.required !== false;
-  const showAddress = formFields?.address.enabled !== false;
-  const showDelivery = formFields?.delivery_type.enabled !== false;
+  const showName = formFields?.full_name !== false;
+  const showPhone = formFields?.phone !== false;
+  const showLocation = formFields?.wilaya_commune !== false;
+  const showAddress = formFields?.address !== false;
+  const showDelivery = formFields?.delivery_type !== false;
   const formButtonRadius =
     formConfig?.button_radius === "none"
       ? "0px"
       : formConfig?.button_radius === "md"
         ? "0.5rem"
-        : formConfig?.button_radius === "full"
-          ? "9999px"
-          : undefined;
-  const formInputStyle = formConfig?.input_bg ? { backgroundColor: formConfig.input_bg } : undefined;
+        : formConfig?.button_radius === "lg"
+          ? "1rem"
+          : formConfig?.button_radius === "full"
+            ? "9999px"
+            : undefined;
+  const formInputStyle = formConfig ? { borderColor: formConfig.border_color } : undefined;
+  const formVars = formConfig
+    ? ({ "--form-focus": formConfig.input_focus_color } as CSSProperties)
+    : undefined;
   const navigate = useNavigate();
   const [active, setActive] = useState(0);
   const [name, setName] = useState("");
@@ -161,10 +163,10 @@ function ProductLanding() {
     e.preventDefault();
     if (submitLock.current) return;
     setTouched(true);
-    if ((requireName || name.trim()) && name.trim().length < 3) { toast.error(t("يرجى كتابة الاسم واللقب.")); return; }
-    if ((requirePhone || phone.trim()) && !phoneOk) { toast.error(t("رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")); return; }
-    if (requireLocation && !wCode) { toast.error(t("يرجى اختيار الولاية.")); return; }
-    if (requireLocation && !commune) { toast.error(t("يرجى اختيار البلدية.")); return; }
+    if (showName && name.trim().length < 3) { toast.error(t("يرجى كتابة الاسم واللقب.")); return; }
+    if (showPhone && !phoneOk) { toast.error(t("رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")); return; }
+    if (showLocation && !wCode) { toast.error(t("يرجى اختيار الولاية.")); return; }
+    if (showLocation && !commune) { toast.error(t("يرجى اختيار البلدية.")); return; }
     if (currentShip == null) { toast.error(t("نوع التوصيل هذا غير متوفر في ولايتك.")); return; }
 
     submitLock.current = true;
@@ -315,7 +317,7 @@ function ProductLanding() {
               onSubmit={submit}
               onFocusCapture={onFormFocus}
               className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6"
-              style={{ backgroundColor: formConfig?.card_bg, borderColor: formConfig?.card_border }}
+              style={{ ...formVars, backgroundColor: formConfig?.bg_color, borderColor: formConfig?.border_color }}
             >
               <div className="text-center">
                 <h2 className="text-xl font-medium">{t("اطلب الآن — الدفع عند الاستلام")}</h2>
@@ -336,7 +338,7 @@ function ProductLanding() {
                     id="cname"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="h-12 text-base"
+                    className="h-12 text-base focus:border-[var(--form-focus)]"
                     style={formInputStyle}
                     autoComplete="name"
                   />
@@ -354,7 +356,7 @@ function ProductLanding() {
                     placeholder="05 / 06 / 07 XX XX XX XX"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/[^0-9 ]/g, ""))}
-                    className={cn("h-12 text-base", touched && !phoneOk && "border-destructive")}
+                    className={cn("h-12 text-base focus:border-[var(--form-focus)]", touched && !phoneOk && "border-destructive")}
                     style={formInputStyle}
                     aria-invalid={touched && !phoneOk}
                   />
@@ -405,7 +407,7 @@ function ProductLanding() {
               {showAddress && (
               <div className="space-y-1.5">
                 <Label htmlFor="caddr">{t("العنوان (اختياري)")}</Label>
-                <Input id="caddr" value={address} onChange={(e) => setAddress(e.target.value)} className="h-12" style={formInputStyle} placeholder={t("الحي، الشارع...")} />
+                <Input id="caddr" value={address} onChange={(e) => setAddress(e.target.value)} className="h-12 focus:border-[var(--form-focus)]" style={formInputStyle} placeholder={t("الحي، الشارع...")} />
               </div>
               )}
 
@@ -475,13 +477,13 @@ function ProductLanding() {
                 className="w-full"
                 disabled={busy}
                 style={{
-                  backgroundColor: formConfig?.button_bg,
+                  backgroundColor: formConfig?.button_bg_color,
                   color: formConfig?.button_text_color,
                   borderRadius: formButtonRadius,
                 }}
               >
                 {busy ? <Loader2 className="animate-spin" /> : <Check />}{" "}
-                {t(formConfig?.button_label || "تأكيد الطلب — الدفع عند الاستلام")}
+                {t(formConfig?.button_text || "تأكيد الطلب الآن")}
               </Button>
               {formConfig?.guarantee_text ? (
                 <p className="text-center text-xs text-muted-foreground">{t(formConfig.guarantee_text)}</p>

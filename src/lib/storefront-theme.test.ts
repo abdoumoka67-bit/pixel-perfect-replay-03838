@@ -184,4 +184,54 @@ describe("storefront theme config", () => {
       expect(preset.buttonText).toMatch(/^#[0-9A-Fa-f]{6}$/);
     }
   });
+
+  it("order form config falls back to the ink/orange defaults", () => {
+    const config = parseStorefrontConfig({});
+    const form = config.form_config;
+    expect(form.bg_color).toBe("#FFFFFF");
+    expect(form.border_color).toBe("#EEEEEE");
+    expect(form.input_focus_color).toBe("#111111");
+    expect(form.button_bg_color).toBe("#111111");
+    expect(form.button_text_color).toBe("#FFFFFF");
+    expect(form.button_radius).toBe("full");
+    expect(form.fields).toEqual({
+      full_name: true,
+      phone: true,
+      confirm_phone: false,
+      backup_phone: false,
+      wilaya_commune: true,
+      address: true,
+      delivery_type: true,
+      notes: false,
+    });
+  });
+
+  it("order form config keeps saved fields and rejects invalid colors", () => {
+    const config = parseStorefrontConfig({
+      form_config: {
+        bg_color: "#FAFAFA",
+        border_color: "#DDDDDD",
+        input_focus_color: "#EA580C",
+        button_bg_color: "#111111",
+        button_text_color: "#FFFFFF",
+        button_text: "اطلب الآن",
+        button_radius: "md",
+        guarantee_text: "الدفع عند الاستلام",
+        fields: { notes: true, confirm_phone: true, backup_phone: false },
+      },
+    });
+    const form = config.form_config;
+    expect(form.bg_color).toBe("#FAFAFA");
+    expect(form.input_focus_color).toBe("#EA580C");
+    expect(form.button_text).toBe("اطلب الآن");
+    expect(form.button_radius).toBe("md");
+    expect(form.fields.notes).toBe(true);
+    expect(form.fields.confirm_phone).toBe(true);
+
+    const invalid = parseStorefrontConfig({
+      form_config: { bg_color: "white", button_radius: "circle" },
+    });
+    expect(invalid.form_config.bg_color).toBe("#FFFFFF");
+    expect(invalid.form_config.button_radius).toBe("full");
+  });
 });

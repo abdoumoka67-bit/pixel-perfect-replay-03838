@@ -286,7 +286,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="theme-forest flex min-h-screen flex-col px-6 py-8 sm:px-12" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="theme-forest flex min-h-screen flex-col bg-background px-6 py-8 sm:px-12" dir={isRtl ? "rtl" : "ltr"}>
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <Link
