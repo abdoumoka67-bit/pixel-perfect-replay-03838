@@ -19,9 +19,11 @@ import {
   STOREFRONT_LANGUAGE_DEFAULT,
   TRUST_BADGE_KEYS,
   TRUST_BADGE_LABELS,
+  formConfigSchema,
   parseStorefrontConfig,
   storefrontConfigSchema,
   type FaqItem,
+  type FormConfig,
   type PresetKey,
   type ReviewItem,
   type StorefrontLanguage,
@@ -73,7 +75,7 @@ export function StorefrontThemeSettings({
   const [buttonAlign, setButtonAlign] = useState("center");
   const [barBgColor, setBarBgColor] = useState("#111111");
   const [barTextColor, setBarTextColor] = useState("#FFFFFF");
-  const [activeTab, setActiveTab] = useState<"hero" | "button" | "bar" | "sections">("hero");
+  const [activeTab, setActiveTab] = useState<"hero" | "button" | "bar" | "sections" | "form">("hero");
   const [imageUploading, setImageUploading] = useState(false);
   const signedUrls = useSignedUrls([heroImageUrl]);
   const previewHeroImage = heroImageUrl.startsWith("http") ? heroImageUrl : signedUrls[heroImageUrl];
@@ -93,6 +95,19 @@ export function StorefrontThemeSettings({
 
   const [trustEnabled, setTrustEnabled] = useState(true);
   const [trustBadges, setTrustBadges] = useState<TrustBadgeKey[]>([...TRUST_BADGE_KEYS]);
+
+  // Order-form overrides (stored in storefront_config.form_config).
+  const [formCardBg, setFormCardBg] = useState("");
+  const [formCardBorder, setFormCardBorder] = useState("");
+  const [formInputBg, setFormInputBg] = useState("");
+  const [formButtonBg, setFormButtonBg] = useState("");
+  const [formButtonText, setFormButtonText] = useState("");
+  const [formButtonRadius, setFormButtonRadius] = useState("");
+  const [formButtonLabel, setFormButtonLabel] = useState("");
+  const [formGuaranteeText, setFormGuaranteeText] = useState("");
+  const [formFields, setFormFields] = useState<FormConfig["fields"]>(
+    () => formConfigSchema.parse({}).fields,
+  );
 
   useEffect(() => {
     if (!store) return;
@@ -133,6 +148,17 @@ export function StorefrontThemeSettings({
 
     setTrustEnabled(cfg.sections.trust.enabled);
     setTrustBadges(cfg.sections.trust.badges);
+
+    const fc = cfg.form_config;
+    setFormCardBg(fc.card_bg ?? "");
+    setFormCardBorder(fc.card_border ?? "");
+    setFormInputBg(fc.input_bg ?? "");
+    setFormButtonBg(fc.button_bg ?? "");
+    setFormButtonText(fc.button_text_color ?? "");
+    setFormButtonRadius(fc.button_radius ?? "");
+    setFormButtonLabel(fc.button_label ?? "");
+    setFormGuaranteeText(fc.guarantee_text ?? "");
+    setFormFields(fc.fields);
   }, [store]);
 
   async function uploadHeroImage(file: File | undefined) {
@@ -217,6 +243,51 @@ export function StorefrontThemeSettings({
     );
   }
 
+  function OptionalColorControl({
+    label,
+    value,
+    fallback,
+    onChange,
+    disabled,
+  }: {
+    label: string;
+    value: string;
+    fallback: string;
+    onChange: (value: string) => void;
+    disabled: boolean;
+  }) {
+    return (
+      <div className="space-y-1">
+        <ColorControl
+          label={label}
+          value={value || fallback}
+          onChange={onChange}
+          disabled={disabled}
+        />
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted-foreground">
+            {value ? t("لون مخصص لهذا النموذج") : t("يستخدم لون المتجر افتراضيًا")}
+          </span>
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            disabled={disabled || !value}
+            className="text-[11px] text-brand hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground disabled:no-underline"
+          >
+            {t("استخدام الافتراضي")}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  function updateFormField<K extends keyof FormConfig["fields"]>(
+    key: K,
+    patch: Partial<FormConfig["fields"][K]>,
+  ) {
+    setFormFields((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
+  }
+
   function OptionButtons({
     label,
     value,
@@ -261,7 +332,7 @@ export function StorefrontThemeSettings({
               aria-pressed={value === option}
               className={cn("rounded-xl border px-4 py-2 text-sm disabled:cursor-not-allowed", value === option ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground")}
             >
-              {t(isRadius && option === "md" ? "دائرية خفيفة" : isRadius && option === "lg" ? "دائرية" : labels[option] ?? option)}
+              {t(isRadius && option === "md" ? "دائرية خفيفة" : isRadius && option === "lg" ? "دائرية" : labels[option] ?? (option || t("افتراضي")))}
             </button>
           ))}
         </div>
@@ -356,8 +427,17 @@ export function StorefrontThemeSettings({
             badges: trustBadges,
           },
         },
-        // Order-form overrides are edited elsewhere; keep them on theme saves.
-        form_config: parseStorefrontConfig(store.storefront_config, store.name).form_config,
+        form_config: {
+          card_bg: formCardBg || undefined,
+          card_border: formCardBorder || undefined,
+          input_bg: formInputBg || undefined,
+          button_bg: formButtonBg || undefined,
+          button_text_color: formButtonText || undefined,
+          button_radius: formButtonRadius || undefined,
+          button_label: formButtonLabel.trim() || undefined,
+          guarantee_text: formGuaranteeText.trim() || undefined,
+          fields: formFields,
+        },
       };
 
       const validated = storefrontConfigSchema.parse(payload);
@@ -423,7 +503,18 @@ export function StorefrontThemeSettings({
     { id: "button" as const, label: t("زر الطلب") },
     { id: "bar" as const, label: t("شريط الإعلان") },
     { id: "sections" as const, label: t("أقسام المتجر") },
+    { id: "form" as const, label: t("نموذج الطلب") },
   ];
+
+  const requiredFormFields = [
+    ["full_name", "الاسم واللقب"],
+    ["phone", "رقم الهاتف"],
+    ["wilaya_commune", "الولاية والبلدية"],
+  ] as const;
+  const optionalFormFields = [
+    ["address", "العنوان"],
+    ["delivery_type", "طريقة التوصيل"],
+  ] as const;
 
   return (
     <div className="space-y-6">
@@ -996,6 +1087,110 @@ export function StorefrontThemeSettings({
                   })}
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Order Form Manager */}
+          <div className={cn("space-y-5", activeTab === "form" ? "" : "hidden")}>
+            <div>
+              <h3 className="text-base font-bold text-foreground">{t("نموذج الطلب")}</h3>
+              <p className="text-xs text-muted-foreground">
+                {t("تحكم في حقول الطلب وألوان البطاقة والزر التي يراها عميلك.")}
+              </p>
+            </div>
+
+            <div className="space-y-3 rounded-2xl border border-border bg-card p-5 shadow-card">
+              <p className="text-sm font-bold text-foreground">{t("حقول النموذج")}</p>
+              {requiredFormFields.map(([key, label]) => {
+                const field = formFields[key];
+                return (
+                  <div key={key} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3">
+                    <span className="text-sm font-medium">{t(label)}</span>
+                    <div className="flex items-center gap-4 text-xs">
+                      <label className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{t("إظهار")}</span>
+                        <Switch
+                          checked={field.enabled}
+                          onCheckedChange={(checked) => updateFormField(key, { enabled: checked })}
+                          disabled={readOnly}
+                        />
+                      </label>
+                      <label className={cn("flex items-center gap-2", !field.enabled && "opacity-50")}>
+                        <span className="text-muted-foreground">{t("إلزامي")}</span>
+                        <Switch
+                          checked={field.required}
+                          onCheckedChange={(checked) => updateFormField(key, { required: checked })}
+                          disabled={readOnly || !field.enabled}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                );
+              })}
+              {optionalFormFields.map(([key, label]) => {
+                const field = formFields[key];
+                return (
+                  <div key={key} className="flex items-center justify-between gap-3 rounded-xl border border-border p-3">
+                    <span className="text-sm font-medium">{t(label)}</span>
+                    <label className="flex items-center gap-2 text-xs">
+                      <span className="text-muted-foreground">{t("إظهار")}</span>
+                      <Switch
+                        checked={field.enabled}
+                        onCheckedChange={(checked) => updateFormField(key, { enabled: checked })}
+                        disabled={readOnly}
+                      />
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">
+              <p className="text-sm font-bold text-foreground">{t("نصوص النموذج")}</p>
+              <div className="space-y-1.5">
+                <Label htmlFor="form-button-label">{t("نص زر الطلب")}</Label>
+                <Input
+                  id="form-button-label"
+                  placeholder={t("اطلب الآن — الدفع عند الاستلام")}
+                  value={formButtonLabel}
+                  onChange={(event) => setFormButtonLabel(event.target.value.slice(0, 50))}
+                  maxLength={50}
+                  disabled={readOnly}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="form-guarantee">{t("نص الضمان أسفل الزر")}</Label>
+                <Input
+                  id="form-guarantee"
+                  placeholder={t("الدفع عند الاستلام — لا تدفع شيئًا الآن")}
+                  value={formGuaranteeText}
+                  onChange={(event) => setFormGuaranteeText(event.target.value.slice(0, 100))}
+                  maxLength={100}
+                  disabled={readOnly}
+                />
+              </div>
+              <OptionButtons
+                label={t("استدارة زر الطلب")}
+                value={formButtonRadius}
+                values={["", "none", "md", "full"]}
+                onChange={setFormButtonRadius}
+                disabled={readOnly}
+                t={t}
+              />
+            </div>
+
+            <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">
+              <p className="text-sm font-bold text-foreground">{t("ألوان النموذج")}</p>
+              <p className="-mt-2 text-xs text-muted-foreground">
+                {t("اترك أي لون على الافتراضي ليبقى متوافقًا مع ألوان متجرك.")}
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <OptionalColorControl label={t("خلفية البطاقة")} value={formCardBg} fallback="#FFFFFF" onChange={setFormCardBg} disabled={readOnly} />
+                <OptionalColorControl label={t("حدود البطاقة")} value={formCardBorder} fallback="#E1E3E5" onChange={setFormCardBorder} disabled={readOnly} />
+                <OptionalColorControl label={t("خلفية الحقول")} value={formInputBg} fallback="#FFFFFF" onChange={setFormInputBg} disabled={readOnly} />
+                <OptionalColorControl label={t("خلفية زر الطلب")} value={formButtonBg} fallback="#008060" onChange={setFormButtonBg} disabled={readOnly} />
+                <OptionalColorControl label={t("لون نص زر الطلب")} value={formButtonText} fallback="#FFFFFF" onChange={setFormButtonText} disabled={readOnly} />
+              </div>
             </div>
           </div>
         </div>
