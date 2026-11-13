@@ -34,9 +34,9 @@ export const MAIN_NAV: NavItem[] = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard, area: "overview" },
   { to: "/dashboard/orders", label: "إدارة الطلبات", icon: ShoppingBag, area: "orders" },
   { to: "/dashboard/products", label: "المنتجات", icon: Package, area: "products" },
-  { to: "/dashboard/design", label: "تصميم المتجر", icon: Palette, area: "design" },
   { to: "/dashboard/analytics", label: "الإحصائيات", icon: BarChart3, area: "analytics" },
   { to: "/dashboard/activity", label: "سجل الأنشطة", icon: History, area: "activity" },
+  { to: "/dashboard/design", label: "تصميم المتجر", icon: Palette, area: "design" },
 ];
 
 export const SETTINGS_NAV: NavItem[] = [
