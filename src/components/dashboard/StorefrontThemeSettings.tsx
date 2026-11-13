@@ -354,6 +354,8 @@ export function StorefrontThemeSettings({
             badges: trustBadges,
           },
         },
+        // Order-form overrides are edited elsewhere; keep them on theme saves.
+        form_config: parseStorefrontConfig(store.storefront_config, store.name).form_config,
       };
 
       const validated = storefrontConfigSchema.parse(payload);

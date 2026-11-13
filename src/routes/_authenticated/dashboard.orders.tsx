@@ -13,6 +13,7 @@ import {
   Phone,
   Plus,
   Printer,
+  RefreshCw,
   Search,
   Send,
   Trash2,
@@ -63,6 +64,7 @@ import {
   type OrderStatus,
 } from "@/lib/commerce";
 import { downloadText, ordersToCsv } from "@/lib/csv";
+import { syncYalidineStatuses } from "@/lib/yalidine.functions";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { cn } from "@/lib/utils";
 import { TrustRadarBadge } from "@/components/dashboard/TrustRadarBadge";
@@ -87,6 +89,24 @@ function OrdersPage() {
   const [toDelete, setToDelete] = useState<Order | null>(null);
   const [labelOrders, setLabelOrders] = useState<Order[] | null>(null);
   const { updateStatus, remove, sendYalidine } = useOrderActions();
+
+  const syncShipping = useMutation({
+    mutationFn: () => syncYalidineStatuses(),
+    onSuccess: (result) => {
+      if (!result.ok) {
+        toast.error(t(result.message));
+        return;
+      }
+      if (result.updated > 0) {
+        toast.success(t("تم تحديث {n} طلب من أصل {m}.", { n: result.updated, m: result.checked }));
+      } else {
+        toast.success(t("لا توجد حالات شحن جديدة ({m} طلب تم فحصه).", { m: result.checked }));
+      }
+      qc.invalidateQueries({ queryKey: ["orders"] });
+    },
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
+  });
+  const handleSyncShipping = () => syncShipping.mutate();
 
   const canAssign = canManage && isPro;
   const members = useQuery({
@@ -300,6 +320,16 @@ function OrdersPage() {
         description={`${t("{n} طلب", { n: total })}${status !== "all" ? ` · ${t(STATUS_LABELS[status])}` : ""}`}
         actions={
           <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs font-medium"
+              onClick={handleSyncShipping}
+              disabled={syncShipping.isPending || readOnly}
+            >
+              <RefreshCw className={cn("size-3.5", syncShipping.isPending && "animate-spin")} />
+              {t("تحديث حالات الشحن")}
+            </Button>
             <Button variant="outline" onClick={exportCsv}>
               <Download /> {selected.size ? t("تصدير المحدد ({n})", { n: selected.size }) : t("تصدير Excel")}
             </Button>

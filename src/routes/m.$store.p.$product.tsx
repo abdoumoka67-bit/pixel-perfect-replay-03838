@@ -87,6 +87,25 @@ function ProductLanding() {
   const { language } = useStorefrontLanguage(storeLanguage);
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
   const isRtl = language === "ar";
+  const formConfig = store.storefront_config?.form_config;
+  const formFields = formConfig?.fields;
+  const showName = formFields?.full_name.enabled !== false;
+  const requireName = formFields?.full_name.required !== false;
+  const showPhone = formFields?.phone.enabled !== false;
+  const requirePhone = formFields?.phone.required !== false;
+  const showLocation = formFields?.wilaya_commune.enabled !== false;
+  const requireLocation = formFields?.wilaya_commune.required !== false;
+  const showAddress = formFields?.address.enabled !== false;
+  const showDelivery = formFields?.delivery_type.enabled !== false;
+  const formButtonRadius =
+    formConfig?.button_radius === "none"
+      ? "0px"
+      : formConfig?.button_radius === "md"
+        ? "0.5rem"
+        : formConfig?.button_radius === "full"
+          ? "9999px"
+          : undefined;
+  const formInputStyle = formConfig?.input_bg ? { backgroundColor: formConfig.input_bg } : undefined;
   const navigate = useNavigate();
   const [active, setActive] = useState(0);
   const [name, setName] = useState("");
@@ -142,10 +161,10 @@ function ProductLanding() {
     e.preventDefault();
     if (submitLock.current) return;
     setTouched(true);
-    if (name.trim().length < 3) { toast.error(t("يرجى كتابة الاسم واللقب.")); return; }
-    if (!phoneOk) { toast.error(t("رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")); return; }
-    if (!wCode) { toast.error(t("يرجى اختيار الولاية.")); return; }
-    if (!commune) { toast.error(t("يرجى اختيار البلدية.")); return; }
+    if ((requireName || name.trim()) && name.trim().length < 3) { toast.error(t("يرجى كتابة الاسم واللقب.")); return; }
+    if ((requirePhone || phone.trim()) && !phoneOk) { toast.error(t("رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")); return; }
+    if (requireLocation && !wCode) { toast.error(t("يرجى اختيار الولاية.")); return; }
+    if (requireLocation && !commune) { toast.error(t("يرجى اختيار البلدية.")); return; }
     if (currentShip == null) { toast.error(t("نوع التوصيل هذا غير متوفر في ولايتك.")); return; }
 
     submitLock.current = true;
@@ -154,10 +173,10 @@ function ProductLanding() {
       const args = {
         _product_id: product.id,
         _quantity: qty,
-        _customer_name: name.trim(),
+        _customer_name: name.trim() || t("عميل"),
         _phone: normalizeDzPhone(phone),
-        _wilaya_code: wCode,
-        _wilaya_name: wilayaByCode(wCode)?.ar ?? "",
+        _wilaya_code: wCode ?? 0,
+        _wilaya_name: wilayaByCode(wCode ?? 0)?.ar ?? "",
         _commune: commune,
         _address: address,
         _delivery_type: delivery,
@@ -291,7 +310,13 @@ function ProductLanding() {
               <p className="mt-1 text-sm">{t("يرجى المحاولة لاحقاً.")}</p>
             </div>
           ) : (
-            <form id="order" onSubmit={submit} onFocusCapture={onFormFocus} className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6">
+            <form
+              id="order"
+              onSubmit={submit}
+              onFocusCapture={onFormFocus}
+              className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6"
+              style={{ backgroundColor: formConfig?.card_bg, borderColor: formConfig?.card_border }}
+            >
               <div className="text-center">
                 <h2 className="text-xl font-medium">{t("اطلب الآن — الدفع عند الاستلام")}</h2>
                 <p className="text-sm text-muted-foreground">{t("املأ معلوماتك وسنتصل بك لتأكيد الطلب")}</p>
@@ -304,26 +329,39 @@ function ProductLanding() {
                 <ChipGroup label={t("اللون")} options={product.colors} value={color} onChange={setColor} />
               )}
 
-              <div className="space-y-1.5">
-                <Label htmlFor="cname">{t("الاسم واللقب")}</Label>
-                <Input id="cname" value={name} onChange={(e) => setName(e.target.value)} className="h-12 text-base" autoComplete="name" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="cphone">{t("رقم الهاتف")}</Label>
-                <Input
-                  id="cphone"
-                  dir="ltr"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  maxLength={14}
-                  placeholder="05 / 06 / 07 XX XX XX XX"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/[^0-9 ]/g, ""))}
-                  className={cn("h-12 text-base", touched && !phoneOk && "border-destructive")}
-                  aria-invalid={touched && !phoneOk}
-                />
-                {touched && !phoneOk && <p className="text-xs text-danger">{t("يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")}</p>}
-              </div>
+              {showName && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="cname">{t("الاسم واللقب")}</Label>
+                  <Input
+                    id="cname"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-12 text-base"
+                    style={formInputStyle}
+                    autoComplete="name"
+                  />
+                </div>
+              )}
+              {showPhone && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="cphone">{t("رقم الهاتف")}</Label>
+                  <Input
+                    id="cphone"
+                    dir="ltr"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={14}
+                    placeholder="05 / 06 / 07 XX XX XX XX"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9 ]/g, ""))}
+                    className={cn("h-12 text-base", touched && !phoneOk && "border-destructive")}
+                    style={formInputStyle}
+                    aria-invalid={touched && !phoneOk}
+                  />
+                  {touched && !phoneOk && <p className="text-xs text-danger">{t("يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")}</p>}
+                </div>
+              )}
+              {showLocation && (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>{t("الولاية")}</Label>
@@ -363,11 +401,15 @@ function ProductLanding() {
                   </Select>
                 </div>
               </div>
+              )}
+              {showAddress && (
               <div className="space-y-1.5">
                 <Label htmlFor="caddr">{t("العنوان (اختياري)")}</Label>
-                <Input id="caddr" value={address} onChange={(e) => setAddress(e.target.value)} className="h-12" placeholder={t("الحي، الشارع...")} />
+                <Input id="caddr" value={address} onChange={(e) => setAddress(e.target.value)} className="h-12" style={formInputStyle} placeholder={t("الحي، الشارع...")} />
               </div>
+              )}
 
+              {showDelivery && (
               <div className="space-y-1.5">
                 <Label>{t("نوع التوصيل")}</Label>
                 <div className="grid grid-cols-2 gap-3">
@@ -396,6 +438,7 @@ function ProductLanding() {
                   })}
                 </div>
               </div>
+              )}
 
               <div className="flex items-center justify-between">
                 <Label>{t("الكمية")}</Label>
@@ -425,9 +468,24 @@ function ProductLanding() {
                 </div>
               </div>
 
-              <Button type="submit" variant="brand" size="xl" className="w-full" disabled={busy}>
-                {busy ? <Loader2 className="animate-spin" /> : <Check />} {t("تأكيد الطلب — الدفع عند الاستلام")}
+              <Button
+                type="submit"
+                variant="brand"
+                size="xl"
+                className="w-full"
+                disabled={busy}
+                style={{
+                  backgroundColor: formConfig?.button_bg,
+                  color: formConfig?.button_text_color,
+                  borderRadius: formButtonRadius,
+                }}
+              >
+                {busy ? <Loader2 className="animate-spin" /> : <Check />}{" "}
+                {t(formConfig?.button_label || "تأكيد الطلب — الدفع عند الاستلام")}
               </Button>
+              {formConfig?.guarantee_text ? (
+                <p className="text-center text-xs text-muted-foreground">{t(formConfig.guarantee_text)}</p>
+              ) : null}
             </form>
           )}
         </div>

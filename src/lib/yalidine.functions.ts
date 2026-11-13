@@ -152,3 +152,147 @@ export const sendOrderToYalidine = createServerFn({ method: "POST" })
       return { ok: false as const, message: "تعذر الوصول إلى خادم Yalidine حالياً." };
     }
   });
+
+type YalidineSyncStatus = "new" | "confirmed" | "shipping" | "delivered" | "cancelled" | "returned";
+
+/** Yalidine reports parcel states in French; only known states are mapped. */
+const STATUS_BY_PARCEL_STATE: Record<string, YalidineSyncStatus> = {
+  "en preparation": "confirmed",
+  prepare: "confirmed",
+  ramasse: "shipping",
+  "en cours de livraison": "shipping",
+  "sorti en livraison": "shipping",
+  "vers wilaya": "shipping",
+  "recu a wilaya": "shipping",
+  "en cours d expedition": "shipping",
+  "en cours de traitement": "shipping",
+  livre: "delivered",
+  retourne: "returned",
+  "en retour": "returned",
+  "retour en cours": "returned",
+  "en cours de retour": "returned",
+  annule: "cancelled",
+  supprime: "cancelled",
+  suspendu: "cancelled",
+};
+
+function normalizeParcelState(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function findParcel(body: unknown, tracking: string): Record<string, unknown> | null {
+  let list: unknown[] = [];
+  if (Array.isArray(body)) list = body;
+  else if (body && typeof body === "object") {
+    const record = body as Record<string, unknown>;
+    if (Array.isArray(record["data"])) list = record["data"];
+    else if (record[tracking] && typeof record[tracking] === "object") list = [record[tracking]];
+  }
+  for (const item of list) {
+    if (!item || typeof item !== "object") continue;
+    const parcel = item as Record<string, unknown>;
+    const parcelTracking = typeof parcel["tracking"] === "string" ? parcel["tracking"] : null;
+    if (!parcelTracking || parcelTracking === tracking) return parcel;
+  }
+  return null;
+}
+
+/**
+ * Pulls the latest parcel state from Yalidine for every unfinished order that
+ * already has a tracking number. Unknown or unreadable states are left as-is.
+ */
+export const syncYalidineStatuses = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const sb = context.supabase;
+    const { data: orders, error } = await sb
+      .from("orders")
+      .select("id,store_id,tracking_number,status")
+      .not("tracking_number", "is", null)
+      .in("status", ["new", "confirmed", "shipping"])
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error) {
+      console.error("Could not load orders for Yalidine sync", error);
+      throw error;
+    }
+    if (!orders || orders.length === 0) {
+      return { ok: true as const, checked: 0, updated: 0, skipped: 0 };
+    }
+
+    const storeIds = [...new Set(orders.map((order) => order.store_id))];
+    const { data: credentials, error: credsError } = await sb
+      .from("yalidine_credentials")
+      .select("store_id,api_id,api_token")
+      .in("store_id", storeIds);
+    if (credsError) {
+      console.error("Could not load Yalidine credentials for sync", credsError);
+      throw credsError;
+    }
+    const credsByStore = new Map(
+      (credentials ?? []).map((creds) => [creds.store_id, { api_id: creds.api_id, api_token: creds.api_token }]),
+    );
+    if (credsByStore.size === 0) {
+      return { ok: false as const, message: "اربط حساب Yalidine أولاً من صفحة الربط." };
+    }
+
+    let updated = 0;
+    let skipped = 0;
+    let checked = 0;
+
+    const batchSize = 5;
+    for (let i = 0; i < orders.length; i += batchSize) {
+      const batch = orders.slice(i, i + batchSize);
+      await Promise.all(
+        batch.map(async (order) => {
+          const tracking = order.tracking_number;
+          const creds = credsByStore.get(order.store_id);
+          if (!tracking || !creds) {
+            skipped += 1;
+            return;
+          }
+          checked += 1;
+          try {
+            const response = await yalidineFetch(
+              `/parcels/?tracking=${encodeURIComponent(tracking)}&page_size=1`,
+              creds,
+            );
+            if (!response.ok) {
+              skipped += 1;
+              return;
+            }
+            const parcel = findParcel(response.body, tracking);
+            const rawState = parcel?.["status"] ?? parcel?.["state"] ?? parcel?.["etat"];
+            if (typeof rawState !== "string" || !rawState.trim()) {
+              skipped += 1;
+              return;
+            }
+            const nextStatus = STATUS_BY_PARCEL_STATE[normalizeParcelState(rawState)];
+            if (!nextStatus || nextStatus === order.status) {
+              skipped += 1;
+              return;
+            }
+            const { error: updateError } = await sb
+              .from("orders")
+              .update({ status: nextStatus })
+              .eq("id", order.id);
+            if (updateError) {
+              console.error("Could not apply Yalidine status to order", order.id, updateError);
+              skipped += 1;
+              return;
+            }
+            updated += 1;
+          } catch (e) {
+            console.error("Yalidine status sync failed for order", order.id, e);
+            skipped += 1;
+          }
+        }),
+      );
+    }
+
+    return { ok: true as const, checked, updated, skipped };
+  });

@@ -226,6 +226,51 @@ export const socialLinksSchema = z.object({
   tiktok: z.string().trim().optional().or(z.literal("")),
 });
 
+/** Button radii accepted by the order form config (no `lg`, per the form contract). */
+export const FORM_BUTTON_RADII = ["none", "md", "full"] as const;
+
+/** Field that can be hidden and/or made optional from the order form. */
+export const formFieldSchema = z.object({
+  enabled: z.boolean().default(true),
+  required: z.boolean().default(true),
+});
+
+/** Field that can only be hidden (the value is optional whenever shown). */
+export const formOptionalFieldSchema = z.object({
+  enabled: z.boolean().default(true),
+});
+
+/**
+ * Order-form overrides stored inside `storefront_config.form_config`.
+ * Colors and texts stay optional so an unset config keeps the storefront theme.
+ */
+export const formConfigSchema = z
+  .object({
+    card_bg: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    card_border: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    input_bg: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    button_bg: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    button_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    button_radius: z.enum(FORM_BUTTON_RADII).optional(),
+    button_label: z.string().trim().max(50).optional(),
+    guarantee_text: z.string().trim().max(100).optional(),
+    fields: z
+      .object({
+        full_name: formFieldSchema.default({}),
+        phone: formFieldSchema.default({}),
+        confirm_phone: formOptionalFieldSchema.default({ enabled: false }),
+        backup_phone: formOptionalFieldSchema.default({ enabled: false }),
+        wilaya_commune: formFieldSchema.default({}),
+        address: formOptionalFieldSchema.default({ enabled: true }),
+        delivery_type: formOptionalFieldSchema.default({ enabled: true }),
+        notes: formOptionalFieldSchema.default({ enabled: false }),
+      })
+      .default({}),
+  })
+  .default({});
+
+export type FormConfig = z.infer<typeof formConfigSchema>;
+
 export const storefrontConfigSchema = z.object({
   preset: z.enum(PRESET_KEYS).default("noir"),
   language: z.enum(STOREFRONT_LANGUAGES).default(STOREFRONT_LANGUAGE_DEFAULT),
@@ -270,6 +315,7 @@ export const storefrontConfigSchema = z.object({
       })
       .default({ enabled: true, badges: [...TRUST_BADGE_KEYS] }),
   }).default({}),
+  form_config: formConfigSchema.default({}),
 });
 
 export type StorefrontConfig = z.infer<typeof storefrontConfigSchema>;
@@ -346,6 +392,7 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
       ...defaultDesign,
       bar_enabled: true,
       bar_text: defaultTexts.barText,
+      form_config: formConfigSchema.parse({}),
       sections: {
         faq: { enabled: true, items: DEFAULT_FAQ_BY_LANGUAGE[defaultLanguage] },
         reviews: { enabled: false, items: [] },
@@ -504,6 +551,9 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
     badges: validBadges.length > 0 ? validBadges : [...TRUST_BADGE_KEYS],
   };
 
+  const parsedFormConfig = formConfigSchema.safeParse(obj["form_config"]);
+  const form_config = parsedFormConfig.success ? parsedFormConfig.data : formConfigSchema.parse({});
+
   return {
     preset,
     language,
@@ -527,6 +577,7 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
     bar_text,
     bar_bg_color,
     bar_text_color,
+    form_config,
     sections: {
       faq,
       reviews,
