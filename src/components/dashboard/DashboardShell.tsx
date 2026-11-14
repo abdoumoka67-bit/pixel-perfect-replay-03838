@@ -379,9 +379,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       </aside>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side={isRtl ? "right" : "left"} className="w-[82vw] max-w-sm border-0 bg-background p-0">
+        <SheetContent side={isRtl ? "right" : "left"} className="w-[82vw] max-w-sm border-0 bg-sidebar p-0 text-sidebar-foreground">
           <SheetTitle className="sr-only">{t("القائمة")}</SheetTitle>
-          <SidebarBody tone="light" onNavigate={() => setOpen(false)} />
+          <SidebarBody tone="dark" onNavigate={() => setOpen(false)} />
         </SheetContent>
       </Sheet>
 

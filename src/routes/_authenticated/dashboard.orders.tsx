@@ -351,142 +351,88 @@ function OrdersPage() {
         </DropdownMenu>
       </div>
 
-      {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-2xl bg-card shadow-card md:block">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-table-header text-xs text-muted-foreground">
-                <th className="w-10 p-4">
-                  <Checkbox checked={allOnPage} onCheckedChange={toggleAll} aria-label={t("تحديد الكل")} />
-                </th>
-                <th className="p-4 text-start font-medium">#</th>
-                <th className="p-4 text-start font-medium">{t("رقم الطلب")}</th>
-                <th className="p-4 text-start font-medium">{t("التاريخ")}</th>
-                <th className="p-4 text-start font-medium">{t("المنتجات")}</th>
-                <th className="p-4 text-start font-medium">{t("السعر الإجمالي")}</th>
-                <th className="p-4 text-start font-medium">{t("حالة الدفع")}</th>
-                <th className="p-4 text-start font-medium">{t("العنوان والولاية")}</th>
-                <th className="p-4 text-start font-medium">{t("حالة الطلب")}</th>
-                <th className="w-12 p-4" />
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((o, i) => (
-                <tr
-                  key={o.id}
-                  className={cn("border-b last:border-0 transition-colors hover:bg-muted/40", selected.has(o.id) && "bg-brand-soft/40")}
-                >
-                  <td className="p-4">
-                    <Checkbox checked={selected.has(o.id)} onCheckedChange={() => toggle(o.id)} aria-label={t("تحديد")} />
-                  </td>
-                  <td className="p-4 text-muted-foreground num">{(page - 1) * PAGE_SIZE + i + 1}</td>
-                  <td className="p-4">
-                    <button className="font-medium hover:text-brand num" onClick={() => setOpenId(o.id)}>
-                      ORX-{o.order_number}
-                    </button>
-                    <p className="text-xs text-muted-foreground">{o.customer_name}</p>
-                    <TrustRadarBadge trust={trustOf(o)} className="mt-1" />
-                    {memberEmail(o.assigned_member_id) && (
-                      <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground" dir="ltr">
-                        <UserCheck className="size-3" /> {memberEmail(o.assigned_member_id)}
-                      </p>
-                    )}
-                  </td>
-                  <td className="whitespace-nowrap p-4 text-muted-foreground">
-                    {new Date(o.created_at).toLocaleDateString("ar-DZ", { day: "numeric", month: "short" })}
-                    <p className="text-xs num">{new Date(o.created_at).toLocaleTimeString("fr-DZ", { hour: "2-digit", minute: "2-digit" })}</p>
-                  </td>
-                  <td className="max-w-[200px] p-4">
-                    <p className="truncate font-medium">{o.product_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {t("الكمية")}: <span className="num">{o.quantity}</span>
-                      {o.call_attempts > 0 && (
-                        <span className="ms-2 inline-flex items-center gap-1 text-brand">
-                          <PhoneCall className="size-3" />
-                          <span className="num">{o.call_attempts}</span>
-                        </span>
-                      )}
-                    </p>
-                  </td>
-                  <td className="whitespace-nowrap p-4 font-medium num">{formatDZD(o.total, language)}</td>
-                  <td className="p-4">
-                    <PaymentBadge status={o.payment_status} />
-                  </td>
-                  <td className="max-w-[200px] p-4">
-                    <p className="truncate">{o.commune}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      <span className="num">{o.wilaya_code}</span> - {o.wilaya_name} · {o.delivery_type === "home" ? t("منزل") : t("مكتب")}
-                    </p>
-                  </td>
-                  <td className="p-4">
-                    <StatusBadge status={o.status} />
-                  </td>
-                  <td className="p-4">
-                    <ActionsMenu o={o} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {rows.length === 0 && !orders.isLoading && <EmptyState />}
-      </div>
-
-      {/* Mobile cards */}
-      <div className="space-y-3 md:hidden">
-        {rows.map((o) => (
-          <div key={o.id} className="rounded-2xl bg-card p-4 shadow-card">
-            <div className="flex items-start justify-between gap-2">
-              <button className="min-w-0 text-start" onClick={() => setOpenId(o.id)}>
-                <p className="truncate font-medium">{o.customer_name}</p>
-                <p className="text-xs text-muted-foreground">
-                  <span className="num">ORX-{o.order_number}</span> · {new Date(o.created_at).toLocaleDateString("ar-DZ")}
-                </p>
-                <TrustRadarBadge trust={trustOf(o)} className="mt-1" />
-              </button>
-              <div className="flex items-center gap-1">
-                <StatusBadge status={o.status} />
-                <ActionsMenu o={o} />
-              </div>
+      {/* Unified Slim Orders List */}
+      <div className="space-y-2.5">
+        {rows.length > 0 && (
+          <div className="flex items-center justify-between px-3 py-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Checkbox checked={allOnPage} onCheckedChange={toggleAll} aria-label={t("تحديد الكل")} />
+              <span>{t("تحديد الكل")} ({rows.length})</span>
             </div>
-            <button className="mt-3 block w-full text-start" onClick={() => setOpenId(o.id)}>
-              <p className="truncate text-sm">
-                {o.product_name} × <span className="num">{o.quantity}</span>
-              </p>
-              <div className="mt-1 flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {o.commune}، {o.wilaya_name}
-                </span>
-                <span className="font-medium num">{formatDZD(o.total, language)}</span>
-              </div>
-            </button>
-            {memberEmail(o.assigned_member_id) && (
-              <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                <UserCheck className="size-3" /> <span dir="ltr">{memberEmail(o.assigned_member_id)}</span>
-              </p>
+            <span>{total} {t("طلب")}</span>
+          </div>
+        )}
+
+        {rows.map((o) => (
+          <div
+            key={o.id}
+            className={cn(
+              "flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-card transition-colors hover:border-foreground/20",
+              selected.has(o.id) && "border-brand/40 bg-brand-soft/20",
             )}
-            {o.call_attempts > 0 && (
-              <p className="mt-2 text-xs text-brand">
-                <span className="num">{o.call_attempts}</span> {t("محاولات اتصال")}
-              </p>
-            )}
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <Button asChild size="sm" variant="default">
-                <a href={`tel:${o.phone}`}>
-                  <Phone /> {t("اتصال")}
-                </a>
-              </Button>
-              <Button asChild size="sm" variant="success">
-                <a href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))} target="_blank" rel="noreferrer">
-                  <MessageCircle /> {t("واتساب")}
-                </a>
-              </Button>
+          >
+            {/* Right side: Checkbox + Name & Order info */}
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <Checkbox
+                checked={selected.has(o.id)}
+                onCheckedChange={() => toggle(o.id)}
+                aria-label={t("تحديد")}
+                className="shrink-0"
+              />
+              <button
+                type="button"
+                onClick={() => setOpenId(o.id)}
+                className="min-w-0 flex-1 text-start"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-sm font-bold text-foreground hover:text-brand">
+                    {o.customer_name}
+                  </p>
+                  <span className="text-xs text-muted-foreground num">ORX-{o.order_number}</span>
+                  <TrustRadarBadge trust={trustOf(o)} />
+                </div>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground num">{formatDZD(o.total, language)}</span>
+                  {" · "}
+                  <span>{o.product_name}</span>
+                  {o.quantity > 1 && (
+                    <span className="num"> (x{o.quantity})</span>
+                  )}
+                  {" · "}
+                  <span className="num">{o.wilaya_code}</span> - {o.wilaya_name}
+                  {o.commune && ` · ${o.commune}`}
+                  {" · "}
+                  <span>{o.delivery_type === "home" ? t("منزل") : t("مكتب")}</span>
+                </p>
+              </button>
+            </div>
+
+            {/* Left side: Status badge + Quick Call & WhatsApp + Actions */}
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <StatusBadge status={o.status} />
+              <a
+                href={`tel:${o.phone}`}
+                className="flex size-8 items-center justify-center rounded-full bg-brand-soft text-brand transition-colors hover:bg-brand/15"
+                title={t("اتصال")}
+              >
+                <Phone className="size-4" />
+              </a>
+              <a
+                href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))}
+                target="_blank"
+                rel="noreferrer"
+                className="flex size-8 items-center justify-center rounded-full bg-brand-soft text-brand transition-colors hover:bg-brand/15"
+                title={t("واتساب")}
+              >
+                <MessageCircle className="size-4" />
+              </a>
+              <ActionsMenu o={o} />
             </div>
           </div>
         ))}
+
         {rows.length === 0 && !orders.isLoading && (
-          <div className="rounded-2xl bg-card shadow-card">
+          <div className="rounded-2xl border border-border bg-card p-8 shadow-card">
             <EmptyState />
           </div>
         )}
