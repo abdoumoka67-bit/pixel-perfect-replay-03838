@@ -67,7 +67,9 @@ export function StorefrontThemeSettings({
   const [heroOverlayOpacity, setHeroOverlayOpacity] = useState(40);
   const [fontFamily, setFontFamily] = useState("Tajawal");
   const [titleSize, setTitleSize] = useState("xl");
+  const [titleOffsetX, setTitleOffsetX] = useState(0);
   const [titleOffsetY, setTitleOffsetY] = useState(0);
+  const [buttonOffsetX, setButtonOffsetX] = useState(0);
   const [buttonOffsetY, setButtonOffsetY] = useState(0);
   const [textAlign, setTextAlign] = useState("center");
   const [buttonBgColor, setButtonBgColor] = useState("#FFFFFF");
@@ -126,7 +128,9 @@ export function StorefrontThemeSettings({
     setHeroOverlayOpacity(cfg.hero_overlay_opacity);
     setFontFamily(cfg.font_family);
     setTitleSize(cfg.title_size);
+    setTitleOffsetX(cfg.title_offset_x ?? 0);
     setTitleOffsetY(cfg.title_offset_y ?? 0);
+    setButtonOffsetX(cfg.button_offset_x ?? 0);
     setButtonOffsetY(cfg.button_offset_y ?? 0);
     setTextAlign(cfg.text_align);
     setButtonBgColor(cfg.button_bg_color);
@@ -358,6 +362,7 @@ export function StorefrontThemeSettings({
         hero_overlay_opacity: heroOverlayOpacity,
         font_family: fontFamily,
         title_size: titleSize,
+        title_offset_x: titleOffsetX,
         title_offset_y: titleOffsetY,
         text_align: textAlign,
         button_bg_color: buttonBgColor,
@@ -365,6 +370,7 @@ export function StorefrontThemeSettings({
         button_size: buttonSize,
         button_radius: buttonRadius,
         button_align: buttonAlign,
+        button_offset_x: buttonOffsetX,
         button_offset_y: buttonOffsetY,
         bar_enabled: barEnabled,
         bar_text: barText.trim(),
@@ -708,6 +714,23 @@ export function StorefrontThemeSettings({
                 </div>
                 <div className="space-y-1.5 pt-2">
                   <div className="flex items-center justify-between">
+                    <Label htmlFor="title-offset-x">{t("مقياس تحريك النص أفقياً")}</Label>
+                    <span className="text-xs font-mono text-muted-foreground">{titleOffsetX > 0 ? `+${titleOffsetX}px` : `${titleOffsetX}px`}</span>
+                  </div>
+                  <input
+                    id="title-offset-x"
+                    type="range"
+                    min="-40"
+                    max="40"
+                    step="2"
+                    value={titleOffsetX}
+                    onChange={(e) => setTitleOffsetX(Number(e.target.value))}
+                    disabled={readOnly}
+                    className="h-2 w-full cursor-pointer accent-brand"
+                  />
+                </div>
+                <div className="space-y-1.5 pt-2">
+                  <div className="flex items-center justify-between">
                     <Label htmlFor="title-offset">{t("مقياس تحريك النص عمودياً")}</Label>
                     <span className="text-xs font-mono text-muted-foreground">{titleOffsetY > 0 ? `+${titleOffsetY}px` : `${titleOffsetY}px`}</span>
                   </div>
@@ -781,6 +804,23 @@ export function StorefrontThemeSettings({
               <OptionButtons label={t("حجم الزر")} value={buttonSize} values={["sm", "md", "lg"]} onChange={setButtonSize} disabled={readOnly} t={t} />
               <OptionButtons label={t("استدارة الحواف")} value={buttonRadius} values={["none", "md", "lg", "full"]} onChange={setButtonRadius} disabled={readOnly} t={t} />
               <OptionButtons label={t("محاذاة الزر")} value={buttonAlign} values={["start", "center", "end"]} onChange={setButtonAlign} disabled={readOnly} t={t} />
+              <div className="space-y-1.5 pt-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="button-offset-x">{t("مقياس تحريك الزر أفقياً")}</Label>
+                  <span className="text-xs font-mono text-muted-foreground">{buttonOffsetX > 0 ? `+${buttonOffsetX}px` : `${buttonOffsetX}px`}</span>
+                </div>
+                <input
+                  id="button-offset-x"
+                  type="range"
+                  min="-40"
+                  max="40"
+                  step="2"
+                  value={buttonOffsetX}
+                  onChange={(e) => setButtonOffsetX(Number(e.target.value))}
+                  disabled={readOnly}
+                  className="h-2 w-full cursor-pointer accent-brand"
+                />
+              </div>
               <div className="space-y-1.5 pt-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="button-offset">{t("مقياس تحريك الزر عمودياً")}</Label>
@@ -1195,7 +1235,11 @@ export function StorefrontThemeSettings({
                 className={cn("cursor-pointer p-6 transition-colors sm:p-8", activeTab === "hero" ? "ring-2 ring-inset ring-brand" : "")}
               >
                 <p
-                  style={{ transform: titleOffsetY ? `translateY(${titleOffsetY}px)` : undefined }}
+                  style={{
+                    transform: (titleOffsetX || titleOffsetY)
+                      ? `translate(${titleOffsetX}px, ${titleOffsetY}px)`
+                      : undefined,
+                  }}
                   className={cn("font-normal leading-tight", titleSizeClass[titleSize], textAlignClass[textAlign])}
                 >
                   {heroTitle || store?.name || t("اسم متجرك")}
@@ -1204,7 +1248,11 @@ export function StorefrontThemeSettings({
                   {heroSubtitle || defaults.heroSubtitle}
                 </p>
                 <div
-                  style={{ transform: buttonOffsetY ? `translateY(${buttonOffsetY}px)` : undefined }}
+                  style={{
+                    transform: (buttonOffsetX || buttonOffsetY)
+                      ? `translate(${buttonOffsetX}px, ${buttonOffsetY}px)`
+                      : undefined,
+                  }}
                   className={cn("mt-4 flex", buttonAlignClass[buttonAlign])}
                 >
                   <button

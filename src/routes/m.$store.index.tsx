@@ -159,7 +159,11 @@ function Storefront() {
         className={`px-6 py-20 transition-colors sm:py-28 ${textAlignClass[config.text_align]}`}
       >
         <h1
-          style={config.title_offset_y ? { transform: `translateY(${config.title_offset_y}px)` } : undefined}
+          style={
+            (config.title_offset_x || config.title_offset_y)
+              ? { transform: `translate(${config.title_offset_x ?? 0}px, ${config.title_offset_y ?? 0}px)` }
+              : undefined
+          }
           className={`font-normal leading-tight ${titleSizeClass[config.title_size]}`}
         >
           {config.hero_title}
@@ -168,8 +172,12 @@ function Storefront() {
           {config.hero_subtitle}
         </p>
         <div
-          style={config.button_offset_y ? { transform: `translateY(${config.button_offset_y}px)` } : undefined}
-          className={`mt-9 flex ${buttonAlignClass[config.button_align]}`}
+          style={
+            (config.button_offset_x || config.button_offset_y)
+              ? { transform: `translate(${config.button_offset_x ?? 0}px, ${config.button_offset_y ?? 0}px)` }
+              : undefined
+          }
+          className={`mt-8 flex ${buttonAlignClass[config.button_align]}`}
         >
           <a
             href="#products"
