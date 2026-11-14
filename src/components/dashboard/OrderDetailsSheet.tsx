@@ -216,6 +216,11 @@ export function OrderDetailsSheet({
     : (configuredCarrierIds.find((id) => id !== "yalidine") ?? null);
   const shippingCarrier = shippingCarrierId ? carrierById(shippingCarrierId) : undefined;
 
+  const hasConnectedCarrier = Boolean(shippingCarrier);
+  const activeCarrierId = shippingCarrierId ?? "yalidine";
+  const activeCarrier = shippingCarrier ?? carrierById(activeCarrierId);
+  const activeCarrierName = activeCarrier ? t(activeCarrier.name) : "شركة التوصيل";
+
   const blockSpam = useMutation({
     mutationFn: async () => {
       if (!order) return;
@@ -428,23 +433,17 @@ export function OrderDetailsSheet({
                     <p className="text-xs text-muted-foreground">
                       {t("الشركة المتصلة: {name}", { name: t(shippingCarrier.name) })}
                     </p>
-                    {shippingCarrier.id === "yalidine" ? (
+                    {hasConnectedCarrier && (
                       <Button
+                        size="sm"
                         variant="outline"
                         className="w-full"
-                        disabled={readOnly || sendYalidine.isPending}
+                        disabled={readOnly || sendYalidine.isPending || !!order.tracking_number}
                         onClick={() => sendYalidine.mutate(order.id)}
                       >
                         {sendYalidine.isPending ? <Loader2 className="animate-spin" /> : <Send />}{" "}
-                        {t("إرسال إلى Yalidine")}
+                        {t("إرسال إلى {name}", { name: activeCarrierName })}
                       </Button>
-                    ) : (
-                      <p className="rounded-lg bg-warning-soft px-3 py-2 text-xs leading-5 text-warning">
-                        {t(
-                          "الشحن التلقائي عبر {name} قيد التجهيز. يمكنك تأكيد الطلب وطباعة قائمة التوصيل يدوياً.",
-                          { name: t(shippingCarrier.name) },
-                        )}
-                      </p>
                     )}
                   </>
                 ) : (

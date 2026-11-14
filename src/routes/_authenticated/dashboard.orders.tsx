@@ -64,6 +64,7 @@ import {
   type OrderStatus,
 } from "@/lib/commerce";
 import { downloadText, ordersToCsv } from "@/lib/csv";
+import { carrierById } from "@/lib/delivery-carriers";
 import { syncYalidineStatuses } from "@/lib/yalidine.functions";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { cn } from "@/lib/utils";
@@ -89,6 +90,23 @@ function OrdersPage() {
   const [toDelete, setToDelete] = useState<Order | null>(null);
   const [labelOrders, setLabelOrders] = useState<Order[] | null>(null);
   const { updateStatus, remove, sendYalidine } = useOrderActions();
+
+  const { data: connectedCarriers = [] } = useQuery({
+    queryKey: ["connected-carriers-list", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("carrier_integrations")
+        .select("carrier_id, connected")
+        .eq("store_id", store!.id)
+        .eq("connected", true);
+      return data ?? [];
+    },
+  });
+  const hasConnectedCarrier = connectedCarriers.length > 0;
+  const activeCarrierId = connectedCarriers[0]?.carrier_id ?? "yalidine";
+  const activeCarrier = carrierById(activeCarrierId);
+  const activeCarrierName = activeCarrier ? t(activeCarrier.name) : "شركة التوصيل";
 
   const syncShipping = useMutation({
     mutationFn: () => syncYalidineStatuses(),
@@ -298,9 +316,11 @@ function OrdersPage() {
         <DropdownMenuItem onClick={() => setLabelOrders([o])}>
           <Printer /> {t("طباعة بوليصة A6")}
         </DropdownMenuItem>
-        <DropdownMenuItem disabled={readOnly || !!o.tracking_number} onClick={() => sendYalidine.mutate(o.id)}>
-          <Send /> {t("إرسال إلى Yalidine")}
-        </DropdownMenuItem>
+        {hasConnectedCarrier && (
+          <DropdownMenuItem disabled={readOnly || !!o.tracking_number} onClick={() => sendYalidine.mutate(o.id)}>
+            <Send className="size-4" /> {t("إرسال إلى {name}", { name: activeCarrierName })}
+          </DropdownMenuItem>
+        )}
         {canManage && (
           <>
             <DropdownMenuSeparator />
