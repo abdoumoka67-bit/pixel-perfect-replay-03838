@@ -8,6 +8,7 @@ import {
   Info,
   Loader2,
   PlugZap,
+  Plus,
   Save,
   Search,
   Truck,
@@ -298,6 +299,8 @@ function CarrierHub({
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
   const [form, setForm] = useState<CarrierForm>({ ...EMPTY_CARRIER_FORM });
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [carrierPickerOpen, setCarrierPickerOpen] = useState(false);
+  const [carrierSearch, setCarrierSearch] = useState("");
 
   const yalidineCreds = useQuery({
     queryKey: ["yalidine", store.id],
@@ -344,6 +347,18 @@ function CarrierHub({
     id === "yalidine"
       ? Boolean(integrations["yalidine"]?.connected || yalidineCreds.data)
       : Boolean(integrations[id]?.connected);
+
+  const linkedCarriers = useMemo(
+    () => DELIVERY_CARRIERS.filter((c) => isLinked(c.id)),
+    [integrations, yalidineCreds.data],
+  );
+  const filteredAllCarriers = useMemo(() => {
+    const q = carrierSearch.trim().toLowerCase();
+    if (!q) return DELIVERY_CARRIERS;
+    return DELIVERY_CARRIERS.filter(
+      (c) => c.name.toLowerCase().includes(q) || c.note.toLowerCase().includes(q),
+    );
+  }, [carrierSearch]);
 
   const invalidateCarrierQueries = () => {
     qc.invalidateQueries({ queryKey: ["carrier-integrations", store.id] });
@@ -479,9 +494,42 @@ function CarrierHub({
             {t("اربط حسابك عند شركتك المفضلة من {n} شركة مدعومة.", { n: DELIVERY_CARRIERS.length })}
           </p>
         </div>
+        <Button
+          onClick={() => {
+            setCarrierSearch("");
+            setCarrierPickerOpen(true);
+          }}
+          className="shrink-0 gap-2 rounded-full bg-[#111111] text-white hover:bg-[#222222]"
+          size="sm"
+        >
+          <Plus className="size-4" /> {t("إضافة شركة توصيل")}
+        </Button>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {DELIVERY_CARRIERS.map((carrier) => {
+        {linkedCarriers.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center gap-3 rounded-2xl bg-card p-8 text-center shadow-card">
+            <span className="flex size-12 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange">
+              <Truck className="size-6" strokeWidth={1.6} />
+            </span>
+            <div>
+              <p className="font-medium">{t("لم تربط أي شركة توصيل بعد")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("اختر شركة من القائمة لربط حسابك وتفعيل التوصيل.")}
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                setCarrierSearch("");
+                setCarrierPickerOpen(true);
+              }}
+              size="sm"
+              className="gap-2 rounded-full bg-[#111111] text-white hover:bg-[#222222]"
+            >
+              <Plus className="size-4" /> {t("إضافة شركة توصيل")}
+            </Button>
+          </div>
+        ) : null}
+        {linkedCarriers.map((carrier) => {
           const linked = isLinked(carrier.id);
           return (
             <div
@@ -543,6 +591,64 @@ function CarrierHub({
           );
         })}
       </div>
+
+      <Dialog open={carrierPickerOpen} onOpenChange={setCarrierPickerOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("إضافة شركة توصيل")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={carrierSearch}
+                onChange={(event) => setCarrierSearch(event.target.value)}
+                placeholder={t("ابحث عن شركة توصيل...")}
+                className="ps-9"
+                dir="auto"
+              />
+            </div>
+            <div className="space-y-2">
+              {filteredAllCarriers.map((carrier) => {
+                const linked = isLinked(carrier.id);
+                return (
+                  <div
+                    key={carrier.id}
+                    className="flex items-center gap-3 rounded-xl border border-border p-3"
+                  >
+                    <CarrierLogo id={carrier.id} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{t(carrier.name)}</p>
+                      <p className="line-clamp-1 text-xs text-muted-foreground">{t(carrier.note)}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={linked ? "outline" : "secondary"}
+                      className={linked ? "shrink-0" : "shrink-0 bg-[#F1F2F4] text-[#111111] hover:bg-[#E2E4E8] font-medium shadow-none"}
+                      disabled={readOnly}
+                      onClick={() => {
+                        setCarrierPickerOpen(false);
+                        openLink(carrier);
+                      }}
+                    >
+                      {linked
+                        ? t("تعديل الربط")
+                        : carrier.category === "private"
+                          ? t("إضافة الساعي")
+                          : t("ربط API")}
+                    </Button>
+                  </div>
+                );
+              })}
+              {filteredAllCarriers.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  {t("لا توجد شركة تطابق بحثك.")}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editing} onOpenChange={(next) => !next && setEditing(null)}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
