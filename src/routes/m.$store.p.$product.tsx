@@ -94,6 +94,9 @@ function ProductLanding() {
   const showLocation = formFields?.wilaya_commune !== false;
   const showAddress = formFields?.address !== false;
   const showDelivery = formFields?.delivery_type !== false;
+  const showConfirmPhone = formFields?.confirm_phone === true;
+  const showBackupPhone = formFields?.backup_phone === true;
+  const showNotes = formFields?.notes === true;
   const formButtonRadius =
     formConfig?.button_radius === "none"
       ? "0px"
@@ -112,6 +115,9 @@ function ProductLanding() {
   const [active, setActive] = useState(0);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [confirmPhone, setConfirmPhone] = useState("");
+  const [backupPhone, setBackupPhone] = useState("");
+  const [notes, setNotes] = useState("");
   const [wilaya, setWilaya] = useState<string>("");
   const [commune, setCommune] = useState<string>("");
   const [address, setAddress] = useState("");
@@ -165,6 +171,14 @@ function ProductLanding() {
     setTouched(true);
     if (showName && name.trim().length < 3) { toast.error(t("يرجى كتابة الاسم واللقب.")); return; }
     if (showPhone && !phoneOk) { toast.error(t("رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")); return; }
+    if (showConfirmPhone && confirmPhone.trim() !== phone.trim()) {
+      toast.error(t("رقم الهاتف غير متطابق. يرجى التأكد من كتابة نفس الرقم."));
+      return;
+    }
+    if (showBackupPhone && backupPhone.trim() && !isValidDzPhone(backupPhone)) {
+      toast.error(t("رقم الهاتف الاحتياطي غير صحيح."));
+      return;
+    }
     if (showLocation && !wCode) { toast.error(t("يرجى اختيار الولاية.")); return; }
     if (showLocation && !commune) { toast.error(t("يرجى اختيار البلدية.")); return; }
     if (currentShip == null) { toast.error(t("نوع التوصيل هذا غير متوفر في ولايتك.")); return; }
@@ -172,6 +186,11 @@ function ProductLanding() {
     submitLock.current = true;
     setBusy(true);
     try {
+      const extraDetails = [
+        address.trim(),
+        backupPhone.trim() ? `${t("هاتف احتياطي")}: ${backupPhone.trim()}` : "",
+        notes.trim() ? `${t("ملاحظات")}: ${notes.trim()}` : "",
+      ].filter(Boolean).join(" | ");
       const args = {
         _product_id: product.id,
         _quantity: qty,
@@ -180,7 +199,7 @@ function ProductLanding() {
         _wilaya_code: wCode ?? 0,
         _wilaya_name: wilayaByCode(wCode ?? 0)?.ar ?? "",
         _commune: commune,
-        _address: address,
+        _address: extraDetails,
         _delivery_type: delivery,
         ...(product.sizes.length ? { _size: size } : {}),
         ...(product.colors.length ? { _color: color } : {}),
@@ -363,6 +382,43 @@ function ProductLanding() {
                   {touched && !phoneOk && <p className="text-xs text-danger">{t("يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")}</p>}
                 </div>
               )}
+              {showConfirmPhone && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="cconfirm_phone">{t("تأكيد رقم الهاتف")}</Label>
+                  <Input
+                    id="cconfirm_phone"
+                    dir="ltr"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={14}
+                    placeholder={t("أعد كتابة رقم هاتفك")}
+                    value={confirmPhone}
+                    onChange={(e) => setConfirmPhone(e.target.value.replace(/[^0-9 ]/g, ""))}
+                    className="h-12 text-base focus:border-[var(--form-focus)]"
+                    style={formInputStyle}
+                  />
+                  {touched && showConfirmPhone && confirmPhone && confirmPhone.trim() !== phone.trim() && (
+                    <p className="text-xs text-danger">{t("رقم الهاتف غير متطابق.")}</p>
+                  )}
+                </div>
+              )}
+              {showBackupPhone && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="cbackup_phone">{t("رقم هاتف إضافي (احتياطي)")}</Label>
+                  <Input
+                    id="cbackup_phone"
+                    dir="ltr"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={14}
+                    placeholder="05 / 06 / 07 XX XX XX XX"
+                    value={backupPhone}
+                    onChange={(e) => setBackupPhone(e.target.value.replace(/[^0-9 ]/g, ""))}
+                    className="h-12 text-base focus:border-[var(--form-focus)]"
+                    style={formInputStyle}
+                  />
+                </div>
+              )}
               {showLocation && (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
@@ -409,6 +465,19 @@ function ProductLanding() {
                 <Label htmlFor="caddr">{t("العنوان (اختياري)")}</Label>
                 <Input id="caddr" value={address} onChange={(e) => setAddress(e.target.value)} className="h-12 focus:border-[var(--form-focus)]" style={formInputStyle} placeholder={t("الحي، الشارع...")} />
               </div>
+              )}
+              {showNotes && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="cnotes">{t("ملاحظات إضافية حول الطلب")}</Label>
+                  <Input
+                    id="cnotes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="h-12 focus:border-[var(--form-focus)]"
+                    style={formInputStyle}
+                    placeholder={t("أي تفاصيل إضافية تريد إعلامنا بها...")}
+                  />
+                </div>
               )}
 
               {showDelivery && (
