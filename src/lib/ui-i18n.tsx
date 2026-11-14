@@ -851,6 +851,63 @@ const en: Record<string, string> = {
   "2. اختر «إضافة إلى الشاشة الرئيسية».": "2. Choose “Add to Home Screen”.",
   "3. اضغط «إضافة» في الزاوية العلوية.": "3. Tap “Add” in the top corner.",
   "فهمت ذلك": "Got it",
+
+  // Storefront theme customizer & order form
+  "نموذج الطلب": "Order form",
+  "تحكم في حقول الطلب وألوان البطاقة والزر التي يراها عميلك.":
+    "Customize order fields, card colors, and button shown to your customer.",
+  "حقول النموذج": "Form fields",
+  "الاسم الكامل للعميل": "Customer's full name",
+  "رقم الاتصال الأساسي": "Primary contact number",
+  "تأكيد رقم الهاتف": "Confirm phone number",
+  "إعادة إدخال الهاتف للتحقق": "Re-enter phone number for verification",
+  "رقم هاتف احتياطي": "Backup phone number",
+  "رقم ثانٍ للتواصل": "Secondary number for contact",
+  "الولاية والبلدية": "Wilaya & Commune",
+  "تحديد منطقة التوصيل": "Select delivery area",
+  "طريقة التوصيل": "Delivery type",
+  "للمنزل أو المكتب": "Home or stop-desk",
+  "ملاحظات إضافية للعميل": "Additional customer instructions",
+  "نصوص النموذج": "Form text",
+  "نص زر الطلب": "Order button text",
+  "تأكيد الطلب الآن": "Confirm order now",
+  "نص الضمان أسفل الزر": "Guarantee text below button",
+  "الدفع عند الاستلام · ضمان الفحص قبل الدفع": "Cash on delivery · Inspect before paying",
+  "استدارة زر الطلب": "Order button radius",
+  "ألوان النموذج": "Form colors",
+  "خلفية البطاقة": "Card background",
+  "حدود الحقول": "Field borders",
+  "لون التركيز عند الكتابة": "Focus color on typing",
+  "خلفية زر الطلب": "Order button background",
+  "لون نص زر الطلب": "Order button text color",
+  "مقياس تحريك النص عمودياً": "Vertical text offset slider",
+  "مقياس تحريك الزر عمودياً": "Vertical button offset slider",
+  "شريط الإعلان العلوي": "Top announcement bar",
+  "شارات الثقة": "Trust badges",
+  "العربية": "Arabic",
+  "اللاتينية": "Latin",
+  "افتراضي": "Default",
+
+  // Product landing order form fields & errors
+  "رقم الهاتف غير متطابق. يرجى التأكد من كتابة نفس الرقم.":
+    "Phone numbers do not match. Please ensure both numbers are identical.",
+  "رقم الهاتف الاحتياطي غير صحيح.": "Invalid backup phone number.",
+  "هاتف احتياطي": "Backup phone",
+  "أعد كتابة رقم هاتفك": "Re-enter your phone number",
+  "رقم الهاتف غير متطابق.": "Phone numbers do not match.",
+  "رقم هاتف إضافي (احتياطي)": "Additional phone number (backup)",
+  "ملاحظات إضافية حول الطلب": "Additional notes about your order",
+  "أي تفاصيل إضافية تريد إعلامنا بها...": "Any extra details you want to let us know...",
+  "عميل": "Customer",
+
+  // Delivery & orders
+  "إضافة شركة توصيل": "Add delivery carrier",
+  "ابحث عن شركة توصيل...": "Search for a delivery carrier...",
+  "اختر شركة من القائمة لربط حسابك وتفعيل التوصيل.":
+    "Choose a company from the list to link your account and enable delivery.",
+  "لا توجد شركة تطابق بحثك.": "No carrier matches your search.",
+  "لم تربط أي شركة توصيل بعد": "No delivery carriers connected yet",
+  "تحديث حالات الشحن": "Sync shipping statuses",
 };
 
 const fr: Record<string, string> = {
@@ -1690,6 +1747,65 @@ const fr: Record<string, string> = {
   "2. اختر «إضافة إلى الشاشة الرئيسية».": "2. Choisissez « Sur l'écran d'accueil ».",
   "3. اضغط «إضافة» في الزاوية العلوية.": "3. Touchez « Ajouter » dans le coin supérieur.",
   "فهمت ذلك": "Compris",
+
+  // Storefront theme customizer & order form
+  "نموذج الطلب": "Formulaire de commande",
+  "تحكم في حقول الطلب وألوان البطاقة والزر التي يراها عميلك.":
+    "Personnalisez les champs de commande, les couleurs de la carte et le bouton affichés à votre client.",
+  "حقول النموذج": "Champs du formulaire",
+  "الاسم الكامل للعميل": "Nom complet du client",
+  "رقم الاتصال الأساسي": "Numéro de contact principal",
+  "تأكيد رقم الهاتف": "Confirmer le numéro de téléphone",
+  "إعادة إدخال الهاتف للتحقق": "Ressaisir le numéro pour vérification",
+  "رقم هاتف احتياطي": "Numéro de téléphone secondaire",
+  "رقم ثانٍ للتواصل": "Deuxième numéro de contact",
+  "الولاية والبلدية": "Wilaya et Commune",
+  "تحديد منطقة التوصيل": "Sélectionner la zone de livraison",
+  "طريقة التوصيل": "Mode de livraison",
+  "للمنزل أو المكتب": "À domicile ou au bureau",
+  "ملاحظات إضافية للعميل": "Instructions supplémentaires du client",
+  "نصوص النموذج": "Textes du formulaire",
+  "نص زر الطلب": "Texte du bouton de commande",
+  "تأكيد الطلب الآن": "Confirmer la commande maintenant",
+  "نص الضمان أسفل الزر": "Texte de garantie sous le bouton",
+  "الدفع عند الاستلام · ضمان الفحص قبل الدفع":
+    "Paiement à la livraison · Vérification avant paiement",
+  "استدارة زر الطلب": "Arrondi du bouton de commande",
+  "ألوان النموذج": "Couleurs du formulaire",
+  "خلفية البطاقة": "Arrière-plan de la carte",
+  "حدود الحقول": "Bordures des champs",
+  "لون التركيز عند الكتابة": "Couleur de focus lors de la saisie",
+  "خلفية زر الطلب": "Arrière-plan du bouton de commande",
+  "لون نص زر الطلب": "Couleur du texte du bouton",
+  "مقياس تحريك النص عمودياً": "Curseur de décalage vertical du texte",
+  "مقياس تحريك الزر عمودياً": "Curseur de décalage vertical du bouton",
+  "شريط الإعلان العلوي": "Barre d'annonce supérieure",
+  "شارات الثقة": "Badges de confiance",
+  "العربية": "Arabe",
+  "اللاتينية": "Latin",
+  "افتراضي": "Par défaut",
+
+  // Product landing order form fields & errors
+  "رقم الهاتف غير متطابق. يرجى التأكد من كتابة نفس الرقم.":
+    "Les numéros de téléphone ne correspondent pas. Veuillez entrer le même numéro.",
+  "رقم الهاتف الاحتياطي غير صحيح.": "Numéro de téléphone secondaire invalide.",
+  "هاتف احتياطي": "Téléphone secondaire",
+  "أعد كتابة رقم هاتفك": "Retapez votre numéro de téléphone",
+  "رقم الهاتف غير متطابق.": "Les numéros ne correspondent pas.",
+  "رقم هاتف إضافي (احتياطي)": "Numéro de téléphone supplémentaire (secondaire)",
+  "ملاحظات إضافية حول الطلب": "Remarques supplémentaires sur la commande",
+  "أي تفاصيل إضافية تريد إعلامنا بها...":
+    "Tout détail supplémentaire que vous souhaitez nous communiquer...",
+  "عميل": "Client",
+
+  // Delivery & orders
+  "إضافة شركة توصيل": "Ajouter une société de livraison",
+  "ابحث عن شركة توصيل...": "Rechercher une société de livraison...",
+  "اختر شركة من القائمة لربط حسابك وتفعيل التوصيل.":
+    "Choisissez une société dans la liste pour lier votre compte et activer la livraison.",
+  "لا توجد شركة تطابق بحثك.": "Aucune société ne correspond à votre recherche.",
+  "لم تربط أي شركة توصيل بعد": "Aucune société de livraison connectée pour le moment",
+  "تحديث حالات الشحن": "Synchroniser les statuts d'expédition",
 };
 
 /** Translates an Arabic UI string into `language`, falling back to Arabic. */
