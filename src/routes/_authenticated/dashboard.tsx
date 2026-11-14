@@ -42,7 +42,7 @@ function DashboardLayout() {
         <Outlet />
       ) : (
         <div className="mx-auto max-w-md rounded-3xl border bg-card p-8 text-center shadow-card">
-          <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange">
+          <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand">
             <ShieldOff className="size-6" strokeWidth={1.6} />
           </span>
           <h1 className="mt-4 text-xl font-medium">{t("هذه الصفحة غير متاحة لك")}</h1>

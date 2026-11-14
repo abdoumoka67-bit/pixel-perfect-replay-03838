@@ -99,7 +99,7 @@ function PlanBadge({ plan }: { plan: "Start" | "Pro" }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
-        isPro ? "bg-accent-orange-soft text-accent-orange" : "border border-current/30 text-muted-foreground",
+        isPro ? "bg-brand-soft text-brand" : "border border-current/30 text-muted-foreground",
       )}
     >
       {plan}
@@ -155,7 +155,7 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
         <span>{t(item.label)}</span>
         <span className="ms-auto flex items-center gap-2">
           {item.to === "/dashboard/orders" && newOrders > 0 && (
-            <span className="flex min-w-5 items-center justify-center rounded-full bg-accent-orange px-1.5 text-[10px] font-medium text-primary-foreground num">
+            <span className="flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-medium text-primary-foreground num">
               {newOrders}
             </span>
           )}

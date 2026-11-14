@@ -509,7 +509,7 @@ function OrdersPage() {
               <StatusBadge status={o.status} />
               <a
                 href={`tel:${o.phone}`}
-                className="flex size-8 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange transition-colors hover:bg-accent-orange/15"
+                className="flex size-8 items-center justify-center rounded-full bg-brand-soft text-brand transition-colors hover:bg-brand/15"
                 title={t("اتصال")}
               >
                 <Phone className="size-4" />
@@ -518,7 +518,7 @@ function OrdersPage() {
                 href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))}
                 target="_blank"
                 rel="noreferrer"
-                className="flex size-8 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange transition-colors hover:bg-accent-orange/15"
+                className="flex size-8 items-center justify-center rounded-full bg-brand-soft text-brand transition-colors hover:bg-brand/15"
                 title={t("واتساب")}
               >
                 <MessageCircle className="size-4" />

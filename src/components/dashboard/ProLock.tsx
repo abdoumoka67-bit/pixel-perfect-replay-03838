@@ -10,7 +10,7 @@ export function ProLock({ title, description, points }: { title: string; descrip
   const t = useTr();
   return (
     <div className="mx-auto max-w-xl rounded-3xl border bg-card p-8 text-center shadow-card">
-      <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange">
+      <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand">
         <Lock className="size-6" strokeWidth={1.6} />
       </span>
       <span className="mt-5 inline-flex rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">Pro</span>

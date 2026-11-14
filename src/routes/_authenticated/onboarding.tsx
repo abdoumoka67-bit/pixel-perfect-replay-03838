@@ -341,7 +341,7 @@ function Onboarding() {
         </div>
 
         <div className="mt-8 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-accent-orange-soft px-3 py-1.5 text-xs text-accent-orange">
+          <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1.5 text-xs text-brand">
             <Sparkles className="size-3.5" /> {t("onb.trial")}
           </span>
           <h1 className="mt-4 text-3xl font-medium text-primary">{currentTitle}</h1>

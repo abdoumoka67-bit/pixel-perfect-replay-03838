@@ -485,7 +485,7 @@ function CarrierHub({
   return (
     <section className="mb-10">
       <div className="mb-3 flex items-center gap-2">
-        <span className="flex size-9 items-center justify-center rounded-xl bg-accent-orange-soft text-accent-orange">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-brand-soft text-brand">
           <Truck className="size-5" strokeWidth={1.6} />
         </span>
         <div className="flex-1">
@@ -508,7 +508,7 @@ function CarrierHub({
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {linkedCarriers.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center gap-3 rounded-2xl bg-card p-8 text-center shadow-card">
-            <span className="flex size-12 items-center justify-center rounded-full bg-accent-orange-soft text-accent-orange">
+            <span className="flex size-12 items-center justify-center rounded-full bg-brand-soft text-brand">
               <Truck className="size-6" strokeWidth={1.6} />
             </span>
             <div>

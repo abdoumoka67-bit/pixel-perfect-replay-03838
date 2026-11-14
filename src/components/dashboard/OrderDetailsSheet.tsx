@@ -358,7 +358,7 @@ export function OrderDetailsSheet({
               <section>
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="font-medium">{t("سجل محاولات التأكيد")}</h3>
-                  <span className="rounded-full bg-accent-orange-soft px-2.5 py-0.5 text-xs font-medium text-accent-orange">
+                  <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-medium text-brand">
                     <span className="num">{order.call_attempts}</span> {t("محاولات")}
                   </span>
                 </div>
