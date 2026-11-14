@@ -67,6 +67,8 @@ export function StorefrontThemeSettings({
   const [heroOverlayOpacity, setHeroOverlayOpacity] = useState(40);
   const [fontFamily, setFontFamily] = useState("Tajawal");
   const [titleSize, setTitleSize] = useState("xl");
+  const [titleOffsetY, setTitleOffsetY] = useState(0);
+  const [buttonOffsetY, setButtonOffsetY] = useState(0);
   const [textAlign, setTextAlign] = useState("center");
   const [buttonBgColor, setButtonBgColor] = useState("#FFFFFF");
   const [buttonTextColor, setButtonTextColor] = useState("#111111");
@@ -124,6 +126,8 @@ export function StorefrontThemeSettings({
     setHeroOverlayOpacity(cfg.hero_overlay_opacity);
     setFontFamily(cfg.font_family);
     setTitleSize(cfg.title_size);
+    setTitleOffsetY(cfg.title_offset_y ?? 0);
+    setButtonOffsetY(cfg.button_offset_y ?? 0);
     setTextAlign(cfg.text_align);
     setButtonBgColor(cfg.button_bg_color);
     setButtonTextColor(cfg.button_text_color);
@@ -354,12 +358,14 @@ export function StorefrontThemeSettings({
         hero_overlay_opacity: heroOverlayOpacity,
         font_family: fontFamily,
         title_size: titleSize,
+        title_offset_y: titleOffsetY,
         text_align: textAlign,
         button_bg_color: buttonBgColor,
         button_text_color: buttonTextColor,
         button_size: buttonSize,
         button_radius: buttonRadius,
         button_align: buttonAlign,
+        button_offset_y: buttonOffsetY,
         bar_enabled: barEnabled,
         bar_text: barText.trim(),
         bar_bg_color: barBgColor,
@@ -700,6 +706,23 @@ export function StorefrontThemeSettings({
                     ] as const).map(([size, label]) => <option key={size} value={size}>{t(label)}</option>)}
                   </select>
                 </div>
+                <div className="space-y-1.5 pt-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="title-offset">{t("مقياس تحريك النص عمودياً")}</Label>
+                    <span className="text-xs font-mono text-muted-foreground">{titleOffsetY > 0 ? `+${titleOffsetY}px` : `${titleOffsetY}px`}</span>
+                  </div>
+                  <input
+                    id="title-offset"
+                    type="range"
+                    min="-40"
+                    max="40"
+                    step="2"
+                    value={titleOffsetY}
+                    onChange={(e) => setTitleOffsetY(Number(e.target.value))}
+                    disabled={readOnly}
+                    className="h-2 w-full cursor-pointer accent-brand"
+                  />
+                </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="text-align">{t("محاذاة النص")}</Label>
                   <select id="text-align" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" value={textAlign} disabled={readOnly} onChange={(event) => setTextAlign(event.target.value)}>
@@ -758,6 +781,23 @@ export function StorefrontThemeSettings({
               <OptionButtons label={t("حجم الزر")} value={buttonSize} values={["sm", "md", "lg"]} onChange={setButtonSize} disabled={readOnly} t={t} />
               <OptionButtons label={t("استدارة الحواف")} value={buttonRadius} values={["none", "md", "lg", "full"]} onChange={setButtonRadius} disabled={readOnly} t={t} />
               <OptionButtons label={t("محاذاة الزر")} value={buttonAlign} values={["start", "center", "end"]} onChange={setButtonAlign} disabled={readOnly} t={t} />
+              <div className="space-y-1.5 pt-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="button-offset">{t("مقياس تحريك الزر عمودياً")}</Label>
+                  <span className="text-xs font-mono text-muted-foreground">{buttonOffsetY > 0 ? `+${buttonOffsetY}px` : `${buttonOffsetY}px`}</span>
+                </div>
+                <input
+                  id="button-offset"
+                  type="range"
+                  min="-40"
+                  max="40"
+                  step="2"
+                  value={buttonOffsetY}
+                  onChange={(e) => setButtonOffsetY(Number(e.target.value))}
+                  disabled={readOnly}
+                  className="h-2 w-full cursor-pointer accent-brand"
+                />
+              </div>
             </div>
           )}
 

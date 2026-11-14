@@ -158,11 +158,19 @@ function Storefront() {
         style={heroBackground}
         className={`px-6 py-20 transition-colors sm:py-28 ${textAlignClass[config.text_align]}`}
       >
-        <h1 className={`font-normal leading-tight ${titleSizeClass[config.title_size]}`}>{config.hero_title}</h1>
+        <h1
+          style={config.title_offset_y ? { transform: `translateY(${config.title_offset_y}px)` } : undefined}
+          className={`font-normal leading-tight ${titleSizeClass[config.title_size]}`}
+        >
+          {config.hero_title}
+        </h1>
         <p className={`mt-5 max-w-md text-lg font-light leading-9 opacity-90 sm:text-xl ${config.text_align === "center" ? "mx-auto" : config.text_align === "start" ? "me-auto" : "ms-auto"}`}>
           {config.hero_subtitle}
         </p>
-        <div className={`mt-9 flex ${buttonAlignClass[config.button_align]}`}>
+        <div
+          style={config.button_offset_y ? { transform: `translateY(${config.button_offset_y}px)` } : undefined}
+          className={`mt-9 flex ${buttonAlignClass[config.button_align]}`}
+        >
           <a
             href="#products"
             style={{ backgroundColor: config.button_bg_color, color: config.button_text_color }}

@@ -273,12 +273,14 @@ export const storefrontConfigSchema = z.object({
   hero_overlay_opacity: z.number().int().min(0).max(90).default(40),
   font_family: z.enum(STOREFRONT_FONTS).default("Tajawal"),
   title_size: z.enum(HERO_TITLE_SIZES).default("xl"),
+  title_offset_y: z.number().int().min(-50).max(50).default(0),
   text_align: z.enum(ELEMENT_ALIGNMENTS).default("center"),
   button_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
   button_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
   button_size: z.enum(BUTTON_SIZES).default("md"),
   button_radius: z.enum(BUTTON_RADII).default("lg"),
   button_align: z.enum(ELEMENT_ALIGNMENTS).default("center"),
+  button_offset_y: z.number().int().min(-50).max(50).default(0),
   bar_enabled: z.boolean().default(true),
   bar_text: z.string().trim().max(80).default("مرحبا بك في متجرنا"),
   bar_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
@@ -360,12 +362,14 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
     hero_overlay_opacity: 40,
     font_family: "Tajawal" as const,
     title_size: "xl" as const,
+    title_offset_y: 0,
     text_align: "center" as const,
     button_bg_color: "#FFFFFF",
     button_text_color: "#111111",
     button_size: "md" as const,
     button_radius: "lg" as const,
     button_align: "center" as const,
+    button_offset_y: 0,
     bar_bg_color: "#111111",
     bar_text_color: "#FFFFFF",
   };
@@ -470,6 +474,19 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
     ELEMENT_ALIGNMENTS.some((align) => align === obj["button_align"])
       ? (obj["button_align"] as (typeof ELEMENT_ALIGNMENTS)[number])
       : defaultDesign.button_align;
+
+  const rawTitleOffset = obj["title_offset_y"];
+  const title_offset_y =
+    typeof rawTitleOffset === "number" && Number.isFinite(rawTitleOffset)
+      ? Math.max(-50, Math.min(50, Math.round(rawTitleOffset)))
+      : 0;
+
+  const rawButtonOffset = obj["button_offset_y"];
+  const button_offset_y =
+    typeof rawButtonOffset === "number" && Number.isFinite(rawButtonOffset)
+      ? Math.max(-50, Math.min(50, Math.round(rawButtonOffset)))
+      : 0;
+
   const bar_bg_color = isHexColor(obj["bar_bg_color"]) ? obj["bar_bg_color"] : defaultDesign.bar_bg_color;
   const bar_text_color = isHexColor(obj["bar_text_color"]) ? obj["bar_text_color"] : defaultDesign.bar_text_color;
 
@@ -556,12 +573,14 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
     hero_overlay_opacity,
     font_family,
     title_size,
+    title_offset_y,
     text_align,
     button_bg_color,
     button_text_color,
     button_size,
     button_radius,
     button_align,
+    button_offset_y,
     bar_enabled,
     bar_text,
     bar_bg_color,
