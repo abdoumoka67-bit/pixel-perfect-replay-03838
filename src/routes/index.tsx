@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,11 @@ import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
 import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
+import { useInView } from "@/hooks/use-in-view";
 import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
+import { DashboardShowcase } from "@/components/landing/DashboardShowcase";
+import { DispatchShowcase } from "@/components/landing/DispatchShowcase";
+import { PixelAttribution } from "@/components/landing/PixelAttribution";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -104,47 +109,125 @@ function FeaturesAccordion() {
   );
 }
 
+/**
+ * Draws a desktop selection over the closing phrase of the hero: a blue marquee
+ * grows with a mouse pointer dragged from the start corner to the opposite one,
+ * holds so the phrase stays readable, then fades out. Timing and corners live in
+ * styles.css (see `hero-select-*`) and respect `prefers-reduced-motion`.
+ */
+function TextSelectionHighlight({
+  children,
+  isRtl,
+  className,
+}: {
+  children: string;
+  isRtl: boolean;
+  className?: string;
+}) {
+  return (
+    <span className={cn("relative inline-block", className)}>
+      {children}
+      <span aria-hidden className="hero-select-layer pointer-events-none absolute inset-0">
+        <span className="hero-select-marquee absolute start-0 top-0 rounded-[2px] border-[1.5px] border-blue-600/80 bg-blue-500/15" />
+        <span
+          className="hero-select-cursor absolute start-0 top-0 h-[22px] w-[18px]"
+          style={{ transform: isRtl ? "translateX(100%)" : undefined }}
+        >
+          <svg
+            width={18}
+            height={22}
+            viewBox="0 0 18 22"
+            className="h-full w-full overflow-visible drop-shadow-sm pointer-events-none select-none"
+            style={{
+              width: "18px",
+              height: "22px",
+              transformOrigin: "0 0",
+              transform: isRtl ? "scaleX(-1)" : undefined,
+            }}
+          >
+            <path
+              d="M0 0 L0 17 L4.4 12.8 L6.9 18.4 L9.4 17.3 L6.9 11.8 L12.6 11.8 Z"
+              fill="#FFFFFF"
+              stroke="#1F2937"
+              strokeWidth="1.3"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </span>
+    </span>
+  );
+}
+
 function Home() {
   const plans = Route.useLoaderData();
   const navigate = useNavigate();
-  // The public site opens in English by default; the visitor can switch language.
-  const { language, setLanguage } = usePublicLanguage("en");
+  // The public site opens in French by default; the visitor can switch language.
+  const { language, setLanguage } = usePublicLanguage("fr");
   const isRtl = language === "ar";
   useDocumentLanguage(language);
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
   const [heroLine1 = "", heroLine2] = t("landing.hero.title").split("\n");
   const [email, setEmail] = useState("");
+  // Pause the selection loop while the hero is off screen.
+  const { ref: heroRef, inView: heroInView } = useInView<HTMLElement>();
+
+  useEffect(() => {
+    // A merchant coming back from Google lands on the hash/code URL, and anyone
+    // with a stored session should never see the marketing page again.
+    const hash = window.location.hash;
+    const search = window.location.search;
+    const isAuthReturn = hash.includes("access_token") || search.includes("code=");
+    // A provider error must be shown, not swallowed by a redirect loop.
+    if (hash.includes("error") || search.includes("error")) return;
+
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let attempts = 0;
+
+    const goDashboard = () => {
+      if (!active) return;
+      void navigate({ to: "/dashboard", replace: true });
+    };
+
+    const check = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!active) return;
+      if (data.session) {
+        goDashboard();
+        return;
+      }
+      // The client may still be exchanging the OAuth code, so retry briefly.
+      if (isAuthReturn && attempts < 10) {
+        attempts += 1;
+        timer = setTimeout(() => void check(), 400);
+      }
+    };
+    void check();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) goDashboard();
+    });
+
+    return () => {
+      active = false;
+      if (timer) clearTimeout(timer);
+      authListener.subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   function renderHeroLine1() {
     let part1 = "متجرك";
-    if (language === "fr") part1 = "Votre Boutique";
-    else if (language === "en") part1 = "Your Store";
-    // Keep the translated remainder (and its capitalization) after the pill.
-    const part2 = heroLine1.startsWith(part1) ? heroLine1.slice(part1.length).trimStart() : "";
+    if (language === "fr") part1 = "Votre boutique";
+    else if (language === "en") part1 = "Your store";
+    // Keep the translated remainder (and its capitalization) after the lead-in.
+    const part2 = heroLine1.startsWith(part1)
+      ? heroLine1.slice(part1.length).trimStart().replace(/^,\s*/, "")
+      : "";
 
     return (
-      <span className="inline-flex flex-wrap items-center justify-center gap-y-1">
+      <span className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 lg:flex-nowrap lg:whitespace-nowrap">
         <span>{part1}</span>{" "}
-        <span className="inline-flex items-center justify-center align-middle mx-1.5 sm:mx-2 p-1.5 sm:p-2 rounded-xl bg-neutral-100/90 border border-neutral-200/70 shadow-xs">
-          <svg className="size-5 sm:size-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-            {/* Blue Bag behind */}
-            <rect x="7" y="5" width="13" height="15" rx="2" fill="#3B82F6" />
-            <path
-              d="M11 5V3.5C11 2.67 11.67 2 12.5 2H14.5C15.33 2 16 2.67 16 3.5V5"
-              stroke="#1D4ED8"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            {/* Yellow Bag in front */}
-            <rect x="4" y="8" width="13" height="14" rx="2" fill="#FACC15" />
-            <path
-              d="M8 8V6.5C8 5.67 8.67 5 9.5 5H11.5C12.33 5 13 5.67 13 6.5V8"
-              stroke="#CA8A04"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </span>{" "}
         {part2 && <span>{part2}</span>}
       </span>
     );
@@ -170,22 +253,35 @@ function Home() {
           </div>
         </header>
 
-        <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-12 text-center sm:pt-20">
+        <section
+          ref={heroRef}
+          data-active={heroInView}
+          className={cn(
+            "hero-stage mx-auto w-full max-w-3xl px-5 text-center lg:max-w-7xl",
+            isRtl ? "pb-10 pt-4 sm:pb-10 sm:pt-8" : "pb-16 pt-12 sm:pt-20",
+          )}
+        >
           <h1
             className={cn(
-              "mx-auto max-w-3xl text-balance break-words text-center leading-tight text-[#1D1D20]",
-              "text-3xl sm:text-4xl md:text-5xl lg:text-6xl flex flex-col items-center gap-2.5 sm:gap-3.5",
-              isRtl ? "font-normal md:font-light" : "font-medium sm:font-semibold tracking-tight",
+              "mx-auto max-w-3xl text-balance break-words text-center font-cairo font-medium text-[#1D1D20] lg:max-w-none",
+              "flex flex-col items-center",
+              isRtl ? "text-hero-ar gap-2" : "text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl gap-3 sm:gap-4",
+              isRtl && "lg:flex-row lg:flex-nowrap lg:justify-center lg:gap-3",
+              !isRtl && "leading-[1.06] tracking-tight",
+              isRtl && "tracking-normal",
             )}
           >
             {renderHeroLine1()}
             {heroLine2 && (
-              <span className="inline-flex items-center px-4 py-1 sm:px-5 sm:py-1.5 rounded-full bg-neutral-100/80 border border-neutral-200/70 text-[#1D1D20] text-[0.8em] font-normal tracking-tight shadow-xs">
+              <TextSelectionHighlight
+                isRtl={isRtl}
+                className={cn(isRtl && "lg:shrink-0 lg:whitespace-nowrap")}
+              >
                 {heroLine2}
-              </span>
+              </TextSelectionHighlight>
             )}
           </h1>
-          <p className="mt-4 mb-8 text-sm text-[#6B6B6B] sm:text-base">
+          <p className={cn("text-sm text-[#6B6B6B] sm:text-base", isRtl ? "mt-2 mb-5" : "mt-4 mb-8")}>
             {t("landing.hero.sub")}
           </p>
           <form
@@ -213,6 +309,10 @@ function Home() {
         </section>
 
         <DeliveryLogosMarquee />
+
+        <DashboardShowcase />
+        <DispatchShowcase />
+        <PixelAttribution />
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16">
           <div className="mb-8 text-center">

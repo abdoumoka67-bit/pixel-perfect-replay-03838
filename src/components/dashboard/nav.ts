@@ -4,6 +4,7 @@ import {
   History,
   LayoutDashboard,
   Package,
+  Palette,
   Settings,
   ShoppingBag,
   Truck,
@@ -17,6 +18,7 @@ export type NavItem = {
     | "/dashboard"
     | "/dashboard/orders"
     | "/dashboard/products"
+    | "/dashboard/design"
     | "/dashboard/analytics"
     | "/dashboard/activity"
     | "/dashboard/team"
@@ -34,6 +36,7 @@ export const MAIN_NAV: NavItem[] = [
   { to: "/dashboard/products", label: "المنتجات", icon: Package, area: "products" },
   { to: "/dashboard/analytics", label: "الإحصائيات", icon: BarChart3, area: "analytics" },
   { to: "/dashboard/activity", label: "سجل الأنشطة", icon: History, area: "activity" },
+  { to: "/dashboard/design", label: "تصميم المتجر", icon: Palette, area: "design" },
 ];
 
 export const SETTINGS_NAV: NavItem[] = [

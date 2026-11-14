@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 import { Check, Loader2, Lock, Minus, Plus, ShieldCheck, Truck, Banknote, Home, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,11 +10,35 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StoreChrome, StoreFaq } from "@/components/store/StoreChrome";
-import { formatDZD, friendlyError, isValidDzPhone, normalizeDzPhone, orderTotal, shippingPrice, type DeliveryType } from "@/lib/commerce";
+import {
+  formatDZD,
+  friendlyError,
+  isValidDzPhone,
+  normalizeDzPhone,
+  orderTotal,
+  shippingPrice,
+  ORDER_NETWORK_ERROR,
+  ORDER_TECHNICAL_ERROR,
+  type DeliveryType,
+} from "@/lib/commerce";
 import { cn } from "@/lib/utils";
-import { trackPixel } from "@/lib/pixels";
+import { identifyPixelCustomer, trackPixel } from "@/lib/pixels";
+import { readAttribution } from "@/lib/attribution";
 import { useStorefrontLanguage } from "@/components/LanguageSwitcher";
 import { tr } from "@/lib/ui-i18n";
+
+/** A submit that never answers must not leave the buyer stuck on a spinner. */
+const ORDER_TIMEOUT_MS = 20_000;
+
+function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return Promise.race([
+    Promise.resolve(promise).finally(() => clearTimeout(timer)),
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(ORDER_NETWORK_ERROR)), ms);
+    }),
+  ]);
+}
 
 export const Route = createFileRoute("/m/$store/p/$product")({
   loader: async ({ params }) => {
@@ -63,10 +87,37 @@ function ProductLanding() {
   const { language } = useStorefrontLanguage(storeLanguage);
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
   const isRtl = language === "ar";
+  const formConfig = store.storefront_config?.form_config;
+  const formFields = formConfig?.fields;
+  const showName = formFields?.full_name !== false;
+  const showPhone = formFields?.phone !== false;
+  const showLocation = formFields?.wilaya_commune !== false;
+  const showAddress = formFields?.address !== false;
+  const showDelivery = formFields?.delivery_type !== false;
+  const showConfirmPhone = formFields?.confirm_phone === true;
+  const showBackupPhone = formFields?.backup_phone === true;
+  const showNotes = formFields?.notes === true;
+  const formButtonRadius =
+    formConfig?.button_radius === "none"
+      ? "0px"
+      : formConfig?.button_radius === "md"
+        ? "0.5rem"
+        : formConfig?.button_radius === "lg"
+          ? "1rem"
+          : formConfig?.button_radius === "full"
+            ? "9999px"
+            : undefined;
+  const formInputStyle = formConfig ? { borderColor: formConfig.border_color } : undefined;
+  const formVars = formConfig
+    ? ({ "--form-focus": formConfig.input_focus_color } as CSSProperties)
+    : undefined;
   const navigate = useNavigate();
   const [active, setActive] = useState(0);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [confirmPhone, setConfirmPhone] = useState("");
+  const [backupPhone, setBackupPhone] = useState("");
+  const [notes, setNotes] = useState("");
   const [wilaya, setWilaya] = useState<string>("");
   const [commune, setCommune] = useState<string>("");
   const [address, setAddress] = useState("");
@@ -77,6 +128,7 @@ function ProductLanding() {
   const [communes, setCommunes] = useState<Communes | null>(null);
   const [busy, setBusy] = useState(false);
   const [touched, setTouched] = useState(false);
+  const submitLock = useRef(false);
 
   const [checkoutTracked, setCheckoutTracked] = useState(false);
   useEffect(() => {
@@ -115,40 +167,91 @@ function ProductLanding() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (submitLock.current) return;
     setTouched(true);
-    if (name.trim().length < 3) { toast.error(t("يرجى كتابة الاسم واللقب.")); return; }
-    if (!phoneOk) { toast.error(t("رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")); return; }
-    if (!wCode) { toast.error(t("يرجى اختيار الولاية.")); return; }
-    if (!commune) { toast.error(t("يرجى اختيار البلدية.")); return; }
+    if (showName && name.trim().length < 3) { toast.error(t("يرجى كتابة الاسم واللقب.")); return; }
+    if (showPhone && !phoneOk) { toast.error(t("رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")); return; }
+    if (showConfirmPhone && confirmPhone.trim() !== phone.trim()) {
+      toast.error(t("رقم الهاتف غير متطابق. يرجى التأكد من كتابة نفس الرقم."));
+      return;
+    }
+    if (showBackupPhone && backupPhone.trim() && !isValidDzPhone(backupPhone)) {
+      toast.error(t("رقم الهاتف الاحتياطي غير صحيح."));
+      return;
+    }
+    if (showLocation && !wCode) { toast.error(t("يرجى اختيار الولاية.")); return; }
+    if (showLocation && !commune) { toast.error(t("يرجى اختيار البلدية.")); return; }
     if (currentShip == null) { toast.error(t("نوع التوصيل هذا غير متوفر في ولايتك.")); return; }
+
+    submitLock.current = true;
     setBusy(true);
-    const { data, error } = await supabase.rpc("place_order", {
-      _product_id: product.id,
-      _quantity: qty,
-      _customer_name: name.trim(),
-      _phone: normalizeDzPhone(phone),
-      _wilaya_code: wCode,
-      _wilaya_name: wilayaByCode(wCode)?.ar ?? "",
-      _commune: commune,
-      _address: address,
-      _delivery_type: delivery,
-      ...(product.sizes.length ? { _size: size } : {}),
-      ...(product.colors.length ? { _color: color } : {}),
-    });
-    setBusy(false);
-    if (error) { toast.error(t(friendlyError(error.message))); return; }
-    const row = data?.[0];
-    trackPixel("Purchase", { id: product.id, name: product.name, value: Number(row?.total ?? total), quantity: qty });
-    navigate({
-      to: "/m/$store/thank-you",
-      params: { store: store.slug },
-      search: {
-        n: Number(row?.order_number ?? 0),
-        t: Number(row?.total ?? total),
-        p: product.name,
-        l: language,
-      },
-    });
+    try {
+      const extraDetails = [
+        address.trim(),
+        backupPhone.trim() ? `${t("هاتف احتياطي")}: ${backupPhone.trim()}` : "",
+        notes.trim() ? `${t("ملاحظات")}: ${notes.trim()}` : "",
+      ].filter(Boolean).join(" | ");
+      const args = {
+        _product_id: product.id,
+        _quantity: qty,
+        _customer_name: name.trim() || t("عميل"),
+        _phone: normalizeDzPhone(phone),
+        _wilaya_code: wCode ?? 0,
+        _wilaya_name: wilayaByCode(wCode ?? 0)?.ar ?? "",
+        _commune: commune,
+        _address: extraDetails,
+        _delivery_type: delivery,
+        ...(product.sizes.length ? { _size: size } : {}),
+        ...(product.colors.length ? { _color: color } : {}),
+        _attribution: readAttribution(),
+      };
+      let { data, error } = await withTimeout(supabase.rpc("place_order", args), ORDER_TIMEOUT_MS);
+      if (error && /_attribution|PGRST202|schema cache|Could not find the function/i.test(`${error.code} ${error.message}`)) {
+        // Migration not applied yet: place the order without attribution instead of failing.
+        const { _attribution: _unused, ...legacy } = args;
+        ({ data, error } = await withTimeout(supabase.rpc("place_order", legacy), ORDER_TIMEOUT_MS));
+      }
+      if (error) {
+        if (error.message.includes("DUPLICATE_ORDER")) {
+          // The previous tap / retry already created it: the merchant has the order.
+          navigate({
+            to: "/m/$store/thank-you",
+            params: { store: store.slug },
+            search: { n: 0, t: total, p: product.name, pid: product.id, l: language },
+          });
+          return;
+        }
+        toast.error(t(friendlyError(error.message)));
+        return;
+      }
+      const row = data?.[0];
+      if (!row) {
+        toast.error(t(ORDER_TECHNICAL_ERROR));
+        return;
+      }
+      // Advanced matching: send hashed buyer data so Meta/TikTok can match the order
+      // to the ad click. Never let a slow pixel call block the confirmation page.
+      await Promise.race([
+        identifyPixelCustomer({ phone: normalizeDzPhone(phone), name }).catch(() => undefined),
+        new Promise<void>((resolve) => setTimeout(resolve, 1500)),
+      ]);
+      navigate({
+        to: "/m/$store/thank-you",
+        params: { store: store.slug },
+        search: {
+          n: Number(row.order_number ?? 0),
+          t: Number(row.total ?? total),
+          p: product.name,
+          pid: product.id,
+          l: language,
+        },
+      });
+    } catch (err) {
+      toast.error(t(friendlyError(err instanceof Error ? err.message : ORDER_NETWORK_ERROR)));
+    } finally {
+      submitLock.current = false;
+      setBusy(false);
+    }
   }
 
   return (
@@ -228,7 +331,13 @@ function ProductLanding() {
               <p className="mt-1 text-sm">{t("يرجى المحاولة لاحقاً.")}</p>
             </div>
           ) : (
-            <form id="order" onSubmit={submit} onFocusCapture={onFormFocus} className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6">
+            <form
+              id="order"
+              onSubmit={submit}
+              onFocusCapture={onFormFocus}
+              className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6"
+              style={{ ...formVars, backgroundColor: formConfig?.bg_color, borderColor: formConfig?.border_color }}
+            >
               <div className="text-center">
                 <h2 className="text-xl font-medium">{t("اطلب الآن — الدفع عند الاستلام")}</h2>
                 <p className="text-sm text-muted-foreground">{t("املأ معلوماتك وسنتصل بك لتأكيد الطلب")}</p>
@@ -241,26 +350,76 @@ function ProductLanding() {
                 <ChipGroup label={t("اللون")} options={product.colors} value={color} onChange={setColor} />
               )}
 
-              <div className="space-y-1.5">
-                <Label htmlFor="cname">{t("الاسم واللقب")}</Label>
-                <Input id="cname" value={name} onChange={(e) => setName(e.target.value)} className="h-12 text-base" autoComplete="name" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="cphone">{t("رقم الهاتف")}</Label>
-                <Input
-                  id="cphone"
-                  dir="ltr"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  maxLength={14}
-                  placeholder="05 / 06 / 07 XX XX XX XX"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/[^0-9 ]/g, ""))}
-                  className={cn("h-12 text-base", touched && !phoneOk && "border-destructive")}
-                  aria-invalid={touched && !phoneOk}
-                />
-                {touched && !phoneOk && <p className="text-xs text-danger">{t("يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")}</p>}
-              </div>
+              {showName && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="cname">{t("الاسم واللقب")}</Label>
+                  <Input
+                    id="cname"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-12 text-base focus:border-[var(--form-focus)]"
+                    style={formInputStyle}
+                    autoComplete="name"
+                  />
+                </div>
+              )}
+              {showPhone && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="cphone">{t("رقم الهاتف")}</Label>
+                  <Input
+                    id="cphone"
+                    dir="ltr"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={14}
+                    placeholder="05 / 06 / 07 XX XX XX XX"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9 ]/g, ""))}
+                    className={cn("h-12 text-base focus:border-[var(--form-focus)]", touched && !phoneOk && "border-destructive")}
+                    style={formInputStyle}
+                    aria-invalid={touched && !phoneOk}
+                  />
+                  {touched && !phoneOk && <p className="text-xs text-danger">{t("يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.")}</p>}
+                </div>
+              )}
+              {showConfirmPhone && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="cconfirm_phone">{t("تأكيد رقم الهاتف")}</Label>
+                  <Input
+                    id="cconfirm_phone"
+                    dir="ltr"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={14}
+                    placeholder={t("أعد كتابة رقم هاتفك")}
+                    value={confirmPhone}
+                    onChange={(e) => setConfirmPhone(e.target.value.replace(/[^0-9 ]/g, ""))}
+                    className="h-12 text-base focus:border-[var(--form-focus)]"
+                    style={formInputStyle}
+                  />
+                  {touched && showConfirmPhone && confirmPhone && confirmPhone.trim() !== phone.trim() && (
+                    <p className="text-xs text-danger">{t("رقم الهاتف غير متطابق.")}</p>
+                  )}
+                </div>
+              )}
+              {showBackupPhone && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="cbackup_phone">{t("رقم هاتف إضافي (احتياطي)")}</Label>
+                  <Input
+                    id="cbackup_phone"
+                    dir="ltr"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={14}
+                    placeholder="05 / 06 / 07 XX XX XX XX"
+                    value={backupPhone}
+                    onChange={(e) => setBackupPhone(e.target.value.replace(/[^0-9 ]/g, ""))}
+                    className="h-12 text-base focus:border-[var(--form-focus)]"
+                    style={formInputStyle}
+                  />
+                </div>
+              )}
+              {showLocation && (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>{t("الولاية")}</Label>
@@ -300,11 +459,28 @@ function ProductLanding() {
                   </Select>
                 </div>
               </div>
+              )}
+              {showAddress && (
               <div className="space-y-1.5">
                 <Label htmlFor="caddr">{t("العنوان (اختياري)")}</Label>
-                <Input id="caddr" value={address} onChange={(e) => setAddress(e.target.value)} className="h-12" placeholder={t("الحي، الشارع...")} />
+                <Input id="caddr" value={address} onChange={(e) => setAddress(e.target.value)} className="h-12 focus:border-[var(--form-focus)]" style={formInputStyle} placeholder={t("الحي، الشارع...")} />
               </div>
+              )}
+              {showNotes && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="cnotes">{t("ملاحظات إضافية حول الطلب")}</Label>
+                  <Input
+                    id="cnotes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="h-12 focus:border-[var(--form-focus)]"
+                    style={formInputStyle}
+                    placeholder={t("أي تفاصيل إضافية تريد إعلامنا بها...")}
+                  />
+                </div>
+              )}
 
+              {showDelivery && (
               <div className="space-y-1.5">
                 <Label>{t("نوع التوصيل")}</Label>
                 <div className="grid grid-cols-2 gap-3">
@@ -333,6 +509,7 @@ function ProductLanding() {
                   })}
                 </div>
               </div>
+              )}
 
               <div className="flex items-center justify-between">
                 <Label>{t("الكمية")}</Label>
@@ -362,9 +539,24 @@ function ProductLanding() {
                 </div>
               </div>
 
-              <Button type="submit" variant="brand" size="xl" className="w-full" disabled={busy}>
-                {busy ? <Loader2 className="animate-spin" /> : <Check />} {t("تأكيد الطلب — الدفع عند الاستلام")}
+              <Button
+                type="submit"
+                variant="brand"
+                size="xl"
+                className="w-full"
+                disabled={busy}
+                style={{
+                  backgroundColor: formConfig?.button_bg_color,
+                  color: formConfig?.button_text_color,
+                  borderRadius: formButtonRadius,
+                }}
+              >
+                {busy ? <Loader2 className="animate-spin" /> : <Check />}{" "}
+                {t(formConfig?.button_text || "تأكيد الطلب الآن")}
               </Button>
+              {formConfig?.guarantee_text ? (
+                <p className="text-center text-xs text-muted-foreground">{t(formConfig.guarantee_text)}</p>
+              ) : null}
             </form>
           )}
         </div>

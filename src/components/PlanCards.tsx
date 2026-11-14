@@ -32,7 +32,7 @@ const START_FEATURES: Record<LanguageCode, string[]> = {
 const PRO_FEATURES: Record<LanguageCode, string[]> = {
   ar: [
     "طلبات غير محدودة",
-    "Meta Pixel و TikTok Pixel",
+    "Meta Pixel (فيسبوك وإنستغرام)",
     "إحصائيات متقدمة للمبيعات",
     `فريق عمل حتى ${MAX_TEAM_USERS} مستخدمين`,
     "سجل الأنشطة: من فعل ماذا ومتى",
@@ -40,7 +40,7 @@ const PRO_FEATURES: Record<LanguageCode, string[]> = {
   ],
   en: [
     "Unlimited orders",
-    "Meta Pixel and TikTok Pixel",
+    "Meta Pixel (Facebook and Instagram)",
     "Advanced sales analytics",
     `A team of up to ${MAX_TEAM_USERS} users`,
     "Activity log: who did what and when",
@@ -48,7 +48,7 @@ const PRO_FEATURES: Record<LanguageCode, string[]> = {
   ],
   fr: [
     "Commandes illimitées",
-    "Meta Pixel et TikTok Pixel",
+    "Meta Pixel (Facebook et Instagram)",
     "Statistiques de ventes avancées",
     `Une équipe jusqu'à ${MAX_TEAM_USERS} utilisateurs`,
     "Journal d'activité : qui a fait quoi et quand",

@@ -8,6 +8,23 @@ export const STOREFRONT_LANGUAGES = ["ar", "fr", "en"] as const;
 export type StorefrontLanguage = (typeof STOREFRONT_LANGUAGES)[number];
 export const STOREFRONT_LANGUAGE_DEFAULT: StorefrontLanguage = "en";
 
+export const ARABIC_FONTS = [
+  "Tajawal", "Cairo", "Almarai", "Readex Pro", "Alexandria",
+  "Changa", "Noto Sans Arabic", "Rubik", "IBM Plex Sans Arabic", "Amiri",
+] as const;
+
+export const LATIN_FONTS = [
+  "Inter", "Plus Jakarta Sans", "Outfit", "Poppins", "Montserrat",
+  "Space Grotesk", "Syne", "Playfair Display", "DM Sans", "Manrope",
+] as const;
+
+/** Every font a storefront may store in `font_family` (Arabic first, then Latin). */
+export const STOREFRONT_FONTS = [...ARABIC_FONTS, ...LATIN_FONTS] as const;
+export const HERO_TITLE_SIZES = ["sm", "base", "lg", "xl", "2xl"] as const;
+export const ELEMENT_ALIGNMENTS = ["start", "center", "end"] as const;
+export const BUTTON_SIZES = ["sm", "md", "lg"] as const;
+export const BUTTON_RADII = ["none", "md", "lg", "full"] as const;
+
 export interface HeroPreset {
   id: PresetKey;
   label: string;
@@ -220,14 +237,56 @@ export const socialLinksSchema = z.object({
   tiktok: z.string().trim().optional().or(z.literal("")),
 });
 
+export const formConfigSchema = z.object({
+  bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
+  border_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#EEEEEE"),
+  input_focus_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
+  button_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
+  button_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
+  button_text: z.string().trim().max(50).default("تأكيد الطلب الآن"),
+  button_radius: z.enum(["none", "md", "lg", "full"]).default("full"),
+  guarantee_text: z.string().trim().max(100).default("الدفع عند الاستلام · ضمان الفحص قبل الدفع"),
+  fields: z.object({
+    full_name: z.boolean().default(true),
+    phone: z.boolean().default(true),
+    confirm_phone: z.boolean().default(false), // Re-enter phone verification
+    backup_phone: z.boolean().default(false),  // Secondary phone
+    wilaya_commune: z.boolean().default(true),
+    address: z.boolean().default(true),        // Detailed street/neighborhood
+    delivery_type: z.boolean().default(true),   // Home vs Office/Stopdesk
+    notes: z.boolean().default(false),          // Customer notes
+  }).default({}),
+}).default({});
+
+export type FormConfig = z.infer<typeof formConfigSchema>;
+
 export const storefrontConfigSchema = z.object({
   preset: z.enum(PRESET_KEYS).default("noir"),
   language: z.enum(STOREFRONT_LANGUAGES).default(STOREFRONT_LANGUAGE_DEFAULT),
   hero_title: z.string().trim().max(80).default(""),
   hero_subtitle: z.string().trim().max(160).default("اطلب الآن والدفع عند الاستلام"),
   hero_button: z.string().trim().max(30).default("تسوق الآن"),
+  hero_bg_type: z.enum(["color", "image"]).default("color"),
+  hero_image_url: z.string().trim().max(500).optional(),
+  hero_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
+  hero_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
+  hero_overlay_opacity: z.number().int().min(0).max(90).default(40),
+  font_family: z.enum(STOREFRONT_FONTS).default("Tajawal"),
+  title_size: z.enum(HERO_TITLE_SIZES).default("xl"),
+  title_offset_x: z.number().int().min(-50).max(50).default(0),
+  title_offset_y: z.number().int().min(-50).max(50).default(0),
+  text_align: z.enum(ELEMENT_ALIGNMENTS).default("center"),
+  button_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
+  button_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
+  button_size: z.enum(BUTTON_SIZES).default("md"),
+  button_radius: z.enum(BUTTON_RADII).default("lg"),
+  button_align: z.enum(ELEMENT_ALIGNMENTS).default("center"),
+  button_offset_x: z.number().int().min(-50).max(50).default(0),
+  button_offset_y: z.number().int().min(-50).max(50).default(0),
   bar_enabled: z.boolean().default(true),
   bar_text: z.string().trim().max(80).default("مرحبا بك في متجرنا"),
+  bar_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
+  bar_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
   sections: z.object({
     faq: z
       .object({
@@ -249,6 +308,7 @@ export const storefrontConfigSchema = z.object({
       })
       .default({ enabled: true, badges: [...TRUST_BADGE_KEYS] }),
   }).default({}),
+  form_config: formConfigSchema.default({}),
 });
 
 export type StorefrontConfig = z.infer<typeof storefrontConfigSchema>;
@@ -296,6 +356,27 @@ function isTrustBadgeKey(value: unknown): value is TrustBadgeKey {
 export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontConfig {
   const defaultLanguage = STOREFRONT_LANGUAGE_DEFAULT;
   const defaultTexts = STOREFRONT_DEFAULTS[defaultLanguage];
+  const defaultDesign = {
+    hero_bg_type: "color" as const,
+    hero_image_url: undefined,
+    hero_bg_color: "#111111",
+    hero_text_color: "#FFFFFF",
+    hero_overlay_opacity: 40,
+    font_family: "Tajawal" as const,
+    title_size: "xl" as const,
+    title_offset_x: 0,
+    title_offset_y: 0,
+    text_align: "center" as const,
+    button_bg_color: "#FFFFFF",
+    button_text_color: "#111111",
+    button_size: "md" as const,
+    button_radius: "lg" as const,
+    button_align: "center" as const,
+    button_offset_x: 0,
+    button_offset_y: 0,
+    bar_bg_color: "#111111",
+    bar_text_color: "#FFFFFF",
+  };
 
   if (!isRecord(raw)) {
     const fallbackTitle = storeName.trim() || defaultTexts.welcomeTitle;
@@ -305,8 +386,10 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
       hero_title: fallbackTitle,
       hero_subtitle: defaultTexts.heroSubtitle,
       hero_button: defaultTexts.heroButton,
+      ...defaultDesign,
       bar_enabled: true,
       bar_text: defaultTexts.barText,
+      form_config: formConfigSchema.parse({}),
       sections: {
         faq: { enabled: true, items: DEFAULT_FAQ_BY_LANGUAGE[defaultLanguage] },
         reviews: { enabled: false, items: [] },
@@ -346,6 +429,82 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
     typeof rawButton === "string" && rawButton.trim()
       ? rawButton.trim().slice(0, 30)
       : texts.heroButton;
+
+  const rawHeroImage = obj["hero_image_url"];
+  const candidateHeroImage = typeof rawHeroImage === "string" ? rawHeroImage.trim().slice(0, 500) : "";
+  const hero_image_url =
+    (/^https?:\/\/[^\s"'<>]+$/i.test(candidateHeroImage) || /^[A-Za-z0-9._/-]+$/.test(candidateHeroImage))
+      ? candidateHeroImage || undefined
+      : undefined;
+  const isHexColor = (value: unknown): value is string =>
+    typeof value === "string" && /^#[0-9A-Fa-f]{6}$/.test(value);
+  const hero_bg_type = obj["hero_bg_type"] === "image" ? "image" : "color";
+  const hero_bg_color = isHexColor(obj["hero_bg_color"]) ? obj["hero_bg_color"] : HERO_PRESETS[preset].from;
+  const hero_text_color = isHexColor(obj["hero_text_color"]) ? obj["hero_text_color"] : HERO_PRESETS[preset].textColor;
+  const rawOverlay = obj["hero_overlay_opacity"];
+  const hero_overlay_opacity =
+    typeof rawOverlay === "number" && Number.isFinite(rawOverlay)
+      ? Math.min(90, Math.max(0, Math.round(rawOverlay)))
+      : defaultDesign.hero_overlay_opacity;
+  const font_family =
+    typeof obj["font_family"] === "string" &&
+    STOREFRONT_FONTS.some((font) => font === obj["font_family"])
+      ? (obj["font_family"] as (typeof STOREFRONT_FONTS)[number])
+      : defaultDesign.font_family;
+  const title_size =
+    typeof obj["title_size"] === "string" &&
+    HERO_TITLE_SIZES.some((size) => size === obj["title_size"])
+      ? (obj["title_size"] as (typeof HERO_TITLE_SIZES)[number])
+      : defaultDesign.title_size;
+  const text_align =
+    typeof obj["text_align"] === "string" &&
+    ELEMENT_ALIGNMENTS.some((align) => align === obj["text_align"])
+      ? (obj["text_align"] as (typeof ELEMENT_ALIGNMENTS)[number])
+      : defaultDesign.text_align;
+  const button_bg_color = isHexColor(obj["button_bg_color"]) ? obj["button_bg_color"] : HERO_PRESETS[preset].buttonBg;
+  const button_text_color = isHexColor(obj["button_text_color"]) ? obj["button_text_color"] : HERO_PRESETS[preset].buttonText;
+  const button_size =
+    typeof obj["button_size"] === "string" &&
+    BUTTON_SIZES.some((size) => size === obj["button_size"])
+      ? (obj["button_size"] as (typeof BUTTON_SIZES)[number])
+      : defaultDesign.button_size;
+  const button_radius =
+    typeof obj["button_radius"] === "string" &&
+    BUTTON_RADII.some((radius) => radius === obj["button_radius"])
+      ? (obj["button_radius"] as (typeof BUTTON_RADII)[number])
+      : defaultDesign.button_radius;
+  const button_align =
+    typeof obj["button_align"] === "string" &&
+    ELEMENT_ALIGNMENTS.some((align) => align === obj["button_align"])
+      ? (obj["button_align"] as (typeof ELEMENT_ALIGNMENTS)[number])
+      : defaultDesign.button_align;
+
+  const rawTitleOffsetX = obj["title_offset_x"];
+  const title_offset_x =
+    typeof rawTitleOffsetX === "number" && Number.isFinite(rawTitleOffsetX)
+      ? Math.max(-50, Math.min(50, Math.round(rawTitleOffsetX)))
+      : 0;
+
+  const rawTitleOffset = obj["title_offset_y"];
+  const title_offset_y =
+    typeof rawTitleOffset === "number" && Number.isFinite(rawTitleOffset)
+      ? Math.max(-50, Math.min(50, Math.round(rawTitleOffset)))
+      : 0;
+
+  const rawButtonOffsetX = obj["button_offset_x"];
+  const button_offset_x =
+    typeof rawButtonOffsetX === "number" && Number.isFinite(rawButtonOffsetX)
+      ? Math.max(-50, Math.min(50, Math.round(rawButtonOffsetX)))
+      : 0;
+
+  const rawButtonOffset = obj["button_offset_y"];
+  const button_offset_y =
+    typeof rawButtonOffset === "number" && Number.isFinite(rawButtonOffset)
+      ? Math.max(-50, Math.min(50, Math.round(rawButtonOffset)))
+      : 0;
+
+  const bar_bg_color = isHexColor(obj["bar_bg_color"]) ? obj["bar_bg_color"] : defaultDesign.bar_bg_color;
+  const bar_text_color = isHexColor(obj["bar_text_color"]) ? obj["bar_text_color"] : defaultDesign.bar_text_color;
 
   const rawBarEnabled = obj["bar_enabled"];
   const bar_enabled = typeof rawBarEnabled === "boolean" ? rawBarEnabled : true;
@@ -414,14 +573,37 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
     badges: validBadges.length > 0 ? validBadges : [...TRUST_BADGE_KEYS],
   };
 
+  const parsedFormConfig = formConfigSchema.safeParse(obj["form_config"]);
+  const form_config = parsedFormConfig.success ? parsedFormConfig.data : formConfigSchema.parse({});
+
   return {
     preset,
     language,
     hero_title,
     hero_subtitle,
     hero_button,
+    hero_bg_type,
+    hero_image_url,
+    hero_bg_color,
+    hero_text_color,
+    hero_overlay_opacity,
+    font_family,
+    title_size,
+    title_offset_x,
+    title_offset_y,
+    text_align,
+    button_bg_color,
+    button_text_color,
+    button_size,
+    button_radius,
+    button_align,
+    button_offset_x,
+    button_offset_y,
     bar_enabled,
     bar_text,
+    bar_bg_color,
+    bar_text_color,
+    form_config,
     sections: {
       faq,
       reviews,

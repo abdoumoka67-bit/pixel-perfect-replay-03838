@@ -45,7 +45,7 @@ function Billing() {
   const t = useTr();
   const language = useUiLanguage();
   const locale = language === "ar" ? "ar-DZ" : language === "fr" ? "fr-DZ" : "en-GB";
-  const { store, sub, tier } = useMyStore();
+  const { store, sub, tier, isAdmin } = useMyStore();
   const { user } = Route.useRouteContext();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -65,9 +65,20 @@ function Billing() {
   const settings = useQuery({
     queryKey: ["platform-settings"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_platform_payment_info");
-      if (error) throw error;
-      return data?.[0] ?? null;
+      // 1. Try RPC first
+      const rpcRes = await supabase.rpc("get_platform_payment_info");
+      if (!rpcRes.error && rpcRes.data?.[0]) return rpcRes.data[0];
+
+      // 2. Fallback to direct table query on platform_settings
+      const tableRes = await supabase
+        .from("platform_settings")
+        .select("ccp_number, ccp_key, ccp_holder, rip")
+        .limit(1)
+        .maybeSingle();
+
+      if (tableRes.data) return tableRes.data;
+      if (rpcRes.error && tableRes.error) throw rpcRes.error;
+      return null;
     },
   });
   const receipts = useQuery({
@@ -138,21 +149,35 @@ function Billing() {
         <div>
           <p className="text-sm text-muted-foreground">{t("حالة الحساب")}</p>
           <p className="mt-1 text-lg font-medium">
-            {sub?.isActive
-              ? sub.isTrial
-                ? t("تجربة مجانية (كل ميزات Pro)")
-                : t("اشتراك {tier} فعّال", { tier: tier === "pro" ? "Pro" : "Start" })
-              : t("وضع القراءة فقط")}
+            {isAdmin
+              ? t("وصول مدير المنصة: كل الميزات مفتوحة بلا حدود")
+              : sub?.isActive
+                ? sub.isTrial
+                  ? t("تجربة مجانية (كل ميزات Pro)")
+                  : t("اشتراك {tier} فعّال", { tier: tier === "pro" ? "Pro" : "Start" })
+                : t("وضع القراءة فقط")}
           </p>
-          {sub && (
+          {isAdmin ? (
             <p className="text-sm text-muted-foreground">
-              {sub.isActive
-                ? t("ينتهي في {date} · {days} أيام متبقية", { date: sub.endsAt.toLocaleDateString(locale), days: sub.daysLeft })
-                : t("انتهى في {date}", { date: sub.endsAt.toLocaleDateString(locale) })}
+              {t("حساب مدير المنصة لا ينتهي ولا يحتاج إلى تجديد.")}
             </p>
+          ) : (
+            sub && (
+              <p className="text-sm text-muted-foreground">
+                {sub.isActive
+                  ? t("ينتهي في {date} · {days} أيام متبقية", { date: sub.endsAt.toLocaleDateString(locale), days: sub.daysLeft })
+                  : t("انتهى في {date}", { date: sub.endsAt.toLocaleDateString(locale) })}
+              </p>
+            )
           )}
         </div>
-        {sub?.isActive ? <Badge variant="success">{t("فعّال")}</Badge> : <Badge variant="danger">{t("منتهي")}</Badge>}
+        {isAdmin ? (
+          <Badge variant="success">{t("مدى الحياة")}</Badge>
+        ) : sub?.isActive ? (
+          <Badge variant="success">{t("فعّال")}</Badge>
+        ) : (
+          <Badge variant="danger">{t("منتهي")}</Badge>
+        )}
       </div>
 
       <h2 className="mb-3 font-medium">{t("اختر الخطة")}</h2>

@@ -11,7 +11,6 @@ import {
   Lock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Logo } from "@/components/brand/Logo";
 import {
   useDocumentLanguage,
   LanguageMenu,
@@ -27,6 +26,9 @@ import { getFeaturePlanBadge, MEMBER_ROLE_LABELS, PRO_AREAS, canOpen } from "@/l
 import { tr, UiLanguageProvider, useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { ProPill } from "./ProLock";
 import { GuidedTour } from "./GuidedTour";
+import { useSignedUrls } from "@/hooks/use-signed-urls";
+import { useAccountTheme } from "@/hooks/use-account-theme";
+import { InstallPwaPrompt } from "@/components/InstallPwaPrompt";
 
 function useSignOut() {
   const queryClient = useQueryClient();
@@ -40,6 +42,27 @@ function useSignOut() {
 }
 
 type Tone = "dark" | "light";
+
+function StoreLogo({
+  path,
+  name,
+  className,
+}: {
+  path: string | null | undefined;
+  name: string | undefined;
+  className?: string;
+}) {
+  const urls = useSignedUrls([path]);
+  if (!path || !urls[path]) return null;
+
+  return (
+    <img
+      src={urls[path]}
+      alt={name ?? ""}
+      className={cn("max-h-10 max-w-36 object-contain", className)}
+    />
+  );
+}
 
 const TONES = {
   dark: {
@@ -219,7 +242,7 @@ function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) 
   return (
     <div className={cn("flex h-full flex-col gap-6 p-4", styles.body)}>
       <div className="flex items-center justify-between gap-2 px-2 pt-2">
-        <Logo tone={tone === "dark" ? "light" : "dark"} />
+        <StoreLogo path={store?.logo_url} name={store?.name} />
         <LanguageMenu
           value={language}
           onChange={setLanguage}
@@ -343,6 +366,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const { language, setLanguage } = useDashboardLanguage(storeLanguage);
   const isRtl = language === "ar";
   useDocumentLanguage(language);
+  useAccountTheme();
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
   const trialLink = useMemo(() =>
     sub && sub.isTrial && sub.daysLeft > 0
@@ -372,7 +396,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
   return (
     <UiLanguageProvider language={language}>
-    <div className="min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="theme-forest min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
       <GuidedTour />
       <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 lg:block">
         <SidebarBody />
@@ -390,7 +414,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           <button onClick={() => setOpen(true)} className="rounded-lg p-2 hover:bg-secondary" aria-label={t("فتح القائمة")}>
             <Menu className="size-5" />
           </button>
-          <Logo />
+          <StoreLogo path={store?.logo_url} name={store?.name} className="max-h-8 max-w-28" />
           <LanguageMenu value={language} onChange={setLanguage} />
         </header>
 
@@ -426,15 +450,15 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         <SubscriptionBanner />
         <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pt-8 lg:pb-12">
           <div className="mb-4">
-            <Button type="button" variant="ghost" size="sm" onClick={goBack}>
-              <ArrowLeft className="size-4 rtl:rotate-180" />
-              {t("السابق")}
+            <Button type="button" variant="ghost" size="sm" onClick={goBack} aria-label={t("السابق")}>
+              <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
             </Button>
           </div>
           {children}
         </main>
       </div>
       <BottomNav />
+      <InstallPwaPrompt />
     </div>
     </UiLanguageProvider>
   );

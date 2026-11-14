@@ -22,13 +22,15 @@ const CARDS: { status: OrderStatus; label: string; icon: typeof Clock; tone: str
 ];
 
 function Overview() {
-  const { store, sub } = useMyStore();
+  const { store, sub, isAdmin } = useMyStore();
   const t = useTr();
   const language = useUiLanguage();
   const dateLocale = language === "ar" ? "ar-DZ" : language === "fr" ? "fr-DZ" : "en-GB";
   const stats = useQuery({
     queryKey: ["order-stats", store?.id],
     enabled: !!store,
+    // New storefront orders must show up without a manual refresh.
+    refetchInterval: 15_000,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("order_stats", { _store_id: store!.id });
       if (error) throw error;
@@ -38,6 +40,7 @@ function Overview() {
   const recent = useQuery({
     queryKey: ["recent-orders", store?.id],
     enabled: !!store,
+    refetchInterval: 15_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
@@ -59,11 +62,13 @@ function Overview() {
       <PageHeader
         title={t("أهلاً، {store}", { store: store?.name ?? "" })}
         description={
-          sub?.isActive
-            ? sub.isTrial
-              ? t("تجربتك المجانية: {n} أيام متبقية", { n: sub.daysLeft })
-              : t("اشتراكك فعّال حتى {date}", { date: sub.endsAt.toLocaleDateString(dateLocale) })
-            : t("حسابك في وضع القراءة فقط")
+          isAdmin
+            ? t("وصول مدير المنصة — جميع الميزات مفتوحة دائمًا")
+            : sub?.isActive
+              ? sub.isTrial
+                ? t("تجربتك المجانية: {n} أيام متبقية", { n: sub.daysLeft })
+                : t("اشتراكك فعّال حتى {date}", { date: sub.endsAt.toLocaleDateString(dateLocale) })
+              : t("حسابك في وضع القراءة فقط")
         }
         actions={
           <Button asChild variant="brand">
@@ -74,17 +79,31 @@ function Overview() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+      <div className="no-scrollbar flex snap-x gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-5 sm:gap-2.5 sm:overflow-visible md:gap-3">
         {CARDS.map((c) => {
           const row = byStatus(c.status);
           return (
-            <div key={c.status} className="rounded-2xl bg-card p-4 shadow-card md:p-5">
-              <div className={`inline-flex size-9 items-center justify-center rounded-xl ${c.tone}`}>
-                <c.icon className="size-[18px]" />
+            <div
+              key={c.status}
+              className="flex min-w-[125px] shrink-0 snap-start flex-col justify-between rounded-2xl bg-card p-3 shadow-card transition-all hover:shadow-md sm:min-w-0 sm:flex-1"
+            >
+              <div className="flex items-center justify-between gap-1.5">
+                <p className="min-w-0 truncate text-xs font-medium text-muted-foreground">{t(c.label)}</p>
+                <div
+                  className={`inline-flex size-6 shrink-0 items-center justify-center rounded-lg sm:size-7 ${c.tone}`}
+                >
+                  <c.icon className="size-3 sm:size-3.5" />
+                </div>
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">{t(c.label)}</p>
-              <p className="mt-0.5 font-display text-2xl font-medium num">{Number(row?.orders_count ?? 0)}</p>
-              <p className="text-xs text-muted-foreground num">{formatDZD(Number(row?.orders_total ?? 0), language)}</p>
+
+              <div className="mt-2">
+                <p className="font-display text-base leading-none font-medium num sm:text-lg md:text-xl">
+                  {Number(row?.orders_count ?? 0)}
+                </p>
+                <p className="mt-1 truncate text-[11px] text-muted-foreground num">
+                  {formatDZD(Number(row?.orders_total ?? 0), language)}
+                </p>
+              </div>
             </div>
           );
         })}

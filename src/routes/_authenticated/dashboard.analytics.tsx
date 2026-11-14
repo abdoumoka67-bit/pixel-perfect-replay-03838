@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { MapPin } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
@@ -23,6 +24,7 @@ type AnalyticsData = {
   daily: { day: string; orders: number; revenue: number }[] | null;
   wilayas: { name: string; count: number }[];
   products: { name: string; orders: number; qty: number; delivered: number; revenue: number }[];
+  sources: { name: string; count: number }[];
 };
 
 function Analytics() {
@@ -40,6 +42,7 @@ function Analytics() {
             t("أكثر الولايات طلباً"),
             t("نسبة التأكيد والتوصيل والإلغاء"),
             t("المنتجات الأكثر ربحاً"),
+            t("مصادر الطلبات والإعلانات"),
           ]}
         />
       </>
@@ -76,6 +79,7 @@ function AnalyticsPro() {
       daily: (d?.daily ?? []).map((x) => ({ ...x, label: x.day.slice(8, 10) + "/" + x.day.slice(5, 7) })),
       wilayas: d?.wilayas ?? [],
       products: d?.products ?? [],
+      sources: d?.sources ?? [],
       st,
     };
   }, [q.data]);
@@ -103,18 +107,69 @@ function AnalyticsPro() {
         <h2 className="mb-4 font-medium">{t("الطلبات اليومية")}</h2>
         <div className="h-64" dir="ltr">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={m.daily}>
+            <AreaChart
+              data={m.daily}
+              accessibilityLayer
+              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#10B981" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} interval={4} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} width={28} />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }} />
-              <Area type="monotone" dataKey="orders" name={t("الطلبات")} stroke="var(--chart-1)" strokeWidth={2.5} fill="url(#g1)" />
+              <YAxis
+                allowDecimals={false}
+                domain={[0, (max: number) => Math.max(max, 1)]}
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                tickLine={false}
+                axisLine={false}
+                width={28}
+              />
+              {/* Dashed cursor follows the pointer on both mouse and touch. */}
+              <Tooltip
+                cursor={{ stroke: "#10B981", strokeDasharray: "4 4", strokeWidth: 1.5 }}
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  const point = payload[0]?.payload as
+                    | { label: string; orders: number; revenue: number }
+                    | undefined;
+                  if (!point) return null;
+                  return (
+                    <div
+                      className="min-w-[130px] rounded-xl border border-border bg-card/95 p-3 text-xs shadow-lg backdrop-blur-xs"
+                      dir="auto"
+                    >
+                      <p className="border-b border-border/50 pb-1 font-medium text-foreground">
+                        {label}
+                      </p>
+                      <p className="mt-1.5 flex items-center justify-between gap-3 text-muted-foreground">
+                        <span>{t("الطلبات")}:</span>
+                        <span className="font-bold text-foreground num">{point.orders}</span>
+                      </p>
+                      {/* Sales always render, even when the day totals zero. */}
+                      <p className="mt-1 flex items-center justify-between gap-3 text-muted-foreground">
+                        <span>{t("المبيعات")}:</span>
+                        <span className="font-bold text-[#10B981] num">
+                          {formatDZD(Number(point.revenue ?? 0), language)}
+                        </span>
+                      </p>
+                    </div>
+                  );
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="orders"
+                name={t("الطلبات")}
+                stroke="#10B981"
+                strokeWidth={2.5}
+                fill="url(#g1)"
+                dot={{ r: 2, fill: "#10B981", stroke: "var(--card)", strokeWidth: 1 }}
+                activeDot={{ r: 5, fill: "#10B981", stroke: "var(--card)", strokeWidth: 2 }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -123,16 +178,47 @@ function AnalyticsPro() {
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl bg-card p-5 shadow-card lg:col-span-2">
           <h2 className="mb-4 font-medium">{t("أكثر الولايات طلباً")}</h2>
-          <div className="h-64" dir="ltr">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={m.wilayas}>
-                <CartesianGrid stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} width={28} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }} />
-                <Bar dataKey="count" name={t("الطلبات")} fill="var(--chart-2)" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="flex h-64 items-center justify-center" dir="ltr">
+            {m.wilayas.length > 0 ? (
+              <div className="h-full w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={m.wilayas} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid stroke="var(--border)" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={28}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "var(--muted)/30" }}
+                      contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }}
+                    />
+                    <Bar
+                      dataKey="count"
+                      name={t("الطلبات")}
+                      fill="var(--primary)"
+                      maxBarSize={32}
+                      radius={[6, 6, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-6 text-center text-sm text-muted-foreground">
+                <div className="mb-2 flex size-10 items-center justify-center rounded-full bg-muted/50">
+                  <MapPin className="size-5 text-muted-foreground" />
+                </div>
+                <p>{t("لا توجد بيانات كافية لعرض توزيع الولايات بعد.")}</p>
+              </div>
+            )}
           </div>
         </div>
         <div className="space-y-6">
@@ -174,6 +260,38 @@ function AnalyticsPro() {
             </ul>
           </div>
         </div>
+      </div>
+
+      <div className="mt-6 rounded-2xl bg-card p-5 shadow-card">
+        <h2 className="mb-3 font-medium">{t("مصادر الطلبات والإعلانات")}</h2>
+        <ul className="space-y-2.5">
+          {m.sources.map((src) => {
+            const pct = m.total ? Math.round((src.count / m.total) * 100) : 0;
+            const isFb = src.name === "Facebook";
+            const isIg = src.name === "Instagram";
+            const isDirect = src.name === "direct";
+            const displayName = isDirect ? t("زيارات مباشرة") : src.name;
+            const dotColor = isFb ? "bg-[#1877F2]" : isIg ? "bg-[#E1306C]" : "bg-muted-foreground";
+
+            return (
+              <li key={src.name}>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <span className={`size-2 rounded-full ${dotColor}`} aria-hidden />
+                    <span>{displayName}</span>
+                  </span>
+                  <span className="num text-xs text-muted-foreground">
+                    {src.count} ({pct}%)
+                  </span>
+                </div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div className={`h-full rounded-full ${dotColor}`} style={{ width: `${pct}%` }} />
+                </div>
+              </li>
+            );
+          })}
+          {m.sources.length === 0 && <li className="text-sm text-muted-foreground">{t("لا توجد بيانات بعد.")}</li>}
+        </ul>
       </div>
     </>
   );

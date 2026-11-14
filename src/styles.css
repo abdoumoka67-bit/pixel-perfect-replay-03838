@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&family=Alexandria:wght@400;500;600;700&family=Amiri:wght@400;700&family=Cairo:wght@400;500;600;700&family=Changa:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800;900&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -13,11 +14,8 @@
   }
 }
 
-.delivery-logos-mask {
-  -webkit-mask-image: linear-gradient(to right, transparent, black 64px, black calc(100% - 64px), transparent);
-  mask-image: linear-gradient(to right, transparent, black 64px, black calc(100% - 64px), transparent);
-}
-
+/* The band clips with overflow only: a logo leaves exactly at one screen edge
+   and the next enters at the other, with identical spacing on both sides. */
 .delivery-logos-track {
   animation: delivery-logos-scroll 28s linear infinite;
   touch-action: pan-y;
@@ -38,6 +36,178 @@
   .delivery-logos-track {
     animation: none;
   }
+}
+
+/* Pixel attribution demo: flowing dashes, floating platform tiles, breathing card. */
+@keyframes pixel-dash {
+  to {
+    stroke-dashoffset: -44;
+  }
+}
+
+@keyframes pixel-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pixel-card-breathe {
+  0%,
+  100% {
+    box-shadow: 0 18px 40px -28px rgba(15, 23, 42, 0.45);
+  }
+  50% {
+    box-shadow: 0 26px 55px -28px rgba(15, 23, 42, 0.55);
+  }
+}
+
+@keyframes pixel-ping {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.7;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.pixel-connector path {
+  stroke-dasharray: 4 7;
+  animation: pixel-dash 1.4s linear infinite;
+}
+
+.pixel-tile {
+  animation: pixel-float 6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.pixel-card {
+  animation: pixel-card-breathe 6s ease-in-out infinite;
+}
+
+.pixel-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pixel-ping 2.4s ease-out infinite;
+}
+
+/* Off screen: freeze every loop so hidden sections cost no paint time. */
+.pixel-stage[data-active="false"] .pixel-connector path,
+.pixel-stage[data-active="false"] .pixel-tile,
+.pixel-stage[data-active="false"] .pixel-card,
+.pixel-stage[data-active="false"] .pixel-ping {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-connector path,
+  .pixel-tile,
+  .pixel-card,
+  .pixel-ping {
+    animation: none;
+  }
+}
+
+/* Order lifecycle demo: a brief scale pulse + soft glow on every stage change. */
+@keyframes order-stage-pop {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+  30% {
+    transform: scale(1.02);
+    box-shadow: 0 8px 22px -12px rgba(99, 102, 241, 0.45);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .order-stage-pop {
+    animation: order-stage-pop 480ms ease-out;
+  }
+}
+
+/* Hero: a desktop-style selection dragged over the closing phrase. */
+@keyframes hero-select-marquee {
+  0% {
+    width: 0%;
+    height: 0%;
+    opacity: 0;
+  }
+  15% {
+    width: 0%;
+    height: 0%;
+    opacity: 1;
+  }
+  50%,
+  80% {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+  }
+  90%,
+  100% {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes hero-select-cursor {
+  0% {
+    inset-inline-start: 0%;
+    top: 0%;
+    opacity: 0;
+  }
+  15% {
+    inset-inline-start: 0%;
+    top: 0%;
+    opacity: 1;
+  }
+  50%,
+  80% {
+    inset-inline-start: 100%;
+    top: 100%;
+    opacity: 1;
+  }
+  90%,
+  100% {
+    inset-inline-start: 100%;
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-select-marquee {
+    animation: hero-select-marquee 4.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  .hero-select-cursor {
+    animation: hero-select-cursor 4.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-select-layer {
+    display: none;
+  }
+}
+
+/* Off screen: freeze the selection loop so the hero costs no paint time. */
+.hero-stage[data-active="false"] .hero-select-marquee,
+.hero-stage[data-active="false"] .hero-select-cursor {
+  animation-play-state: paused;
 }
 
 /*
@@ -79,6 +249,9 @@
 
   --color-table-header: var(--table-header);
   --color-notify: var(--notify);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-orange-soft: var(--accent-orange-soft);
+  --color-primary-hover: var(--primary-hover);
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
   --color-brand-foreground: var(--brand-foreground);
@@ -139,6 +312,12 @@ html[lang="en"] {
   /* Primary Action (Solid Crisp Dark) */
   --primary: #232326;
   --primary-foreground: #FFFFFF;
+  --primary-hover: #3A3A3D;
+
+  /* Solid neutral button (public scope) */
+  --solid: #171717;
+  --solid-hover: #262626;
+  --solid-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 
   /* Secondary & Surfaces */
   --secondary: #F1F2F4;
@@ -177,6 +356,10 @@ html[lang="en"] {
   --brand-soft: #E3F1EC;
 
   --notify: #EF4444;
+
+  /* Accent — soft orange for icon circles and small badges */
+  --accent-orange: #EA580C;
+  --accent-orange-soft: #FDF0E7;
 
   /* Charts — remapped to the Polaris palette */
   --chart-1: #EA580C;
@@ -217,6 +400,10 @@ html[lang="en"] {
   --muted-foreground: #8C9196;
   --primary: #FFFFFF;
   --primary-foreground: #0B0C0D;
+  --primary-hover: #E3E5E8;
+  --solid: #FFFFFF;
+  --solid-hover: #E3E5E8;
+  --solid-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   --secondary: #1A1C1E;
   --secondary-foreground: #E3E5E8;
   --accent: #1A1C1E;
@@ -239,6 +426,8 @@ html[lang="en"] {
   --brand-foreground: #0B0C0D;
   --brand-soft: rgba(16, 185, 129, 0.14);
   --notify: #EF4444;
+  --accent-orange: #FB923C;
+  --accent-orange-soft: rgba(251, 146, 60, 0.16);
   --chart-1: #10B981;
   --chart-2: #E3E5E8;
   --chart-3: #22C55E;
@@ -259,6 +448,65 @@ html[lang="en"] {
   --gradient-brand: linear-gradient(135deg, var(--brand), var(--brand-strong));
   --gradient-hero: linear-gradient(var(--card), var(--card));
   --gradient-dark: linear-gradient(135deg, #0B0C0D 0%, #141517 60%, #1A1C1E 100%);
+}
+
+/*
+ * Account scope — forest-green action buttons on the ink & orange shell for
+ * /auth, /reset-password, /onboarding and /dashboard. The public landing page
+ * and the storefronts keep the neutral palette from :root.
+ *
+ * Buttons #04342C (hover #0A4F42), accent #EA580C, background #F5F5F5,
+ * white cards with #EEEEEE borders, focus ring 25% forest.
+ */
+.theme-forest {
+  --background: #F5F5F5;
+  --sand: #F5F5F5;
+  --card: #FFFFFF;
+  --border: #EEEEEE;
+  --input: #EEEEEE;
+
+  --primary: #04342C;
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #0A4F42;
+
+  --solid: #04342C;
+  --solid-hover: #0A4F42;
+  --solid-shadow: 0 1px 2px rgba(4, 52, 44, 0.18), 0 4px 12px -4px rgba(4, 52, 44, 0.45);
+
+  --ring: rgba(4, 52, 44, 0.25);
+
+  --brand: #04342C;
+  --brand-strong: #02231D;
+  --brand-foreground: #FFFFFF;
+  --brand-soft: #E6F0ED;
+
+  --accent-orange: #EA580C;
+  --accent-orange-soft: #FDF0E7;
+}
+
+.dark.theme-forest,
+.dark .theme-forest {
+  --background: #0B0C0D;
+  --card: #141517;
+  --border: #262626;
+
+  --primary: #34D399;
+  --primary-foreground: #04342C;
+  --primary-hover: #6EE7B7;
+
+  --solid: #34D399;
+  --solid-hover: #6EE7B7;
+  --solid-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+
+  --ring: rgba(52, 211, 153, 0.35);
+
+  --brand: #6EE7B7;
+  --brand-strong: #34D399;
+  --brand-foreground: #04342C;
+  --brand-soft: rgba(52, 211, 153, 0.14);
+
+  --accent-orange: #FB923C;
+  --accent-orange-soft: rgba(251, 146, 60, 0.16);
 }
 
 @layer base {
@@ -320,6 +568,15 @@ html[lang="en"] {
   font-family: var(--font-display);
 }
 
+@utility font-cairo {
+  font-family: "Cairo", system-ui, sans-serif;
+}
+
+@utility text-hero-ar {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.3;
+}
+
 @utility bg-gradient-brand {
   background-image: var(--gradient-brand);
 }
@@ -340,6 +597,14 @@ html[lang="en"] {
 
 @utility pb-safe {
   padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ---------- A6 thermal shipping labels (100x150mm, pure B/W) ---------- */
@@ -388,5 +653,98 @@ html[lang="en"] {
 @media (prefers-reduced-motion: reduce) {
   .animate-delivery-marquee {
     animation: none !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .showcase-dash-section {
+    overflow-x: hidden;
+    padding: 0 16px;
+  }
+
+  .showcase-dash-container {
+    padding-inline: 0;
+  }
+
+  .showcase-dash-panel {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .showcase-dash-scale-viewport {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+  }
+
+  .showcase-dash-scale-canvas {
+    width: 1152px;
+    max-width: none;
+    transform: scale(0.23);
+    transform-origin: top left;
+  }
+
+  .showcase-dash-grid {
+    min-height: 530px;
+    grid-template-columns: 210px minmax(0, 1fr);
+  }
+
+  .showcase-dash-sidebar {
+    display: flex;
+  }
+
+  .showcase-dash-main {
+    padding: 20px;
+  }
+
+  .showcase-dash-bottom-tabs {
+    display: none;
+  }
+
+  .showcase-dash-phone {
+    /* Show the same floating phone as the desktop preview, sized in the
+       1152px canvas so it keeps the exact desktop composition when scaled. */
+    display: block;
+    right: 24px;
+    width: 240px;
+  }
+
+  .showcase-dash-url {
+    display: inline;
+  }
+
+  .showcase-dash-search {
+    display: flex;
+  }
+
+  .showcase-dash-title {
+    font-size: 16px;
+  }
+
+  .showcase-dash-subtitle {
+    font-size: 10px;
+  }
+
+  .showcase-dash-order-customer {
+    font-size: 12px;
+  }
+
+  .showcase-dash-order-details {
+    font-size: 10px;
+  }
+
+  .showcase-dash-order-status {
+    padding-inline: 8px;
+    font-size: 9px;
+  }
+
+  .showcase-dash-stat-value {
+    font-size: 20px;
+  }
+
+  .showcase-dash-carrier-card {
+    padding: 12px;
   }
 }

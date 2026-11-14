@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { translate } from "@/lib/i18n";
 import { useUiLanguage } from "@/lib/ui-i18n";
 
@@ -10,12 +11,26 @@ const DELIVERY_LOGOS = [
   "/logos/delivery-08.png",
 ];
 
+const LOGO_SET_WIDTH = DELIVERY_LOGOS.length * 136;
+
 export function DeliveryLogosMarquee() {
   const language = useUiLanguage();
+  const [logoCopies, setLogoCopies] = useState(3);
+
+  useEffect(() => {
+    const updateCopies = () => {
+      const copies = Math.max(1, Math.ceil(window.innerWidth / LOGO_SET_WIDTH) + 1);
+      setLogoCopies((current) => (current === copies ? current : copies));
+    };
+
+    updateCopies();
+    window.addEventListener("resize", updateCopies);
+    return () => window.removeEventListener("resize", updateCopies);
+  }, []);
 
   return (
-    <section className="mx-auto w-full max-w-3xl pb-16">
-      <div className="mb-8 px-5 text-center">
+    <section className="w-full pb-16">
+      <div className="mx-auto mb-8 w-full max-w-3xl px-5 text-center">
         <span className="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground">
           {translate(language, "landing.delivery.badge")}
         </span>
@@ -24,10 +39,7 @@ export function DeliveryLogosMarquee() {
         </h2>
       </div>
       {DELIVERY_LOGOS.length > 0 && (
-        <div
-          className="delivery-logos-mask relative left-1/2 w-screen -translate-x-1/2 overflow-hidden"
-          dir="ltr"
-        >
+        <div className="delivery-logos-mask w-full overflow-hidden" dir="ltr">
           <div className="delivery-logos-track flex w-max py-1" dir="ltr">
             {[0, 1].map((setIndex) => (
               <div
@@ -36,14 +48,16 @@ export function DeliveryLogosMarquee() {
                 aria-hidden="true"
                 dir="ltr"
               >
-                {DELIVERY_LOGOS.map((src, index) => (
-                  <div
-                    key={`${src}-${index}`}
-                    className="flex h-[88px] w-[120px] shrink-0 items-center justify-center rounded-2xl border border-border bg-card p-4"
-                  >
-                    <img src={src} alt="" className="h-12 w-full object-contain" />
-                  </div>
-                ))}
+                {Array.from({ length: logoCopies }, (_, copyIndex) =>
+                  DELIVERY_LOGOS.map((src, index) => (
+                    <div
+                      key={`${copyIndex}-${src}-${index}`}
+                      className="flex h-[88px] w-[120px] shrink-0 items-center justify-center rounded-2xl border border-border bg-card p-4"
+                    >
+                      <img src={src} alt="" className="h-12 w-full object-contain" />
+                    </div>
+                  )),
+                )}
               </div>
             ))}
           </div>

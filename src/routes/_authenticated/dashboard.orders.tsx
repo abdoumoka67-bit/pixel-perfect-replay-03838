@@ -13,6 +13,7 @@ import {
   Phone,
   Plus,
   Printer,
+  RefreshCw,
   Search,
   Send,
   Trash2,
@@ -63,6 +64,8 @@ import {
   type OrderStatus,
 } from "@/lib/commerce";
 import { downloadText, ordersToCsv } from "@/lib/csv";
+import { carrierById } from "@/lib/delivery-carriers";
+import { syncYalidineStatuses } from "@/lib/yalidine.functions";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { cn } from "@/lib/utils";
 import { TrustRadarBadge } from "@/components/dashboard/TrustRadarBadge";
@@ -87,6 +90,41 @@ function OrdersPage() {
   const [toDelete, setToDelete] = useState<Order | null>(null);
   const [labelOrders, setLabelOrders] = useState<Order[] | null>(null);
   const { updateStatus, remove, sendYalidine } = useOrderActions();
+
+  const { data: connectedCarriers = [] } = useQuery({
+    queryKey: ["connected-carriers-list", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("carrier_integrations")
+        .select("carrier_id, connected")
+        .eq("store_id", store!.id)
+        .eq("connected", true);
+      return data ?? [];
+    },
+  });
+  const hasConnectedCarrier = connectedCarriers.length > 0;
+  const activeCarrierId = connectedCarriers[0]?.carrier_id ?? "yalidine";
+  const activeCarrier = carrierById(activeCarrierId);
+  const activeCarrierName = activeCarrier ? t(activeCarrier.name) : "شركة التوصيل";
+
+  const syncShipping = useMutation({
+    mutationFn: () => syncYalidineStatuses(),
+    onSuccess: (result) => {
+      if (!result.ok) {
+        toast.error(t(result.message));
+        return;
+      }
+      if (result.updated > 0) {
+        toast.success(t("تم تحديث {n} طلب من أصل {m}.", { n: result.updated, m: result.checked }));
+      } else {
+        toast.success(t("لا توجد حالات شحن جديدة ({m} طلب تم فحصه).", { m: result.checked }));
+      }
+      qc.invalidateQueries({ queryKey: ["orders"] });
+    },
+    onError: (e: Error) => toast.error(t(friendlyError(e.message))),
+  });
+  const handleSyncShipping = () => syncShipping.mutate();
 
   const canAssign = canManage && isPro;
   const members = useQuery({
@@ -142,6 +180,8 @@ function OrdersPage() {
     queryKey: ["orders", store?.id, page, q, status],
     enabled: !!store,
     placeholderData: keepPreviousData,
+    // Poll while the page is visible so new orders arrive on their own.
+    refetchInterval: 20_000,
     queryFn: async () => {
       const from = (page - 1) * PAGE_SIZE;
       const { data, count, error } = await buildQuery("*", true).range(from, from + PAGE_SIZE - 1);
@@ -276,9 +316,11 @@ function OrdersPage() {
         <DropdownMenuItem onClick={() => setLabelOrders([o])}>
           <Printer /> {t("طباعة بوليصة A6")}
         </DropdownMenuItem>
-        <DropdownMenuItem disabled={readOnly || !!o.tracking_number} onClick={() => sendYalidine.mutate(o.id)}>
-          <Send /> {t("إرسال إلى Yalidine")}
-        </DropdownMenuItem>
+        {hasConnectedCarrier && (
+          <DropdownMenuItem disabled={readOnly || !!o.tracking_number} onClick={() => sendYalidine.mutate(o.id)}>
+            <Send className="size-4" /> {t("إرسال إلى {name}", { name: activeCarrierName })}
+          </DropdownMenuItem>
+        )}
         {canManage && (
           <>
             <DropdownMenuSeparator />
@@ -298,6 +340,16 @@ function OrdersPage() {
         description={`${t("{n} طلب", { n: total })}${status !== "all" ? ` · ${t(STATUS_LABELS[status])}` : ""}`}
         actions={
           <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs font-medium"
+              onClick={handleSyncShipping}
+              disabled={syncShipping.isPending || readOnly}
+            >
+              <RefreshCw className={cn("size-3.5", syncShipping.isPending && "animate-spin")} />
+              {t("تحديث حالات الشحن")}
+            </Button>
             <Button variant="outline" onClick={exportCsv}>
               <Download /> {selected.size ? t("تصدير المحدد ({n})", { n: selected.size }) : t("تصدير Excel")}
             </Button>

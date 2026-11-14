@@ -83,7 +83,7 @@ export function CarrierLogo({ id, className }: { id: string; className?: string 
         />
       ) : (
         <span
-          className="flex size-full items-center justify-center rounded-md bg-muted text-[11px] font-semibold tracking-wide text-muted-foreground"
+          className="flex size-full items-center justify-center rounded-md bg-muted text-[11px] font-bold tracking-wide text-muted-foreground"
           aria-hidden="true"
         >
           {brand?.initials ?? "??"}
