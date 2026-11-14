@@ -113,15 +113,15 @@ function ProductsPage() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {products.data?.map((p) => (
-          <div key={p.id} className="flex flex-row items-center gap-3 rounded-2xl bg-card p-3 shadow-card sm:flex-col sm:items-stretch sm:gap-0 sm:overflow-hidden sm:p-0">
-            <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-muted sm:h-auto sm:w-full sm:rounded-none sm:aspect-[4/3]">
+          <div key={p.id} className="group flex flex-row items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card transition-shadow hover:shadow-md sm:flex-col sm:items-stretch sm:gap-0 sm:overflow-hidden sm:p-0">
+            <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-muted sm:h-36 sm:w-full sm:rounded-none">
               {p.images[0] && urls[p.images[0]] ? (
                 <img src={urls[p.images[0]]} alt={p.name} className="size-full object-cover" loading="lazy" />
               ) : (
                 <div className="flex size-full items-center justify-center text-muted-foreground">
-                  <Package className="size-6 sm:size-10" />
+                  <Package className="size-6 sm:size-8" />
                 </div>
               )}
               <div className="absolute start-3 top-3 hidden gap-1.5 sm:flex">
@@ -129,9 +129,9 @@ function ProductsPage() {
                 {p.stock === 0 && <Badge variant="danger">{t("نفدت الكمية")}</Badge>}
               </div>
             </div>
-            <div className="min-w-0 flex-1 sm:p-4">
+            <div className="min-w-0 flex-1 sm:p-3">
               <div className="flex items-center justify-between gap-2">
-                <p className="truncate font-medium">{p.name}</p>
+                <p className="truncate text-sm font-medium" title={p.name}>{p.name}</p>
                 <span className="shrink-0 sm:hidden">
                   {p.is_active ? <Badge variant="success">{t("معروض")}</Badge> : <Badge variant="neutral">{t("مخفي")}</Badge>}
                 </span>
@@ -148,12 +148,12 @@ function ProductsPage() {
                 </p>
               )}
               <div className="mt-1 flex items-baseline gap-2">
-                <span className="font-display text-lg font-medium text-brand num">{formatDZD(p.price, language)}</span>
+                <span className="font-display text-base font-medium text-brand num">{formatDZD(p.price, language)}</span>
                 {p.compare_at_price ? (
-                  <span className="text-sm text-muted-foreground line-through num">{formatDZD(p.compare_at_price, language)}</span>
+                  <span className="text-xs text-muted-foreground line-through num">{formatDZD(p.compare_at_price, language)}</span>
                 ) : null}
               </div>
-              <div className="mt-2 flex gap-1.5 sm:mt-4 sm:gap-2">
+              <div className="mt-2 flex gap-1.5 sm:mt-2.5 sm:gap-1.5">
                 <Button
                   size="sm"
                   variant="outline"
