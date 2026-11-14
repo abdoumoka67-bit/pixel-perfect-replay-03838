@@ -499,7 +499,7 @@ function CarrierHub({
             setCarrierSearch("");
             setCarrierPickerOpen(true);
           }}
-          className="shrink-0 gap-2 rounded-full bg-[#111111] text-white hover:bg-[#222222]"
+          className="shrink-0 gap-2 rounded-full bg-primary text-primary-foreground hover:bg-primary-hover"
           size="sm"
         >
           <Plus className="size-4" /> {t("إضافة شركة توصيل")}
@@ -523,7 +523,7 @@ function CarrierHub({
                 setCarrierPickerOpen(true);
               }}
               size="sm"
-              className="gap-2 rounded-full bg-[#111111] text-white hover:bg-[#222222]"
+              className="gap-2 rounded-full bg-primary text-primary-foreground hover:bg-primary-hover"
             >
               <Plus className="size-4" /> {t("إضافة شركة توصيل")}
             </Button>
