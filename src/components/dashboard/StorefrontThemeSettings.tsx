@@ -1194,13 +1194,19 @@ export function StorefrontThemeSettings({
                 onClick={() => setActiveTab("hero")}
                 className={cn("cursor-pointer p-6 transition-colors sm:p-8", activeTab === "hero" ? "ring-2 ring-inset ring-brand" : "")}
               >
-                <p className={cn("font-normal leading-tight", titleSizeClass[titleSize], textAlignClass[textAlign])}>
+                <p
+                  style={{ transform: titleOffsetY ? `translateY(${titleOffsetY}px)` : undefined }}
+                  className={cn("font-normal leading-tight", titleSizeClass[titleSize], textAlignClass[textAlign])}
+                >
                   {heroTitle || store?.name || t("اسم متجرك")}
                 </p>
                 <p className={cn("mt-2 max-w-xs text-xs font-light leading-relaxed opacity-90", textAlign === "center" ? "mx-auto" : textAlign === "start" ? "me-auto" : "ms-auto", textAlignClass[textAlign])}>
                   {heroSubtitle || defaults.heroSubtitle}
                 </p>
-                <div className={cn("mt-4 flex", buttonAlignClass[buttonAlign])}>
+                <div
+                  style={{ transform: buttonOffsetY ? `translateY(${buttonOffsetY}px)` : undefined }}
+                  className={cn("mt-4 flex", buttonAlignClass[buttonAlign])}
+                >
                   <button
                     type="button"
                     onClick={(event) => {
