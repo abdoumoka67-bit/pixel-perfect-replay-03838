@@ -114,12 +114,6 @@ const en: Record<string, string> = {
   "تم تحديث {n} طلب من أصل {m}.": "Updated {n} of {m} orders.",
   "لا توجد حالات شحن جديدة ({m} طلب تم فحصه).": "No new shipping statuses ({m} orders checked).",
   "إرسال إلى {name}": "Send to {name}",
-  "إشعارات الطلبات": "Order notifications",
-  "فعّل الإشعارات لتصلك الطلبات الجديدة على هاتفك.": "Enable notifications to get new orders on your phone.",
-  "تفعيل": "Enable",
-  "لاحقًا": "Later",
-  "تم تفعيل الإشعارات": "Notifications enabled",
-  "الإشعارات محظورة من إعدادات المتصفح.": "Notifications are blocked in your browser settings.",
 
   // Thank-you page
   "تم تسجيل طلبك بنجاح": "Order placed successfully",
@@ -185,9 +179,6 @@ const en: Record<string, string> = {
   "ربط Yalidine": "Yalidine integration",
   "إعدادات المتجر": "Store settings",
   "لوحة التحكم": "Dashboard",
-  "طلب جديد": "New order",
-  "عرض الطلبات": "View orders",
-  "زبون": "Customer",
   "الإعدادات والاشتراك": "Settings & subscription",
   "المنصة": "Platform",
   "لوحة الإدارة": "Admin panel",
@@ -1042,14 +1033,6 @@ const fr: Record<string, string> = {
   "لا توجد حالات شحن جديدة ({m} طلب تم فحصه).":
     "Aucun nouveau statut d'expédition ({m} commandes vérifiées).",
   "إرسال إلى {name}": "Envoyer à {name}",
-  "إشعارات الطلبات": "Notifications de commandes",
-  "فعّل الإشعارات لتصلك الطلبات الجديدة على هاتفك.":
-    "Activez les notifications pour recevoir les nouvelles commandes sur votre téléphone.",
-  "تفعيل": "Activer",
-  "لاحقًا": "Plus tard",
-  "تم تفعيل الإشعارات": "Notifications activées",
-  "الإشعارات محظورة من إعدادات المتصفح.":
-    "Les notifications sont bloquées dans les paramètres de votre navigateur.",
 
   // Thank-you page
   "تم تسجيل طلبك بنجاح": "Commande enregistrée avec succès",
@@ -1116,9 +1099,6 @@ const fr: Record<string, string> = {
   "ربط Yalidine": "Connexion Yalidine",
   "إعدادات المتجر": "Paramètres de la boutique",
   "لوحة التحكم": "Tableau de bord",
-  "طلب جديد": "Nouvelle commande",
-  "عرض الطلبات": "Voir les commandes",
-  "زبون": "Client",
   "الإعدادات والاشتراك": "Paramètres et abonnement",
   "المنصة": "Plateforme",
   "لوحة الإدارة": "Panneau d'administration",

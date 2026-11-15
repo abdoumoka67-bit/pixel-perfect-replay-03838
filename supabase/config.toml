@@ -1,5 +1,1 @@
 project_id = "qvevwpofibfhhbytwurh"
-
-# Web Push sender: protected by the x-webhook-secret header, not by a user JWT.
-[functions.send-order-push]
-verify_jwt = false
