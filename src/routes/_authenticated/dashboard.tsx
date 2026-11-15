@@ -13,6 +13,7 @@ import {
   orderNotificationPermission,
   requestOrderNotificationPermission,
   showOrderNotification,
+  subscribeOrderPush,
 } from "@/lib/order-notifications";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
@@ -92,6 +93,8 @@ function playOrderChime() {
 
 function NotificationsOptIn() {
   const t = useTr();
+  const language = useUiLanguage();
+  const { store } = useMyStore();
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">(orderNotificationPermission);
   // Rendered only after mount so the server and the first client paint agree.
   const [hidden, setHidden] = useState(true);
@@ -129,7 +132,10 @@ function NotificationsOptIn() {
           onClick={async () => {
             const result = await requestOrderNotificationPermission();
             setPermission(result);
-            if (result === "granted") toast.success(t("تم تفعيل الإشعارات"));
+            if (result === "granted") {
+              toast.success(t("تم تفعيل الإشعارات"));
+              if (store?.id) void subscribeOrderPush(store.id, language);
+            }
             if (result === "denied") toast.error(t("الإشعارات محظورة من إعدادات المتصفح."));
           }}
         >
@@ -216,6 +222,13 @@ function DashboardLayout() {
       supabase.removeChannel(channel);
     };
   }, [store?.id, qc, t, language, navigate, logoUrl]);
+
+  // Keep this device registered for background pushes (app closed) whenever the
+  // permission is already granted — e.g. after a reinstall or a store switch.
+  useEffect(() => {
+    if (!store?.id || orderNotificationPermission() !== "granted") return;
+    void subscribeOrderPush(store.id, language);
+  }, [store?.id, language]);
 
   // Platform admins can open every dashboard area, including the Pro ones.
   const allowed = isAdmin || canOpen(access, areaForPath(path));

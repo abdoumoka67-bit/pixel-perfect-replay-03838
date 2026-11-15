@@ -1,10 +1,12 @@
 // System notifications for incoming orders.
 //
-// The dashboard already plays a chime and shows an in-app toast; this layer is
-// only for phones where the installed app sits in the background and the toast
-// would be invisible. It uses the Notification API directly (no push backend),
-// so it works while the app/tab is still alive. Real notifications for a fully
-// closed app need Web Push + VAPID keys on a server.
+// Two layers:
+//  1. `showOrderNotification` — paints a notification while the app is still
+//     alive (foreground/background tab) using the Notification API.
+//  2. `subscribeOrderPush` — registers the device for Web Push so the
+//     `send-order-push` Edge Function can notify it with the app fully closed.
+
+import { supabase } from "@/integrations/supabase/client";
 
 export type OrderNotification = {
   title: string;
@@ -15,6 +17,79 @@ export type OrderNotification = {
 };
 
 const FALLBACK_ICON = "/icons/icon-192.png";
+
+// Public VAPID key (safe to ship). Empty until the project is configured, in
+// which case push stays disabled and only in-app alerts are used.
+const VAPID_PUBLIC_KEY = (import.meta.env["VITE_VAPID_PUBLIC_KEY"] ?? "") as string;
+
+export function pushNotificationsConfigured(): boolean {
+  return VAPID_PUBLIC_KEY.length > 0;
+}
+
+function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
+  const padded = (base64 + "=".repeat((4 - (base64.length % 4)) % 4))
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+  const raw = atob(padded);
+  const bytes = new Uint8Array(new ArrayBuffer(raw.length));
+  for (let i = 0; i < raw.length; i += 1) bytes[i] = raw.charCodeAt(i);
+  return bytes;
+}
+
+/**
+ * Registers this device for background pushes (works with the app closed) and
+ * stores the subscription for the Edge Function. Safe to call repeatedly.
+ */
+export async function subscribeOrderPush(storeId: string, language: string): Promise<boolean> {
+  if (!VAPID_PUBLIC_KEY) return false;
+  if (!orderNotificationsSupported() || Notification.permission !== "granted") return false;
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+
+  try {
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) return false;
+
+    let subscription = await registration.pushManager.getSubscription();
+    if (!subscription) {
+      const options: PushSubscriptionOptionsInit = {
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      };
+      try {
+        subscription = await registration.pushManager.subscribe(options);
+      } catch {
+        // A previous subscription may be bound to another VAPID key.
+        const stale = await registration.pushManager.getSubscription();
+        await stale?.unsubscribe().catch(() => undefined);
+        subscription = await registration.pushManager.subscribe(options);
+      }
+    }
+
+    const keys = subscription.toJSON().keys;
+    const p256dh = keys?.["p256dh"];
+    const auth = keys?.["auth"];
+    if (!p256dh || !auth) return false;
+
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    if (!userId) return false;
+
+    // The endpoint is unique by digest, so replace the row instead of upserting.
+    await supabase.from("push_subscriptions").delete().eq("endpoint", subscription.endpoint);
+    const { error } = await supabase.from("push_subscriptions").insert({
+      store_id: storeId,
+      user_id: userId,
+      endpoint: subscription.endpoint,
+      p256dh,
+      auth,
+      language: language === "en" || language === "fr" ? language : "ar",
+      user_agent: navigator.userAgent.slice(0, 180),
+    });
+    return !error;
+  } catch {
+    return false;
+  }
+}
 
 export function orderNotificationsSupported(): boolean {
   return typeof window !== "undefined" && "Notification" in window;
