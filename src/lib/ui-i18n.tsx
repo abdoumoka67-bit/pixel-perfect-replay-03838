@@ -911,6 +911,8 @@ const en: Record<string, string> = {
   "لا توجد شركة تطابق بحثك.": "No carrier matches your search.",
   "لم تربط أي شركة توصيل بعد": "No delivery carriers connected yet",
   "تحديث حالات الشحن": "Sync shipping statuses",
+  "طلب": "orders",
+  "تم عرض": "Showing",
 };
 
 const fr: Record<string, string> = {
@@ -1812,6 +1814,8 @@ const fr: Record<string, string> = {
   "لا توجد شركة تطابق بحثك.": "Aucune société ne correspond à votre recherche.",
   "لم تربط أي شركة توصيل بعد": "Aucune société de livraison connectée pour le moment",
   "تحديث حالات الشحن": "Synchroniser les statuts d'expédition",
+  "طلب": "commandes",
+  "تم عرض": "Affichage de",
 };
 
 /** Translates an Arabic UI string into `language`, falling back to Arabic. */

@@ -3,8 +3,6 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  ChevronLeft,
-  ChevronRight,
   Download,
   Eye,
   Filter,
@@ -17,12 +15,11 @@ import {
   Search,
   Send,
   Trash2,
-  PhoneCall,
   UserCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
-import { PaymentBadge, StatusBadge } from "@/components/dashboard/StatusBadge";
+import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { OrderDetailsSheet, confirmMessage, useOrderActions, type Order } from "@/components/dashboard/OrderDetailsSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,7 +71,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/orders")({
   component: OrdersPage,
 });
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 100;
 
 function OrdersPage() {
   const t = useTr();
@@ -140,7 +137,6 @@ function OrdersPage() {
       return data;
     },
   });
-  const memberEmail = (id: string | null) => (id ? members.data?.find((m) => m.id === id)?.email ?? null : null);
   const assign = useMutation({
     mutationFn: async ({ orderId, memberId }: { orderId: string; memberId: string | null }) => {
       // the SQL function accepts null to clear the assignment
@@ -171,7 +167,13 @@ function OrdersPage() {
     if (status !== "all") query = query.eq("status", status);
     if (q) {
       const safe = q.replace(/[%,()]/g, "");
-      query = query.or(`phone.ilike.%${safe}%,customer_name.ilike.%${safe}%`);
+      const cleanDigits = safe.replace(/\D/g, "");
+      const num = cleanDigits ? parseInt(cleanDigits, 10) : null;
+      if (num && !isNaN(num)) {
+        query = query.or(`phone.ilike.%${safe}%,customer_name.ilike.%${safe}%,order_number.eq.${num}`);
+      } else {
+        query = query.or(`phone.ilike.%${safe}%,customer_name.ilike.%${safe}%`);
+      }
     }
     return query;
   };
@@ -192,7 +194,6 @@ function OrdersPage() {
 
   const rows = useMemo(() => orders.data?.rows ?? [], [orders.data?.rows]);
   const total = orders.data?.count ?? 0;
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const openOrder = useMemo(() => rows.find((r) => r.id === openId) ?? null, [rows, openId]);
 
   // Trust radar: minimal order history per phone, evaluated in pure commerce.ts.
@@ -403,233 +404,103 @@ function OrdersPage() {
         </DropdownMenu>
       </div>
 
-      {/* Selection & Counts Header Bar */}
-      {rows.length > 0 && (
-        <div className="flex items-center justify-between px-2 py-1 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Checkbox checked={allOnPage} onCheckedChange={toggleAll} aria-label={t("تحديد الكل")} />
-            <span>{t("تحديد الكل")} ({rows.length})</span>
+      {/* Unified Slim Orders List */}
+      <div className="space-y-2.5">
+        {rows.length > 0 && (
+          <div className="flex items-center justify-between px-3 py-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Checkbox checked={allOnPage} onCheckedChange={toggleAll} aria-label={t("تحديد الكل")} />
+              <span>{t("تحديد الكل")} ({rows.length})</span>
+            </div>
+            <span>{total} {t("طلب")}</span>
           </div>
-          <span>{total} {t("طلب")}</span>
-        </div>
-      )}
+        )}
 
-      {/* 1. Desktop View: Shopify Data Table (hidden on mobile, visible on md+) */}
-      <div className="hidden md:block overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-        <div className="overflow-x-auto">
-          <table className="w-full text-start text-xs">
-            <thead className="border-b border-border bg-muted/40 text-muted-foreground">
-              <tr>
-                <th className="w-10 px-3 py-3 text-start">
-                  <Checkbox checked={allOnPage} onCheckedChange={toggleAll} aria-label={t("تحديد الكل")} />
-                </th>
-                <th className="px-3 py-3 text-start font-medium">{t("الطلب")}</th>
-                <th className="px-3 py-3 text-start font-medium">{t("التاريخ")}</th>
-                <th className="px-3 py-3 text-start font-medium">{t("الزبون والوجهة")}</th>
-                <th className="px-3 py-3 text-start font-medium">{t("المنتجات")}</th>
-                <th className="px-3 py-3 text-start font-medium">{t("المبلغ")}</th>
-                <th className="px-3 py-3 text-start font-medium">{t("حالة الدفع")}</th>
-                <th className="px-3 py-3 text-start font-medium">{t("حالة الطلب")}</th>
-                <th className="px-3 py-3 text-end font-medium">{t("إجراءات")}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60">
-              {rows.map((o) => (
-                <tr
-                  key={o.id}
-                  className={cn(
-                    "group transition-colors hover:bg-muted/30",
-                    selected.has(o.id) && "bg-brand-soft/20",
-                  )}
-                >
-                  <td className="px-3 py-3.5 align-middle">
-                    <Checkbox
-                      checked={selected.has(o.id)}
-                      onCheckedChange={() => toggle(o.id)}
-                      aria-label={t("تحديد")}
-                    />
-                  </td>
-                  <td className="px-3 py-3.5 align-middle">
-                    <button
-                      type="button"
-                      onClick={() => setOpenId(o.id)}
-                      className="font-bold text-foreground hover:text-brand num transition-colors"
-                    >
-                      #ORX-{o.order_number}
-                    </button>
-                  </td>
-                  <td className="px-3 py-3.5 align-middle text-muted-foreground num whitespace-nowrap">
-                    {new Date(o.created_at).toLocaleDateString(language === "ar" ? "ar-DZ" : language === "fr" ? "fr-FR" : "en-US", {
-                      day: "2-digit",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </td>
-                  <td className="px-3 py-3.5 align-middle">
-                    <button
-                      type="button"
-                      onClick={() => setOpenId(o.id)}
-                      className="text-start"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-foreground group-hover:text-brand transition-colors">
-                          {o.customer_name}
-                        </span>
-                        <TrustRadarBadge trust={trustOf(o)} />
-                      </div>
-                      <p className="mt-0.5 text-muted-foreground text-[11px]">
-                        <span className="num">{o.wilaya_code}</span> - {o.wilaya_name}
-                        {o.commune ? ` (${o.commune})` : ""} · {o.delivery_type === "home" ? t("منزل") : t("مكتب")}
-                      </p>
-                    </button>
-                  </td>
-                  <td className="px-3 py-3.5 align-middle max-w-[180px]">
-                    <p className="truncate text-foreground font-medium" title={o.product_name}>
-                      {o.product_name}
-                    </p>
-                    {o.quantity > 1 && (
-                      <span className="text-[11px] text-muted-foreground num">
-                        {t("الكمية:")} {o.quantity}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-3 py-3.5 align-middle font-bold text-foreground num whitespace-nowrap">
-                    {formatDZD(o.total, language)}
-                  </td>
-                  <td className="px-3 py-3.5 align-middle whitespace-nowrap">
-                    <PaymentBadge status={o.payment_status} />
-                  </td>
-                  <td className="px-3 py-3.5 align-middle whitespace-nowrap">
-                    <StatusBadge status={o.status} />
-                  </td>
-                  <td className="px-3 py-3.5 align-middle text-end whitespace-nowrap">
-                    <div className="flex items-center justify-end gap-1">
-                      <a
-                        href={`tel:${o.phone}`}
-                        className="flex size-7 items-center justify-center rounded-full bg-brand-soft text-brand transition-colors hover:bg-brand/15"
-                        title={t("اتصال")}
-                      >
-                        <Phone className="size-3.5" />
-                      </a>
-                      <a
-                        href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex size-7 items-center justify-center rounded-full bg-brand-soft text-brand transition-colors hover:bg-brand/15"
-                        title={t("واتساب")}
-                      >
-                        <MessageCircle className="size-3.5" />
-                      </a>
-                      <ActionsMenu o={o} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* 2. Mobile View: Shopify Ultra-Slim List (visible on mobile only, hidden on md+) */}
-      <div className="md:hidden space-y-2">
         {rows.map((o) => (
           <div
             key={o.id}
             className={cn(
-              "flex items-center justify-between gap-2.5 rounded-xl border border-border bg-card px-3 py-2.5 shadow-sm transition-colors",
+              "flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-card transition-colors hover:border-foreground/20",
               selected.has(o.id) && "border-brand/40 bg-brand-soft/20",
             )}
           >
-            {/* Checkbox */}
-            <Checkbox
-              checked={selected.has(o.id)}
-              onCheckedChange={() => toggle(o.id)}
-              aria-label={t("تحديد")}
-              className="shrink-0"
-            />
-
-            {/* Middle: Order info + Customer */}
-            <button
-              type="button"
-              onClick={() => setOpenId(o.id)}
-              className="min-w-0 flex-1 text-start"
-            >
-              <div className="flex items-center justify-between gap-1.5">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="truncate text-xs font-bold text-foreground">
+            {/* Right side: Checkbox + Name & Order info */}
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <Checkbox
+                checked={selected.has(o.id)}
+                onCheckedChange={() => toggle(o.id)}
+                aria-label={t("تحديد")}
+                className="shrink-0"
+              />
+              <button
+                type="button"
+                onClick={() => setOpenId(o.id)}
+                className="min-w-0 flex-1 text-start"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-sm font-bold text-foreground hover:text-brand">
                     {o.customer_name}
-                  </span>
+                  </p>
+                  <span className="text-xs text-muted-foreground num">ORX-{o.order_number}</span>
                   <TrustRadarBadge trust={trustOf(o)} />
                 </div>
-                <span className="shrink-0 text-xs font-bold text-foreground num">
-                  {formatDZD(o.total, language)}
-                </span>
-              </div>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground num">{formatDZD(o.total, language)}</span>
+                  {" · "}
+                  <span>{o.product_name}</span>
+                  {o.quantity > 1 && (
+                    <span className="num"> (x{o.quantity})</span>
+                  )}
+                  {" · "}
+                  <span className="num">{o.wilaya_code}</span> - {o.wilaya_name}
+                  {o.commune && ` · ${o.commune}`}
+                  {" · "}
+                  <span>{o.delivery_type === "home" ? t("منزل") : t("مكتب")}</span>
+                </p>
+              </button>
+            </div>
 
-              <div className="mt-1 flex items-center justify-between gap-1.5 text-[11px] text-muted-foreground">
-                <div className="flex items-center gap-1 truncate">
-                  <span className="num font-medium text-foreground/80">#ORX-{o.order_number}</span>
-                  <span>·</span>
-                  <span className="truncate">{o.wilaya_name}</span>
-                </div>
-                <StatusBadge status={o.status} />
-              </div>
-            </button>
-
-            {/* Quick Actions (Call, WhatsApp, More) */}
-            <div className="flex shrink-0 items-center gap-1">
+            {/* Left side: Status badge + Quick Call & WhatsApp + Actions */}
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <StatusBadge status={o.status} />
               <a
                 href={`tel:${o.phone}`}
-                className="flex size-7 items-center justify-center rounded-full bg-brand-soft text-brand transition-colors hover:bg-brand/15"
+                className="flex size-8 items-center justify-center rounded-full bg-brand-soft text-brand transition-colors hover:bg-brand/15"
                 title={t("اتصال")}
               >
-                <Phone className="size-3.5" />
+                <Phone className="size-4" />
               </a>
               <a
                 href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))}
                 target="_blank"
                 rel="noreferrer"
-                className="flex size-7 items-center justify-center rounded-full bg-brand-soft text-brand transition-colors hover:bg-brand/15"
+                className="flex size-8 items-center justify-center rounded-full bg-brand-soft text-brand transition-colors hover:bg-brand/15"
                 title={t("واتساب")}
               >
-                <MessageCircle className="size-3.5" />
+                <MessageCircle className="size-4" />
               </a>
               <ActionsMenu o={o} />
             </div>
           </div>
         ))}
+
+        {rows.length === 0 && !orders.isLoading && (
+          <div className="rounded-2xl border border-border bg-card p-8 shadow-card">
+            <EmptyState />
+          </div>
+        )}
       </div>
 
-      {rows.length === 0 && !orders.isLoading && (
-        <div className="rounded-2xl border border-border bg-card p-8 shadow-card">
-          <EmptyState />
-        </div>
-      )}
-
       {total > 0 && (
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            {t("عرض")} <span className="num">{(page - 1) * PAGE_SIZE + 1}</span>–<span className="num">{Math.min(page * PAGE_SIZE, total)}</span>{" "}
-            {t("من")} <span className="num">{total}</span>
-          </p>
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-              <ChevronRight /> {t("السابق")}
-            </Button>
-            {pageNumbers(page, pages).map((n, idx) =>
-              n === -1 ? (
-                <span key={`gap-${idx}`} className="px-1 text-muted-foreground">…</span>
-              ) : (
-                <Button key={n} size="sm" variant={n === page ? "default" : "ghost"} className="w-8 num" onClick={() => setPage(n)}>
-                  {n}
-                </Button>
-              ),
-            )}
-            <Button variant="outline" size="sm" disabled={page >= pages} onClick={() => setPage(page + 1)}>
-              {t("التالي")} <ChevronLeft />
-            </Button>
-          </div>
+        <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground">
+          <span>
+            {t("إجمالي الطلبات")}: <span className="num font-bold text-foreground">{total}</span>
+          </span>
+          {rows.length < total && (
+            <span>
+              {t("تم عرض")} <span className="num font-medium text-foreground">{rows.length}</span> {t("طلب")}
+            </span>
+          )}
         </div>
       )}
 
@@ -680,14 +551,4 @@ function EmptyState() {
   );
 }
 
-function pageNumbers(current: number, total: number): number[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const set = new Set([1, total, current, current - 1, current + 1]);
-  const list = Array.from(set).filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
-  const out: number[] = [];
-  list.forEach((n, i) => {
-    if (i > 0 && n - (list[i - 1] ?? n) > 1) out.push(-1);
-    out.push(n);
-  });
-  return out;
-}
+// Paging controls were replaced by the unified totals footer in the now-unified list.

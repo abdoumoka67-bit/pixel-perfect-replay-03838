@@ -410,12 +410,14 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       </Sheet>
 
       <div className="overflow-x-clip lg:ps-64">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card/90 px-4 backdrop-blur lg:hidden">
-          <button onClick={() => setOpen(true)} className="rounded-lg p-2 hover:bg-secondary" aria-label={t("فتح القائمة")}>
-            <Menu className="size-5" />
-          </button>
-          <StoreLogo path={store?.logo_url} name={store?.name} className="max-h-8 max-w-28" />
-          <LanguageMenu value={language} onChange={setLanguage} />
+        <header className="sticky top-0 z-30 border-b bg-card/90 pt-safe backdrop-blur lg:hidden">
+          <div className="flex h-14 items-center justify-between px-4">
+            <button onClick={() => setOpen(true)} className="rounded-lg p-2 hover:bg-secondary" aria-label={t("فتح القائمة")}>
+              <Menu className="size-5" />
+            </button>
+            <StoreLogo path={store?.logo_url} name={store?.name} className="max-h-8 max-w-28" />
+            <LanguageMenu value={language} onChange={setLanguage} />
+          </div>
         </header>
 
         {store && sub && sub.isTrial && sub.daysLeft <= 2 && (
