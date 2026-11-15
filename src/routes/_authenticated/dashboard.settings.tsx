@@ -139,6 +139,7 @@ function SettingsPage() {
             <div>
               <p className="font-medium">{t("شعار المتجر")}</p>
               <p className="text-xs text-muted-foreground">{t("يظهر في صفحات الهبوط. مربع، حتى 5MB.")}</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground/80">{t("ينصح بوضع الشعار بدون خلفية")}</p>
             </div>
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => uploadLogo(e.target.files?.[0])} />
           </div>
