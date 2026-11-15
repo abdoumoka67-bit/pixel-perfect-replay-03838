@@ -13,6 +13,7 @@ import { useMyStore } from "@/hooks/use-my-store";
 import { RECEIPT_BUCKET, fileExt } from "@/lib/images";
 import { calculateSubscriptionPrice, formatDZD, SUBSCRIPTION_MAX_MONTHS } from "@/lib/commerce";
 import { PlanCards } from "@/components/PlanCards";
+import { cn } from "@/lib/utils";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/billing")({
@@ -22,21 +23,64 @@ export const Route = createFileRoute("/_authenticated/dashboard/billing")({
 function CopyRow({ label, value }: { label: string; value: string }) {
   const t = useTr();
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-sidebar-accent px-4 py-3">
-      <div className="min-w-0">
-        <p className="text-xs text-sidebar-muted">{label}</p>
-        <p className="truncate font-display font-medium tracking-wide num">{value}</p>
+    <div className="flex items-center justify-between gap-2.5 rounded-xl border border-border/70 bg-muted/40 px-3.5 py-2.5 transition-colors hover:border-brand/40">
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+        <p className="truncate font-mono text-xs font-bold text-foreground num">{value}</p>
       </div>
       <button
+        type="button"
         onClick={() => {
           navigator.clipboard.writeText(value);
           toast.success(t("تم النسخ"));
         }}
-        className="rounded-lg p-2 text-sidebar-muted hover:bg-sidebar hover:text-sidebar-foreground"
+        className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         aria-label={t("نسخ {label}", { label })}
       >
-        <Copy className="size-4" />
+        <Copy className="size-3.5" />
       </button>
+    </div>
+  );
+}
+
+{/* Official Algérie Poste Emblem */}
+function AlgeriePosteLogo({ className = "size-7" }: { className?: string }) {
+  return (
+    <div className={cn("flex shrink-0 items-center justify-center rounded-xl bg-[#005BAA]/10 p-1.5", className)}>
+      <svg viewBox="0 0 48 48" className="size-full" fill="none">
+        <rect width="48" height="48" rx="10" fill="#005BAA" />
+        <path
+          d="M10 16C10 14.8954 10.8954 14 12 14H36C37.1046 14 38 14.8954 38 16V32C38 33.1046 37.1046 34 36 34H12C10.8954 34 10 33.1046 10 32V16Z"
+          fill="#FFCC00"
+        />
+        <path
+          d="M11 15L24 25L37 15"
+          stroke="#005BAA"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="24" cy="28" r="3" fill="#005BAA" />
+      </svg>
+    </div>
+  );
+}
+
+{/* Official BaridiMob Emblem */}
+function BaridiMobLogo({ className = "size-7" }: { className?: string }) {
+  return (
+    <div className={cn("flex shrink-0 items-center justify-center rounded-xl bg-[#00A3E0]/10 p-1.5", className)}>
+      <svg viewBox="0 0 48 48" className="size-full" fill="none">
+        <rect width="48" height="48" rx="10" fill="#0082C8" />
+        <path
+          d="M14 12H34C35.1046 12 36 12.8954 36 14V34C36 35.1046 35.1046 36 34 36H14C12.8954 36 12 35.1046 12 34V14C12 12.8954 12.8954 12 14 12Z"
+          stroke="#FFFFFF"
+          strokeWidth="2"
+        />
+        <path d="M12 18H36" stroke="#FFFFFF" strokeWidth="2" />
+        <circle cx="24" cy="27" r="4" fill="#FFCC00" />
+        <path d="M21 27L24 24L27 27" stroke="#0082C8" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
     </div>
   );
 }
@@ -223,20 +267,50 @@ function Billing() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
-          <h2 className="font-medium">{t("معلومات الدفع")}</h2>
-          <p className="mt-1 text-sm text-sidebar-muted">
-            {t("حوّل مبلغ الخطة المختارة ({amount}) إلى أحد الحسابين:", { amount: formatDZD(amountDue, language) })}
-          </p>
-          <div className="mt-5 space-y-3">
-            <p className="text-xs font-medium text-sidebar-primary">{t("بريد الجزائر — CCP")}</p>
-            <CopyRow label={t("رقم الحساب")} value={settings.data?.ccp_number ?? "…"} />
-            <div className="grid grid-cols-2 gap-3">
-              <CopyRow label={t("المفتاح (Clé)")} value={settings.data?.ccp_key ?? "…"} />
-              <CopyRow label={t("الاسم")} value={settings.data?.ccp_holder ?? "…"} />
+        {/* Payment Methods: 2 Separate White Cards */}
+        <div className="space-y-4">
+          <div>
+            <h2 className="font-medium text-foreground">{t("معلومات الدفع")}</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("حوّل مبلغ الخطة المختارة ({amount}) إلى أحد الحسابين التاليين:", {
+                amount: formatDZD(amountDue, language),
+              })}
+            </p>
+          </div>
+
+          {/* Card 1: Algérie Poste (CCP) */}
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-card transition-colors hover:border-foreground/20">
+            <div className="flex items-center gap-3 border-b border-border/60 pb-3">
+              <AlgeriePosteLogo className="size-9" />
+              <div>
+                <p className="font-bold text-foreground text-sm">{t("بريد الجزائر — CCP")}</p>
+                <p className="text-[11px] text-muted-foreground">{t("الدفع عبر مكاتب البريد أو الصك البريدي")}</p>
+              </div>
             </div>
-            <p className="pt-2 text-xs font-medium text-sidebar-primary">BaridiMob — RIP</p>
-            <CopyRow label={t("رقم RIP")} value={settings.data?.rip ?? "…"} />
+
+            <div className="mt-3.5 space-y-2.5">
+              <CopyRow label={t("رقم الحساب البريدي (CCP)")} value={settings.data?.ccp_number ?? "…"} />
+              <div className="grid grid-cols-2 gap-2.5">
+                <CopyRow label={t("المفتاح (Clé)")} value={settings.data?.ccp_key ?? "…"} />
+                <CopyRow label={t("اسم صاحب الحساب")} value={settings.data?.ccp_holder ?? "…"} />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: BaridiMob (RIP) */}
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-card transition-colors hover:border-foreground/20">
+            <div className="flex items-center gap-3 border-b border-border/60 pb-3">
+              <BaridiMobLogo className="size-9" />
+              <div>
+                <p className="font-bold text-foreground text-sm">BaridiMob — بريدي موب</p>
+                <p className="text-[11px] text-muted-foreground">{t("التحويل الفوري عبر تطبيق بريدي موب (RIP)")}</p>
+              </div>
+            </div>
+
+            <div className="mt-3.5 space-y-2.5">
+              <CopyRow label={t("رقم الحساب البريدي الجاري (RIP)")} value={settings.data?.rip ?? "…"} />
+              <CopyRow label={t("اسم صاحب الحساب")} value={settings.data?.ccp_holder ?? "…"} />
+            </div>
           </div>
         </div>
 
