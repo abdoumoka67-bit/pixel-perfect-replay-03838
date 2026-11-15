@@ -18,9 +18,12 @@ export type OrderNotification = {
 
 const FALLBACK_ICON = "/icons/icon-192.png";
 
-// Public VAPID key (safe to ship). Empty until the project is configured, in
-// which case push stays disabled and only in-app alerts are used.
-const VAPID_PUBLIC_KEY = (import.meta.env["VITE_VAPID_PUBLIC_KEY"] ?? "") as string;
+// Public VAPID key (safe to ship — every Web Push site exposes it). The build
+// env wins when present; the constant keeps push working on hosts that do not
+// inject VITE_* variables (e.g. the Lovable publisher ignoring `.env`).
+const VAPID_PUBLIC_KEY =
+  ((import.meta.env["VITE_VAPID_PUBLIC_KEY"] ?? "") as string) ||
+  "BE2AL0rpyGobAXJlE5K4rNvNbGlbBsGtj5GEUUEow2q5GOGgxr2yaxsvRy4ve54mmEaWRitNitid5vbfMLZyJlU";
 
 export function pushNotificationsConfigured(): boolean {
   return VAPID_PUBLIC_KEY.length > 0;
