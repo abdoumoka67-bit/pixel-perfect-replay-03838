@@ -73,7 +73,7 @@ supabase functions deploy send-order-push --no-verify-jwt
 | Events | `INSERT` فقط |
 | Type | `HTTP Request` |
 | Method | `POST` |
-| URL | `https://<project-ref>.supabase.co/functions/v1/send-order-push` |
+| URL | `https://qvevwpofibfhhbytwurh.supabase.co/functions/v1/send-order-push` |
 | HTTP Headers | `x-webhook-secret: <نفس القيمة من الخطوة 3>` |
 | Body | الافتراضي (يحتوي `record`) |
 
