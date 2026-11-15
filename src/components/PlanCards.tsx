@@ -120,40 +120,37 @@ export function PlanCards({
         const features = pro ? PRO_FEATURES[language] : START_FEATURES[language];
         const selected = selectedId === p.id;
         const body = (
-          <>
+          <div className="flex flex-1 flex-col">
             <div className="flex items-center justify-between gap-2">
-              <p className={cn("text-lg font-medium", pro ? "text-sidebar-foreground" : "text-foreground")}>{p.name}</p>
+              <p className="text-lg font-medium text-foreground">{p.name}</p>
               {pro && (
-                <span className="rounded-full bg-card px-3 py-1 text-xs font-medium text-foreground">{labels.bestForTeams}</span>
+                <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-bold text-brand">
+                  {labels.bestForTeams}
+                </span>
               )}
             </div>
             <p className="mt-4 flex items-baseline gap-1.5">
-              <span className="text-4xl font-medium num">{formatDZD(p.price, language)}</span>
-              <span className={cn("text-sm", pro ? "text-sidebar-muted" : "text-muted-foreground")}>
+              <span className="text-4xl font-medium text-foreground num">{formatDZD(p.price, language)}</span>
+              <span className="text-sm text-muted-foreground">
                 / {p.months === 1 ? labels.perMonth : `${p.months} ${labels.months}`}
               </span>
             </p>
-            {pro && <p className="mt-1 text-sm text-sidebar-muted">{labels.startPlus}</p>}
-            <ul className="mt-5 space-y-3 text-sm">
+            {pro && <p className="mt-1 text-sm text-muted-foreground">{labels.startPlus}</p>}
+            <ul className="mt-5 flex-1 space-y-3 text-sm">
               {features.map((f) => (
                 <li key={f} className="flex items-start gap-2.5">
-                  <span
-                    className={cn(
-                      "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full",
-                      pro ? "bg-card/15 text-sidebar-foreground" : "bg-brand-soft text-brand",
-                    )}
-                  >
+                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
                     <Check className="size-3" />
                   </span>
-                  <span className={pro ? "text-sidebar-foreground/90" : ""}>{f}</span>
+                  <span className="text-foreground">{f}</span>
                 </li>
               ))}
             </ul>
-          </>
+          </div>
         );
         const cardClass = cn(
-          "relative flex flex-col rounded-3xl p-6 text-start transition-all",
-          pro ? "bg-sidebar text-sidebar-foreground shadow-float" : "border bg-card shadow-card",
+          "relative flex h-full flex-col rounded-3xl border border-border bg-card p-6 text-start shadow-card transition-all",
+          selected ? "border-brand/50 ring-2 ring-brand ring-offset-2 ring-offset-background" : "hover:border-foreground/20",
         );
         if (onSelect) {
           return (
@@ -162,24 +159,28 @@ export function PlanCards({
               type="button"
               onClick={() => onSelect(p.id)}
               aria-pressed={selected}
-              className={cn(cardClass, "outline-none", selected ? "ring-2 ring-brand ring-offset-2 ring-offset-background" : "")}
+              className={cn(cardClass, "outline-none")}
             >
               {body}
-              <span
-                className={cn(
-                  "mt-6 flex h-11 items-center justify-center rounded-full text-sm font-medium",
-                  pro ? "bg-card text-foreground" : "bg-primary text-primary-foreground",
-                )}
-              >
-                {selected ? labels.selected : labels.choose(p.name)}
-              </span>
+              <div className="mt-auto w-full pt-6">
+                <span
+                  className={cn(
+                    "flex h-11 w-full items-center justify-center rounded-full text-sm font-medium transition-colors",
+                    selected
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "border border-border bg-secondary/60 text-foreground hover:bg-secondary",
+                  )}
+                >
+                  {selected ? labels.selected : labels.choose(p.name)}
+                </span>
+              </div>
             </button>
           );
         }
         return (
           <div key={p.id} className={cardClass}>
             {body}
-            <div className="mt-auto pt-6">{action?.(p)}</div>
+            <div className="mt-auto w-full pt-6">{action?.(p)}</div>
           </div>
         );
       })}
