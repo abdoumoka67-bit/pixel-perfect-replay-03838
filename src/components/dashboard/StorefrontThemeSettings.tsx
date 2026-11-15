@@ -1212,83 +1212,287 @@ export function StorefrontThemeSettings({
           <div className="sticky top-6 space-y-4">
             <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
               <div className="flex items-center justify-between border-b bg-muted/60 px-4 py-2.5 text-xs text-muted-foreground">
-                <span className="font-medium">{t("معاينة مباشرة")}</span>
-                <span className="rounded-full bg-card px-2.5 py-0.5 text-[11px] font-medium border text-foreground">
+                <span className="font-medium">
+                  {activeTab === "form" ? t("معاينة نموذج الطلب") : t("معاينة مباشرة")}
+                </span>
+                <span className="rounded-full border bg-card px-2.5 py-0.5 text-[11px] font-medium text-foreground">
                   {t("مباشر")}
                 </span>
               </div>
-              <div className="flex items-center justify-between border-b bg-card px-4 py-3 text-sm">
-                <span className="font-medium">{store?.name || t("اسم متجرك")}</span>
-                <span className="text-xs text-muted-foreground">{t("منتجاتنا")}</span>
-              </div>
 
-              {barEnabled && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("bar")}
-                  style={{ backgroundColor: barBgColor, color: barTextColor }}
-                  className={cn("w-full px-3 py-2 text-center text-xs", activeTab === "bar" ? "ring-2 ring-inset ring-brand" : "")}
-                >
-                  {barText || defaults.barText}
-                </button>
-              )}
-
-              <div
-                style={{ ...heroBackground, color: heroTextColor, fontFamily }}
-                onClick={() => setActiveTab("hero")}
-                className={cn("cursor-pointer p-6 transition-colors sm:p-8", activeTab === "hero" ? "ring-2 ring-inset ring-brand" : "")}
-              >
-                <p
-                  style={{
-                    transform: (titleOffsetX || titleOffsetY)
-                      ? `translate(${titleOffsetX}px, ${titleOffsetY}px)`
-                      : undefined,
-                  }}
-                  className={cn("font-normal leading-tight", titleSizeClass[titleSize], textAlignClass[textAlign])}
-                >
-                  {heroTitle || store?.name || t("اسم متجرك")}
-                </p>
-                <p className={cn("mt-2 max-w-xs text-xs font-light leading-relaxed opacity-90", textAlign === "center" ? "mx-auto" : textAlign === "start" ? "me-auto" : "ms-auto", textAlignClass[textAlign])}>
-                  {heroSubtitle || defaults.heroSubtitle}
-                </p>
+              {/* 1. When on "form" tab: Show live order form preview */}
+              {activeTab === "form" ? (
                 <div
-                  style={{
-                    transform: (buttonOffsetX || buttonOffsetY)
-                      ? `translate(${buttonOffsetX}px, ${buttonOffsetY}px)`
-                      : undefined,
-                  }}
-                  className={cn("mt-4 flex", buttonAlignClass[buttonAlign])}
+                  className="p-5 transition-colors"
+                  style={{ backgroundColor: formBgColor, fontFamily }}
                 >
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setActiveTab("button");
-                    }}
-                    style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-                    className={cn("inline-flex items-center justify-center font-normal shadow-sm", buttonSizeClass[buttonSize], buttonRadiusClass[buttonRadius], activeTab === "button" ? "ring-2 ring-brand ring-offset-2" : "")}
-                  >
-                    {heroButton || defaults.heroButton}
-                  </button>
+                  <div className="mb-4 text-center">
+                    <p className="text-sm font-bold text-foreground">
+                      {t("أدخل معلوماتك لإتمام الطلب")}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      {t("الدفع عند الاستلام بعد معاينة المنتج")}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {/* Full Name */}
+                    {formFields.full_name && (
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-foreground">
+                          {t("الاسم واللقب")} <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          placeholder={t("محمد بن علي")}
+                          style={{ borderColor: formBorderColor }}
+                          className="h-9 w-full rounded-lg border bg-background px-3 text-xs outline-none"
+                        />
+                      </div>
+                    )}
+
+                    {/* Phone */}
+                    {formFields.phone && (
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-foreground">
+                          {t("رقم الهاتف")} <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          placeholder="0550 12 34 56"
+                          dir="ltr"
+                          style={{ borderColor: formBorderColor }}
+                          className="h-9 w-full rounded-lg border bg-background px-3 text-xs outline-none"
+                        />
+                      </div>
+                    )}
+
+                    {/* Confirm Phone */}
+                    {formFields.confirm_phone && (
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-foreground">
+                          {t("تأكيد رقم الهاتف")} <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          placeholder="0550 12 34 56"
+                          dir="ltr"
+                          style={{ borderColor: formBorderColor }}
+                          className="h-9 w-full rounded-lg border bg-background px-3 text-xs outline-none"
+                        />
+                      </div>
+                    )}
+
+                    {/* Backup Phone */}
+                    {formFields.backup_phone && (
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-foreground">
+                          {t("رقم هاتف إضافي")} <span className="text-xs text-muted-foreground">({t("اختياري")})</span>
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          placeholder="0660 98 76 54"
+                          dir="ltr"
+                          style={{ borderColor: formBorderColor }}
+                          className="h-9 w-full rounded-lg border bg-background px-3 text-xs outline-none"
+                        />
+                      </div>
+                    )}
+
+                    {/* Wilaya & Commune */}
+                    {formFields.wilaya_commune && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-medium text-foreground">
+                            {t("الولاية")} <span className="text-destructive">*</span>
+                          </label>
+                          <div
+                            style={{ borderColor: formBorderColor }}
+                            className="flex h-9 items-center justify-between rounded-lg border bg-background px-3 text-xs text-foreground"
+                          >
+                            <span>16 - الجزائر</span>
+                            <span className="text-[10px] text-muted-foreground">▼</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-medium text-foreground">
+                            {t("البلدية")} <span className="text-destructive">*</span>
+                          </label>
+                          <div
+                            style={{ borderColor: formBorderColor }}
+                            className="flex h-9 items-center justify-between rounded-lg border bg-background px-3 text-xs text-foreground"
+                          >
+                            <span>باب الزوار</span>
+                            <span className="text-[10px] text-muted-foreground">▼</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Address */}
+                    {formFields.address && (
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-foreground">
+                          {t("العنوان التفصيلي")}
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          placeholder={t("الحي، رقم العمارة أو الشارع...")}
+                          style={{ borderColor: formBorderColor }}
+                          className="h-9 w-full rounded-lg border bg-background px-3 text-xs outline-none"
+                        />
+                      </div>
+                    )}
+
+                    {/* Delivery Type */}
+                    {formFields.delivery_type && (
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-foreground">
+                          {t("مكان الاستلام")}
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div
+                            style={{ borderColor: formBorderColor }}
+                            className="flex items-center justify-center gap-1.5 rounded-lg border bg-background py-2 text-xs font-medium text-foreground"
+                          >
+                            <span className="size-2 rounded-full bg-brand" />
+                            <span>{t("توصيل للمنزل")}</span>
+                          </div>
+                          <div
+                            style={{ borderColor: formBorderColor }}
+                            className="flex items-center justify-center gap-1.5 rounded-lg border bg-background/50 py-2 text-xs text-muted-foreground"
+                          >
+                            <span>{t("استلام من المكتب")}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Notes */}
+                    {formFields.notes && (
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-foreground">
+                          {t("ملاحظات إضافية")}
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          placeholder={t("وقت التوصيل المفضل أو تعليمات...")}
+                          style={{ borderColor: formBorderColor }}
+                          className="h-9 w-full rounded-lg border bg-background px-3 text-xs outline-none"
+                        />
+                      </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        style={{
+                          backgroundColor: formButtonBgColor,
+                          color: formButtonTextColor,
+                        }}
+                        className={cn(
+                          "w-full h-11 text-sm font-medium shadow-sm transition-transform active:scale-95",
+                          buttonRadiusClass[formButtonRadius],
+                        )}
+                      >
+                        {formButtonText || t("تأكيد الطلب الآن")}
+                      </button>
+                    </div>
+
+                    {/* Guarantee Text */}
+                    {formGuaranteeText && (
+                      <p className="pt-1 text-center text-[11px] text-muted-foreground">
+                        {formGuaranteeText}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-              {trustEnabled && (
-              <button
-                type="button"
-                onClick={() => setActiveTab("sections")}
-                className={cn("grid w-full grid-cols-3 gap-2 p-3 text-center", activeTab === "sections" ? "ring-2 ring-inset ring-brand" : "")}
-              >
-                {trustBadges.slice(0, 3).map((badgeKey) => (
-                  <span key={badgeKey} className="rounded-xl border bg-background px-2 py-2 text-[10px]">
-                    {badgeLabels[badgeKey]}
-                  </span>
-                ))}
-                {trustBadges.length === 0 && <span className="col-span-3 text-xs text-muted-foreground">{t("شارات الثقة")}</span>}
-              </button>
+              ) : (
+                /* 2. For all other tabs (hero, button, bar, sections): Show Landing Hero Preview */
+                <>
+                  <div className="flex items-center justify-between border-b bg-card px-4 py-3 text-sm">
+                    <span className="font-medium">{store?.name || t("اسم متجرك")}</span>
+                    <span className="text-xs text-muted-foreground">{t("منتجاتنا")}</span>
+                  </div>
+
+                  {barEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("bar")}
+                      style={{ backgroundColor: barBgColor, color: barTextColor }}
+                      className={cn("w-full px-3 py-2 text-center text-xs", activeTab === "bar" ? "ring-2 ring-inset ring-brand" : "")}
+                    >
+                      {barText || defaults.barText}
+                    </button>
+                  )}
+
+                  <div
+                    style={{ ...heroBackground, color: heroTextColor, fontFamily }}
+                    onClick={() => setActiveTab("hero")}
+                    className={cn("cursor-pointer p-6 transition-colors sm:p-8", activeTab === "hero" ? "ring-2 ring-inset ring-brand" : "")}
+                  >
+                    <p
+                      style={{
+                        transform: (titleOffsetX || titleOffsetY)
+                          ? `translate(${titleOffsetX}px, ${titleOffsetY}px)`
+                          : undefined,
+                      }}
+                      className={cn("font-normal leading-tight", titleSizeClass[titleSize], textAlignClass[textAlign])}
+                    >
+                      {heroTitle || store?.name || t("اسم متجرك")}
+                    </p>
+                    <p className={cn("mt-2 max-w-xs text-xs font-light leading-relaxed opacity-90", textAlign === "center" ? "mx-auto" : textAlign === "start" ? "me-auto" : "ms-auto", textAlignClass[textAlign])}>
+                      {heroSubtitle || defaults.heroSubtitle}
+                    </p>
+                    <div
+                      style={{
+                        transform: (buttonOffsetX || buttonOffsetY)
+                          ? `translate(${buttonOffsetX}px, ${buttonOffsetY}px)`
+                          : undefined,
+                      }}
+                      className={cn("mt-4 flex", buttonAlignClass[buttonAlign])}
+                    >
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setActiveTab("button");
+                        }}
+                        style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+                        className={cn("inline-flex items-center justify-center font-normal shadow-sm", buttonSizeClass[buttonSize], buttonRadiusClass[buttonRadius], activeTab === "button" ? "ring-2 ring-brand ring-offset-2" : "")}
+                      >
+                        {heroButton || defaults.heroButton}
+                      </button>
+                    </div>
+                  </div>
+
+                  {trustEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("sections")}
+                      className={cn("grid w-full grid-cols-3 gap-2 p-3 text-center", activeTab === "sections" ? "ring-2 ring-inset ring-brand" : "")}
+                    >
+                      {trustBadges.slice(0, 3).map((badgeKey) => (
+                        <span key={badgeKey} className="rounded-xl border bg-background px-2 py-2 text-[10px]">
+                          {badgeLabels[badgeKey]}
+                        </span>
+                      ))}
+                      {trustBadges.length === 0 && <span className="col-span-3 text-xs text-muted-foreground">{t("شارات الثقة")}</span>}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
