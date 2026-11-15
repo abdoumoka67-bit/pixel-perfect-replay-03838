@@ -37,6 +37,57 @@ import { fileExt, PRODUCT_BUCKET } from "@/lib/images";
 
 type Store = Tables<"stores">;
 
+function ColorControl({
+  label,
+  value,
+  onChange,
+  disabled,
+  presets = [],
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled: boolean;
+  presets?: string[];
+}) {
+  return (
+    <div className="space-y-2">
+      <Label className="flex items-center justify-between gap-3">
+        <span>{label}</span>
+        <span className="flex items-center gap-2 rounded-lg border px-2 py-1 text-xs font-normal" dir="ltr">
+          <input
+            type="color"
+            value={value}
+            onChange={(event) => onChange(event.target.value.toUpperCase())}
+            disabled={disabled}
+            className="size-6 cursor-pointer rounded border-0 bg-transparent p-0 disabled:cursor-not-allowed"
+            aria-label={label}
+          />
+          {value}
+        </span>
+      </Label>
+      {presets.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {presets.map((color) => (
+            <button
+              key={color}
+              type="button"
+              onClick={() => onChange(color)}
+              disabled={disabled}
+              aria-label={color}
+              className={cn(
+                "size-7 rounded-full border border-border disabled:cursor-not-allowed",
+                value.toLowerCase() === color.toLowerCase() ? "ring-2 ring-primary ring-offset-2" : "",
+              )}
+              style={{ backgroundColor: color }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function StorefrontThemeSettings({
   store,
   readOnly,
@@ -202,53 +253,6 @@ export function StorefrontThemeSettings({
     );
   }
 
-  function ColorControl({
-    label,
-    value,
-    onChange,
-    disabled,
-    presets = [],
-  }: {
-    label: string;
-    value: string;
-    onChange: (value: string) => void;
-    disabled: boolean;
-    presets?: string[];
-  }) {
-    return (
-      <div className="space-y-2">
-        <Label className="flex items-center justify-between gap-3">
-          <span>{label}</span>
-          <span className="flex items-center gap-2 rounded-lg border px-2 py-1 text-xs font-normal" dir="ltr">
-            <input
-              type="color"
-              value={value}
-              onChange={(event) => onChange(event.target.value.toUpperCase())}
-              disabled={disabled}
-              className="size-6 cursor-pointer rounded border-0 bg-transparent p-0 disabled:cursor-not-allowed"
-              aria-label={label}
-            />
-            {value}
-          </span>
-        </Label>
-        {presets.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {presets.map((color) => (
-              <button
-                key={color}
-                type="button"
-                onClick={() => onChange(color)}
-                disabled={disabled}
-                aria-label={color}
-                className={cn("size-7 rounded-full border border-border disabled:cursor-not-allowed", value.toLowerCase() === color.toLowerCase() ? "ring-2 ring-primary ring-offset-2" : "")}
-                style={{ backgroundColor: color }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
 
   function updateFormField(key: keyof FormConfig["fields"], enabled: boolean) {
     setFormFields((prev) => ({ ...prev, [key]: enabled }));
