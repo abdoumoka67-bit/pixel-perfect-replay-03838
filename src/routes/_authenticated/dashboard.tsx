@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { ShieldOff, ShoppingBag } from "lucide-react";
@@ -8,7 +8,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { myStoreQuery, useMyStore } from "@/hooks/use-my-store";
 import { areaForPath, canOpen, formatDZD } from "@/lib/commerce";
-import { useTr } from "@/lib/ui-i18n";
+import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   beforeLoad: async ({ context }) => {
@@ -34,11 +34,25 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardLayout,
 });
 
+// One shared context per tab: browsers cap the number of live AudioContexts,
+// so creating a new one for every order would eventually silence the chime.
+let orderAudioCtx: AudioContext | null = null;
+
+function getOrderAudioCtx(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  const AudioCtor =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioCtor) return null;
+  orderAudioCtx ??= new AudioCtor();
+  return orderAudioCtx;
+}
+
 function playOrderChime() {
   try {
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
+    const ctx = getOrderAudioCtx();
+    if (!ctx) return;
+    if (ctx.state === "suspended") void ctx.resume();
     const now = ctx.currentTime;
     
     // First tone (pleasant chime)
@@ -73,6 +87,8 @@ function playOrderChime() {
 function DashboardLayout() {
   const t = useTr();
   const qc = useQueryClient();
+  const navigate = useNavigate();
+  const language = useUiLanguage();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { access, isAdmin, store } = useMyStore();
 
@@ -107,7 +123,7 @@ function DashboardLayout() {
           // Show prominent toast with order details
           const name = newOrder.customer_name || t("زبون");
           const num = newOrder.order_number ? `#${newOrder.order_number}` : "";
-          const amount = formatDZD(Number(newOrder.total ?? 0));
+          const amount = formatDZD(Number(newOrder.total ?? 0), language);
 
           toast.success(`${t("طلب جديد")} ${num}: ${name} (${amount})`, {
             icon: <ShoppingBag className="size-5 text-brand" />,
@@ -115,7 +131,7 @@ function DashboardLayout() {
             action: {
               label: t("عرض الطلبات"),
               onClick: () => {
-                window.location.href = "/dashboard/orders";
+                navigate({ to: "/dashboard/orders" });
               },
             },
           });
@@ -126,7 +142,7 @@ function DashboardLayout() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [store?.id, qc, t]);
+  }, [store?.id, qc, t, language, navigate]);
 
   // Platform admins can open every dashboard area, including the Pro ones.
   const allowed = isAdmin || canOpen(access, areaForPath(path));
