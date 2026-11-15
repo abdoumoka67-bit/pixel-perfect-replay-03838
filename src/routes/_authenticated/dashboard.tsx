@@ -1,13 +1,19 @@
 import { createFileRoute, Link, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { ShieldOff, ShoppingBag } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, ShieldOff, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { myStoreQuery, useMyStore } from "@/hooks/use-my-store";
+import { useSignedUrls } from "@/hooks/use-signed-urls";
 import { areaForPath, canOpen, formatDZD } from "@/lib/commerce";
+import {
+  orderNotificationPermission,
+  requestOrderNotificationPermission,
+  showOrderNotification,
+} from "@/lib/order-notifications";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -84,6 +90,59 @@ function playOrderChime() {
   }
 }
 
+function NotificationsOptIn() {
+  const t = useTr();
+  const [permission, setPermission] = useState<NotificationPermission | "unsupported">(orderNotificationPermission);
+  // Rendered only after mount so the server and the first client paint agree.
+  const [hidden, setHidden] = useState(true);
+
+  useEffect(() => {
+    try {
+      setHidden(window.localStorage.getItem("oranix:notifications-prompt") === "dismissed");
+    } catch {
+      setHidden(false);
+    }
+  }, []);
+
+  if (hidden || permission !== "default") return null;
+
+  const dismiss = () => {
+    try {
+      window.localStorage.setItem("oranix:notifications-prompt", "dismissed");
+    } catch {
+      // Private mode blocks storage; the banner simply comes back next time.
+    }
+    setHidden(true);
+  };
+
+  return (
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-card">
+      <div className="flex min-w-0 items-center gap-2 text-sm">
+        <Bell className="size-4 shrink-0 text-brand" />
+        <span className="font-medium">{t("إشعارات الطلبات")}</span>
+        <span className="truncate text-muted-foreground">{t("فعّل الإشعارات لتصلك الطلبات الجديدة على هاتفك.")}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Button
+          type="button"
+          size="sm"
+          onClick={async () => {
+            const result = await requestOrderNotificationPermission();
+            setPermission(result);
+            if (result === "granted") toast.success(t("تم تفعيل الإشعارات"));
+            if (result === "denied") toast.error(t("الإشعارات محظورة من إعدادات المتصفح."));
+          }}
+        >
+          {t("تفعيل")}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={dismiss}>
+          {t("لاحقًا")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function DashboardLayout() {
   const t = useTr();
   const qc = useQueryClient();
@@ -91,6 +150,8 @@ function DashboardLayout() {
   const language = useUiLanguage();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { access, isAdmin, store } = useMyStore();
+  const signedLogos = useSignedUrls([store?.logo_url]);
+  const logoUrl = store?.logo_url ? signedLogos[store.logo_url] : undefined;
 
   useEffect(() => {
     if (!store?.id) return;
@@ -125,6 +186,18 @@ function DashboardLayout() {
           const num = newOrder.order_number ? `#${newOrder.order_number}` : "";
           const amount = formatDZD(Number(newOrder.total ?? 0), language);
 
+          // The in-app toast is invisible while the PWA sits in the background,
+          // so mirror it as a system notification with the store logo.
+          if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+            void showOrderNotification({
+              title: `${t("طلب جديد")} ${num}`.trim(),
+              body: `${name} · ${amount}`,
+              icon: logoUrl,
+              tag: newOrder.order_number ? `order-${newOrder.order_number}` : undefined,
+              url: "/dashboard/orders",
+            });
+          }
+
           toast.success(`${t("طلب جديد")} ${num}: ${name} (${amount})`, {
             icon: <ShoppingBag className="size-5 text-brand" />,
             duration: 8000,
@@ -142,12 +215,13 @@ function DashboardLayout() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [store?.id, qc, t, language, navigate]);
+  }, [store?.id, qc, t, language, navigate, logoUrl]);
 
   // Platform admins can open every dashboard area, including the Pro ones.
   const allowed = isAdmin || canOpen(access, areaForPath(path));
   return (
     <DashboardShell>
+      <NotificationsOptIn />
       {allowed ? (
         <Outlet />
       ) : (
