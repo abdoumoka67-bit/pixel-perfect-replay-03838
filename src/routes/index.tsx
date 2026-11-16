@@ -169,6 +169,7 @@ function Home() {
   const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
   const [heroLine1 = "", heroLine2] = t("landing.hero.title").split("\n");
   const [email, setEmail] = useState("");
+  const [pricingMonths, setPricingMonths] = useState(1);
   // Pause the selection loop while the hero is off screen.
   const { ref: heroRef, inView: heroInView } = useInView<HTMLElement>();
 
@@ -337,6 +338,8 @@ function Home() {
                 <PlanCards
                   plans={plans}
                   language={language}
+                  months={pricingMonths}
+                  onMonthsChange={setPricingMonths}
                   action={(p) => (
                     <Button asChild size="lg" variant={p.tier === "pro" ? "outline" : "default"} className={p.tier === "pro" ? "w-full rounded-[12px] border-transparent text-foreground" : "w-full rounded-[12px]"}>
                       <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
