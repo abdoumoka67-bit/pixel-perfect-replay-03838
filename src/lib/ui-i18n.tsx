@@ -277,6 +277,7 @@ const en: Record<string, string> = {
   "تم نسخ رابط صفحة الهبوط": "Landing page link copied",
   "فتح الصفحة": "Open page",
   "تعديل": "Edit",
+  "تغيير": "Change",
   "حذف": "Delete",
   "حذف «{name}»؟": "Delete “{name}”?",
   "ستتوقف صفحة الهبوط الخاصة به. الطلبات السابقة تبقى محفوظة.":
@@ -1197,6 +1198,7 @@ const fr: Record<string, string> = {
   "تم نسخ رابط صفحة الهبوط": "Lien de la page copié",
   "فتح الصفحة": "Ouvrir la page",
   "تعديل": "Modifier",
+  "تغيير": "Changer",
   "حذف": "Supprimer",
   "حذف «{name}»؟": "Supprimer « {name} » ?",
   "ستتوقف صفحة الهبوط الخاصة به. الطلبات السابقة تبقى محفوظة.":

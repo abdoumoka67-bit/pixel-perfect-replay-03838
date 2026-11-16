@@ -132,8 +132,9 @@ export function StorefrontThemeSettings({
   const [barTextColor, setBarTextColor] = useState("#FFFFFF");
   const [activeTab, setActiveTab] = useState<"hero" | "button" | "bar" | "sections" | "form">("hero");
   const [imageUploading, setImageUploading] = useState(false);
+  const [localHeroPreview, setLocalHeroPreview] = useState<string | null>(null);
   const signedUrls = useSignedUrls([heroImageUrl]);
-  const previewHeroImage = heroImageUrl.startsWith("http") ? heroImageUrl : signedUrls[heroImageUrl];
+  const previewHeroImage = localHeroPreview || (heroImageUrl.startsWith("http") ? heroImageUrl : signedUrls[heroImageUrl]);
 
   // Sections
   const [faqEnabled, setFaqEnabled] = useState(true);
@@ -230,12 +231,18 @@ export function StorefrontThemeSettings({
       return;
     }
     setImageUploading(true);
+    // Instant local preview (0ms)
+    const instantUrl = URL.createObjectURL(file);
+    setLocalHeroPreview(instantUrl);
+    setHeroBgType("image");
+
     const extension = fileExt(file).replace(/[^a-z0-9]/gi, "") || "jpg";
     const path = `${userId}/hero-${crypto.randomUUID()}.${extension}`;
     const { error } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, file, { contentType: file.type });
     setImageUploading(false);
     if (error) {
       toast.error(t("تعذر رفع صورة الواجهة."));
+      setLocalHeroPreview(null);
       return;
     }
     setHeroImageUrl(path);
@@ -621,7 +628,17 @@ export function StorefrontThemeSettings({
                         {t("رفع صورة للواجهة")}
                       </Button>
                       {heroImageUrl && (
-                        <Button type="button" variant="ghost" size="icon" aria-label={t("حذف الصورة")} onClick={() => setHeroImageUrl("")} disabled={readOnly}>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          aria-label={t("حذف الصورة")}
+                          onClick={() => {
+                            setHeroImageUrl("");
+                            setLocalHeroPreview(null);
+                          }}
+                          disabled={readOnly}
+                        >
                           <X className="size-4" />
                         </Button>
                       )}

@@ -107,13 +107,6 @@ function Storefront() {
   const heroBackground: CSSProperties = {
     backgroundColor: config.hero_bg_color,
     color: config.hero_text_color,
-    ...(config.hero_bg_type === "image" && config.hero_image_url
-      ? {
-          backgroundImage: `linear-gradient(rgba(0,0,0,${config.hero_overlay_opacity / 100}), rgba(0,0,0,${config.hero_overlay_opacity / 100})), url(${JSON.stringify(config.hero_image_url)})`,
-          backgroundPosition: "center",
-          backgroundSize: "cover",
-        }
-      : {}),
   };
   const titleSizeClass: Record<string, string> = {
     sm: "text-2xl sm:text-3xl",
@@ -156,36 +149,57 @@ function Storefront() {
       {/* 1. Hero Section */}
       <section
         style={heroBackground}
-        className={`px-6 py-20 transition-colors sm:py-28 ${textAlignClass[config.text_align]}`}
+        className={`relative overflow-hidden px-6 py-20 transition-colors sm:py-28 ${textAlignClass[config.text_align]}`}
       >
-        <h1
-          style={
-            (config.title_offset_x || config.title_offset_y)
-              ? { transform: `translate(${config.title_offset_x ?? 0}px, ${config.title_offset_y ?? 0}px)` }
-              : undefined
-          }
-          className={`font-normal leading-tight ${titleSizeClass[config.title_size]}`}
-        >
-          {config.hero_title}
-        </h1>
-        <p className={`mt-5 max-w-md text-lg font-light leading-9 opacity-90 sm:text-xl ${config.text_align === "center" ? "mx-auto" : config.text_align === "start" ? "me-auto" : "ms-auto"}`}>
-          {config.hero_subtitle}
-        </p>
-        <div
-          style={
-            (config.button_offset_x || config.button_offset_y)
-              ? { transform: `translate(${config.button_offset_x ?? 0}px, ${config.button_offset_y ?? 0}px)` }
-              : undefined
-          }
-          className={`mt-8 flex ${buttonAlignClass[config.button_align]}`}
-        >
-          <a
-            href="#products"
-            style={{ backgroundColor: config.button_bg_color, color: config.button_text_color }}
-            className={`inline-flex items-center font-normal shadow-float transition-opacity hover:opacity-90 ${buttonSizeClass[config.button_size]} ${buttonRadiusClass[config.button_radius]}`}
+        {config.hero_bg_type === "image" && config.hero_image_url && (
+          <>
+            <img
+              src={config.hero_image_url}
+              alt=""
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
+              className="absolute inset-0 size-full object-cover object-center"
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundColor: `rgba(0, 0, 0, ${config.hero_overlay_opacity / 100})`,
+              }}
+            />
+          </>
+        )}
+
+        <div className="relative z-10">
+          <h1
+            style={
+              (config.title_offset_x || config.title_offset_y)
+                ? { transform: `translate(${config.title_offset_x ?? 0}px, ${config.title_offset_y ?? 0}px)` }
+                : undefined
+            }
+            className={`font-normal leading-tight ${titleSizeClass[config.title_size]}`}
           >
-            {config.hero_button}
-          </a>
+            {config.hero_title}
+          </h1>
+          <p className={`mt-5 max-w-md text-lg font-light leading-9 opacity-90 sm:text-xl ${config.text_align === "center" ? "mx-auto" : config.text_align === "start" ? "me-auto" : "ms-auto"}`}>
+            {config.hero_subtitle}
+          </p>
+          <div
+            style={
+              (config.button_offset_x || config.button_offset_y)
+                ? { transform: `translate(${config.button_offset_x ?? 0}px, ${config.button_offset_y ?? 0}px)` }
+                : undefined
+            }
+            className={`mt-8 flex ${buttonAlignClass[config.button_align]}`}
+          >
+            <a
+              href="#products"
+              style={{ backgroundColor: config.button_bg_color, color: config.button_text_color }}
+              className={`inline-flex items-center font-normal shadow-float transition-opacity hover:opacity-90 ${buttonSizeClass[config.button_size]} ${buttonRadiusClass[config.button_radius]}`}
+            >
+              {config.hero_button}
+            </a>
+          </div>
         </div>
       </section>
 

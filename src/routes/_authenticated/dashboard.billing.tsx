@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Check, Copy, FileImage, Loader2, Upload } from "lucide-react";
+import { Check, Copy, FileImage, Loader2, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -97,6 +97,17 @@ function Billing() {
   const [months, setMonths] = useState(1);
   const [ref, setRef] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
   const plans = useQuery({
     queryKey: ["plans"],
@@ -317,15 +328,68 @@ function Billing() {
           </div>
           <div className="space-y-1.5">
             <Label>{t("صورة الوصل")}</Label>
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="flex w-full items-center gap-3 rounded-xl border-2 border-dashed p-4 text-start text-sm text-muted-foreground hover:border-brand hover:text-brand"
-            >
-              {file ? <FileImage className="size-5 text-brand" /> : <Upload className="size-5" />}
-              <span className="truncate">{file ? file.name : t("اضغط لاختيار صورة (حتى 5MB)")}</span>
-            </button>
-            <input ref={fileRef} type="file" accept="image/*,application/pdf" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            {previewUrl ? (
+              <div className="relative overflow-hidden rounded-xl border border-border bg-muted/30 p-3">
+                <div className="flex items-center gap-3">
+                  {file?.type.startsWith("image/") ? (
+                    <img
+                      src={previewUrl}
+                      alt={t("معاينة الوصل")}
+                      className="size-16 rounded-lg border border-border object-cover shadow-sm sm:size-20"
+                    />
+                  ) : (
+                    <div className="flex size-16 items-center justify-center rounded-lg border border-border bg-background shadow-sm sm:size-20">
+                      <FileImage className="size-6 text-brand" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{file?.name}</p>
+                    <p className="text-xs text-muted-foreground num">
+                      {file ? `${(file.size / 1024).toFixed(0)} KB` : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                      {t("تغيير")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-danger hover:bg-danger-soft hover:text-danger"
+                      onClick={() => {
+                        setFile(null);
+                        if (fileRef.current) fileRef.current.value = "";
+                      }}
+                      aria-label={t("حذف")}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setFile(e.dataTransfer.files?.[0] ?? null);
+                }}
+                className="flex w-full items-center gap-3 rounded-xl border-2 border-dashed p-4 text-start text-sm text-muted-foreground transition-colors hover:border-brand hover:text-brand"
+              >
+                <Upload className="size-5" />
+                <span className="truncate">{t("اضغط لاختيار صورة (حتى 5MB)")}</span>
+              </button>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*,application/pdf"
+              hidden
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
           </div>
           <Button type="submit" variant="brand" className="w-full" size="lg" disabled={submit.isPending}>
             {submit.isPending && <Loader2 className="animate-spin" />} {t("إرسال للمراجعة")}
