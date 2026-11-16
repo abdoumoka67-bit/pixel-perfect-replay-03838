@@ -205,14 +205,25 @@ function MerchantCard({ tone = "dark" }: { tone?: Tone }) {
   const styles = TONES[tone];
   const t = useTr();
   const { store, access } = useMyStore();
+  const urls = useSignedUrls([store?.logo_url]);
+  const logoUrl = store?.logo_url ? urls[store.logo_url] : null;
   const signOut = useSignOut();
   const initials = (store?.name ?? t("؟")).trim().slice(0, 1);
+
   return (
     <div className={cn("rounded-2xl p-3", styles.card)}>
       <div className="flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary font-display font-medium text-primary-foreground">
-          {initials}
-        </div>
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={store?.name ?? ""}
+            className="size-10 shrink-0 rounded-full border border-sidebar-border/40 bg-background/20 object-cover"
+          />
+        ) : (
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary font-display font-medium text-primary-foreground">
+            {initials}
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <p className={cn("truncate text-sm font-medium", styles.name)}>{store?.name}</p>
           {access === "owner" ? (

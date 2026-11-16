@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { verifyCustomDomain } from "@/lib/domain.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Copy, ExternalLink, Globe, ImagePlus, Loader2, Palette, Save, Target } from "lucide-react";
+import { Copy, ExternalLink, Globe, ImagePlus, Loader2, Palette, Save, Target, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { ProLock, ProPill } from "@/components/dashboard/ProLock";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,8 +48,10 @@ function SettingsPage() {
   const [whatsapp, setWhatsapp] = useState("");
   const [origin, setOrigin] = useState("16");
   const [logo, setLogo] = useState<string | null>(null);
+  const [localLogoPreview, setLocalLogoPreview] = useState<string | null>(null);
   const [metaPixel, setMetaPixel] = useState("");
   const urls = useSignedUrls([logo]);
+  const activeLogoUrl = localLogoPreview || (logo && urls[logo] ? urls[logo] : null);
 
   useEffect(() => {
     if (!store) return;
@@ -81,9 +83,15 @@ function SettingsPage() {
 
   async function uploadLogo(f: File | undefined) {
     if (!f) return;
+    const instantUrl = URL.createObjectURL(f);
+    setLocalLogoPreview(instantUrl);
     const path = `${user.id}/logo-${crypto.randomUUID()}.${fileExt(f)}`;
     const { error } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, f, { contentType: f.type });
-    if (error) { toast.error(t("تعذر رفع الشعار")); return; }
+    if (error) {
+      toast.error(t("تعذر رفع الشعار"));
+      setLocalLogoPreview(null);
+      return;
+    }
     setLogo(path);
   }
 
@@ -128,18 +136,51 @@ function SettingsPage() {
       >
         <div className="space-y-5 rounded-2xl bg-card p-6 shadow-card">
           <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="flex size-20 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed text-muted-foreground hover:border-brand hover:text-brand"
-              aria-label={t("رفع الشعار")}
-            >
-              {logo && urls[logo] ? <img src={urls[logo]} alt="" className="size-full object-cover" /> : <ImagePlus className="size-6" />}
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="flex size-20 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed text-muted-foreground transition-colors hover:border-brand hover:text-brand"
+                aria-label={t("رفع الشعار")}
+              >
+                {activeLogoUrl ? (
+                  <img src={activeLogoUrl} alt="" className="size-full object-cover" />
+                ) : (
+                  <ImagePlus className="size-6" />
+                )}
+              </button>
+              {(logo || localLogoPreview) && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLogo(null);
+                    setLocalLogoPreview(null);
+                  }}
+                  className="absolute -top-1.5 -end-1.5 flex size-6 items-center justify-center rounded-full bg-danger text-danger-foreground shadow-sm transition-transform hover:scale-110"
+                  title={t("حذف الشعار")}
+                  aria-label={t("حذف الشعار")}
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
             <div>
               <p className="font-medium">{t("شعار المتجر")}</p>
               <p className="text-xs text-muted-foreground">{t("يظهر في صفحات الهبوط. مربع، حتى 5MB.")}</p>
               <p className="mt-0.5 text-[11px] text-muted-foreground/80">{t("ينصح بوضع الشعار بدون خلفية")}</p>
+              {(logo || localLogoPreview) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLogo(null);
+                    setLocalLogoPreview(null);
+                  }}
+                  className="mt-1 text-xs text-danger hover:underline"
+                >
+                  {t("حذف الشعار")}
+                </button>
+              )}
             </div>
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => uploadLogo(e.target.files?.[0])} />
           </div>
