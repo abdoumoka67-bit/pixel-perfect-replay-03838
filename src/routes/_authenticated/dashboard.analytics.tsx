@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { MapPin } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, MapPin } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
@@ -84,9 +84,34 @@ function AnalyticsPro() {
     };
   }, [q.data]);
 
+  const trends = useMemo(() => {
+    // Split the 30-day period into two 15-day halves to compute real growth/decline percentage
+    const daily = q.data?.daily ?? [];
+    if (daily.length < 4) return { orders: 0, revenue: 0 };
+    const mid = Math.floor(daily.length / 2);
+    const prevHalf = daily.slice(0, mid);
+    const currHalf = daily.slice(mid);
+
+    const prevOrders = prevHalf.reduce((sum, d) => sum + (d.orders || 0), 0);
+    const currOrders = currHalf.reduce((sum, d) => sum + (d.orders || 0), 0);
+
+    const prevRev = prevHalf.reduce((sum, d) => sum + Number(d.revenue || 0), 0);
+    const currRev = currHalf.reduce((sum, d) => sum + Number(d.revenue || 0), 0);
+
+    const calcPct = (curr: number, prev: number) => {
+      if (prev === 0) return curr > 0 ? 100 : 0;
+      return Math.round(((curr - prev) / prev) * 1000) / 10;
+    };
+
+    return {
+      orders: calcPct(currOrders, prevOrders),
+      revenue: calcPct(currRev, prevRev),
+    };
+  }, [q.data?.daily]);
+
   const kpis = [
-    { label: t("طلبات آخر 30 يوماً"), value: String(m.total) },
-    { label: t("مداخيل مُسلّمة"), value: formatDZD(m.revenue, language) },
+    { label: t("طلبات آخر 30 يوماً"), value: String(m.total), trend: trends.orders },
+    { label: t("مداخيل مُسلّمة"), value: formatDZD(m.revenue, language), trend: trends.revenue },
     { label: t("نسبة التأكيد"), value: `${m.confirmRate}%` },
     { label: t("نسبة التوصيل"), value: `${m.deliveryRate}%` },
   ];
@@ -98,7 +123,24 @@ function AnalyticsPro() {
         {kpis.map((k) => (
           <div key={k.label} className="rounded-2xl bg-card p-5 shadow-card">
             <p className="text-sm text-muted-foreground">{k.label}</p>
-            <p className="mt-1 font-display text-2xl font-medium num">{k.value}</p>
+            <div className="mt-1 flex flex-wrap items-baseline gap-2">
+              <p className="font-display text-2xl font-medium num">{k.value}</p>
+              {"trend" in k && typeof k.trend === "number" && k.trend !== 0 && (
+                <span
+                  className={`inline-flex items-center gap-0.5 text-xs font-medium num ${
+                    k.trend > 0 ? "text-emerald-500" : "text-rose-500"
+                  }`}
+                  dir="ltr"
+                >
+                  <span>{k.trend > 0 ? `+${k.trend}%` : `${k.trend}%`}</span>
+                  {k.trend > 0 ? (
+                    <ArrowUpRight className="size-3.5 shrink-0" />
+                  ) : (
+                    <ArrowDownRight className="size-3.5 shrink-0" />
+                  )}
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>

@@ -286,11 +286,11 @@
   --shadow-brand: var(--shadow-brand);
 }
 
-/* Latin languages (French / English) switch the whole UI to the SF Pro stack. */
+/* Latin languages (French / English) switch the whole UI to the Plus Jakarta Sans stack. */
 html[lang="fr"],
 html[lang="en"] {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 :root {
@@ -368,16 +368,16 @@ html[lang="en"] {
   --chart-4: #8A6116;
   --chart-5: #6D7175;
 
-  /* sidebar #111111, active item #1E1E1E, inactive text #6B6B6B, active text #FFFFFF */
-  --sidebar: oklch(0.178 0 0);
-  --sidebar-foreground: oklch(1 0 0);
-  --sidebar-muted: oklch(0.528 0 0);
-  --sidebar-primary: oklch(0.646 0.222 41.1);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.235 0 0);
-  --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(0.285 0 0);
-  --sidebar-ring: oklch(0.646 0.222 41.1);
+  /* Sidebar dark graphite theme matching screenshot */
+  --sidebar: #141414;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-muted: #8A8A8A;
+  --sidebar-primary: #EA580C;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #242424;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #222222;
+  --sidebar-ring: #EA580C;
 
   /* Shadows (Subtle, crisp Shopify-style elevation) */
   --shadow-card: 0 0 0 1px var(--border), 0 1px 3px 0 rgba(0, 0, 0, 0.04);
@@ -590,7 +590,9 @@ html[lang="en"] {
 }
 
 @utility num {
+  font-family: "Plus Jakarta Sans", var(--font-sans);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
   direction: ltr;
   unicode-bidi: isolate;
 }

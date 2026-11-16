@@ -149,7 +149,7 @@ export function PlanCards({
           </div>
         );
         const cardClass = cn(
-          "relative flex h-full flex-col rounded-3xl border border-border bg-card p-6 text-start shadow-card transition-all",
+          "relative flex h-full flex-col rounded-[16px] border border-border bg-card p-8 text-start shadow-card transition-all",
           selected ? "border-brand/50 ring-2 ring-brand ring-offset-2 ring-offset-background" : "hover:border-foreground/20",
         );
         if (onSelect) {
@@ -162,12 +162,12 @@ export function PlanCards({
               className={cn(cardClass, "outline-none")}
             >
               {body}
-              <div className="mt-auto w-full pt-6">
+              <div className="mt-auto w-full pt-8">
                 <span
                   className={cn(
-                    "flex h-11 w-full items-center justify-center rounded-full text-sm font-medium transition-colors",
+                    "flex h-12 w-full items-center justify-center rounded-[12px] text-base font-medium transition-colors",
                     selected
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                      ? "bg-primary text-primary-foreground shadow-xs"
                       : "border border-border bg-secondary/60 text-foreground hover:bg-secondary",
                   )}
                 >
@@ -180,7 +180,7 @@ export function PlanCards({
         return (
           <div key={p.id} className={cardClass}>
             {body}
-            <div className="mt-auto w-full pt-6">{action?.(p)}</div>
+            {action && <div className="mt-auto w-full pt-8">{action(p)}</div>}
           </div>
         );
       })}

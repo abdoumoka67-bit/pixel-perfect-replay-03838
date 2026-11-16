@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, Clock, PackageCheck, Plus, Truck, XCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, CheckCircle2, Clock, PackageCheck, Plus, Truck, XCircle, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
@@ -143,14 +143,22 @@ function Overview() {
           <p className="mt-1 font-display text-4xl font-medium num">{totalOrders}</p>
           <div className="my-5 h-px bg-sidebar-border" />
           <p className="text-sm text-sidebar-muted">{t("مداخيل الطلبات المسلّمة")}</p>
-          <p className="mt-1 font-display text-2xl font-medium text-sidebar-primary num">
-            {formatDZD(Number(delivered?.orders_total ?? 0), language)}
-          </p>
-          <p className="mt-4 text-xs text-sidebar-muted">
-            {t("نسبة التوصيل: {value}", {
-              value: `${totalOrders ? Math.round((Number(delivered?.orders_count ?? 0) / totalOrders) * 100) : 0}%`,
-            })}
-          </p>
+          <div className="mt-1 flex flex-wrap items-baseline gap-2">
+            <p className="font-display text-2xl font-medium text-sidebar-primary num">
+              {formatDZD(Number(delivered?.orders_total ?? 0), language)}
+            </p>
+            {totalOrders > 0 && (
+              <span
+                className={`inline-flex items-center gap-0.5 text-xs font-medium num ${
+                  Number(delivered?.orders_count ?? 0) / totalOrders >= 0.5 ? "text-emerald-400" : "text-amber-400"
+                }`}
+                dir="ltr"
+              >
+                <span>{Math.round((Number(delivered?.orders_count ?? 0) / totalOrders) * 100)}%</span>
+                <ArrowUpRight className="size-3.5 shrink-0" />
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </>

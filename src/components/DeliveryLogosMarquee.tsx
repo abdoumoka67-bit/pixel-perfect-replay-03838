@@ -11,7 +11,7 @@ const DELIVERY_LOGOS = [
   "/logos/delivery-08.png",
 ];
 
-const LOGO_SET_WIDTH = DELIVERY_LOGOS.length * 136;
+const LOGO_SET_WIDTH = DELIVERY_LOGOS.length * 176;
 
 export function DeliveryLogosMarquee() {
   const language = useUiLanguage();
@@ -52,9 +52,9 @@ export function DeliveryLogosMarquee() {
                   DELIVERY_LOGOS.map((src, index) => (
                     <div
                       key={`${copyIndex}-${src}-${index}`}
-                      className="flex h-[88px] w-[120px] shrink-0 items-center justify-center rounded-2xl border border-border bg-card p-4"
+                      className="flex h-[84px] w-[140px] shrink-0 items-center justify-center rounded-[12px] border border-border bg-card p-3 shadow-xs sm:h-[96px] sm:w-[160px]"
                     >
-                      <img src={src} alt="" className="h-12 w-full object-contain" />
+                      <img src={src} alt="" className="max-h-12 w-auto max-w-[110px] object-contain" />
                     </div>
                   )),
                 )}

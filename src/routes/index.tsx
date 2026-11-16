@@ -257,17 +257,19 @@ function Home() {
           ref={heroRef}
           data-active={heroInView}
           className={cn(
-            "hero-stage mx-auto w-full max-w-3xl px-5 text-center lg:max-w-7xl",
-            isRtl ? "pb-10 pt-4 sm:pb-10 sm:pt-8" : "pb-16 pt-12 sm:pt-20",
+            "hero-stage mx-auto w-full max-w-3xl px-5 text-center lg:max-w-5xl",
+            isRtl ? "pb-12 pt-6 sm:pb-16 sm:pt-10" : "pb-16 pt-12 sm:pt-20",
           )}
         >
           <h1
             className={cn(
-              "mx-auto max-w-3xl text-balance break-words text-center font-cairo font-medium text-[#1D1D20] lg:max-w-none",
+              "mx-auto max-w-3xl text-balance break-words text-center font-cairo font-medium text-[#111111] lg:max-w-none",
               "flex flex-col items-center",
-              isRtl ? "text-hero-ar gap-2" : "text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl gap-3 sm:gap-4",
+              isRtl
+                ? "text-3xl sm:text-4xl md:text-[48px] md:leading-[1.15] gap-2"
+                : "text-3xl sm:text-4xl md:text-[48px] md:leading-[1.12] gap-3",
               isRtl && "lg:flex-row lg:flex-nowrap lg:justify-center lg:gap-3",
-              !isRtl && "leading-[1.06] tracking-tight",
+              !isRtl && "tracking-tight",
               isRtl && "tracking-normal",
             )}
           >
@@ -281,12 +283,12 @@ function Home() {
               </TextSelectionHighlight>
             )}
           </h1>
-          <p className={cn("text-sm text-[#6B6B6B] sm:text-base", isRtl ? "mt-2 mb-5" : "mt-4 mb-8")}>
+          <p className={cn("text-base text-[#6B6B6B] sm:text-lg max-w-2xl mx-auto", isRtl ? "mt-4 mb-8" : "mt-4 mb-8")}>
             {t("landing.hero.sub")}
           </p>
           <form
             onSubmit={startWithEmail}
-            className="mx-auto flex w-full max-w-md items-center gap-1.5 rounded-full border border-border bg-white p-1.5 shadow-sm"
+            className="mx-auto flex w-full max-w-md items-center gap-2 rounded-full border border-border bg-white p-1.5 shadow-xs"
           >
             <input
               type="email"
@@ -297,11 +299,11 @@ function Home() {
               aria-label={t("landing.hero.email")}
               autoComplete="email"
               dir={isRtl ? "rtl" : "ltr"}
-              className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              className="min-w-0 flex-1 bg-transparent px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
             />
             <Button
               type="submit"
-              className="h-10 shrink-0 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all px-5 text-sm font-medium"
+              className="h-12 shrink-0 rounded-full bg-[#111111] text-white shadow-xs hover:bg-black/90 active:scale-[0.98] transition-all px-6 text-base font-medium"
             >
               {t("landing.hero.emailCta")}
             </Button>
@@ -336,7 +338,7 @@ function Home() {
                   plans={plans}
                   language={language}
                   action={(p) => (
-                    <Button asChild size="xl" variant={p.tier === "pro" ? "outline" : "default"} className={p.tier === "pro" ? "w-full border-transparent text-foreground" : "w-full"}>
+                    <Button asChild size="lg" variant={p.tier === "pro" ? "outline" : "default"} className={p.tier === "pro" ? "w-full rounded-[12px] border-transparent text-foreground" : "w-full rounded-[12px]"}>
                       <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
                     </Button>
                   )}
