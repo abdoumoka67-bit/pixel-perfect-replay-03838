@@ -1,7 +1,11 @@
 import type { ReactNode } from "react";
 import { Check, ChevronDown } from "lucide-react";
-import { formatDZD, START_MONTHLY_ORDER_LIMIT, MAX_TEAM_USERS, type LanguageCode } from "@/lib/commerce";
+import { START_MONTHLY_ORDER_LIMIT, MAX_TEAM_USERS, type LanguageCode } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
+
+const DZD_NUMBER = new Intl.NumberFormat("fr-DZ");
+/** Prices are always printed as "1 700 دج" regardless of the UI language. */
+const formatPrice = (value: number) => `${DZD_NUMBER.format(value)} دج`;
 
 export type PlanCardData = { id: string; name: string; price: number; months: number; tier: string };
 
@@ -164,17 +168,15 @@ export function PlanCards({
             {/* Price section with dynamic duration calculations */}
             <div className="mt-4">
               <div className="flex flex-wrap items-baseline gap-1.5">
-                <span className="text-3xl font-medium text-foreground num">
-                  {formatDZD(totalPrice, language)}
-                </span>
+                <span className="text-4xl font-medium text-foreground num">{formatPrice(totalPrice)}</span>
                 {cardMonths > 1 && (
                   <span className="text-xs text-muted-foreground num">
-                    ({formatDZD(Math.round(totalPrice / cardMonths), language)} / {labels.perMonth})
+                    ({formatPrice(Math.round(totalPrice / cardMonths))} / {labels.perMonth})
                   </span>
                 )}
                 {cardMonths === 6 && (
                   <span className="text-xs text-muted-foreground line-through num">
-                    {formatDZD(regularTotal, language)}
+                    {formatPrice(regularTotal)}
                   </span>
                 )}
               </div>
@@ -197,12 +199,12 @@ export function PlanCards({
                     className="w-full appearance-none rounded-xl border border-border bg-background px-3.5 py-2 text-sm font-medium text-foreground shadow-xs transition-all hover:border-foreground/30 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand pe-9"
                     dir={language === "ar" ? "rtl" : "ltr"}
                   >
-                    <option value={1}>{labels.oneMonth} ({formatDZD(monthlyRate, language)})</option>
-                    <option value={2}>{labels.monthsCount(2)} ({formatDZD(monthlyRate * 2, language)})</option>
-                    <option value={3}>{labels.monthsCount(3)} ({formatDZD(monthlyRate * 3, language)})</option>
-                    <option value={4}>{labels.monthsCount(4)} ({formatDZD(monthlyRate * 4, language)})</option>
-                    <option value={5}>{labels.monthsCount(5)} ({formatDZD(monthlyRate * 5, language)})</option>
-                    <option value={6}>{labels.monthsCount(6)} — {labels.freeMonthBadge} ({formatDZD(monthlyRate * 5, language)})</option>
+                    <option value={1}>{labels.oneMonth} ({formatPrice(monthlyRate)})</option>
+                    <option value={2}>{labels.monthsCount(2)} ({formatPrice(monthlyRate * 2)})</option>
+                    <option value={3}>{labels.monthsCount(3)} ({formatPrice(monthlyRate * 3)})</option>
+                    <option value={4}>{labels.monthsCount(4)} ({formatPrice(monthlyRate * 4)})</option>
+                    <option value={5}>{labels.monthsCount(5)} ({formatPrice(monthlyRate * 5)})</option>
+                    <option value={6}>{labels.monthsCount(6)} — {labels.freeMonthBadge} ({formatPrice(monthlyRate * 5)})</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground">
                     <ChevronDown className="size-4" />
