@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { formatDZD, START_MONTHLY_ORDER_LIMIT, MAX_TEAM_USERS, type LanguageCode } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
 
@@ -65,6 +65,11 @@ const LABELS: Record<
     startPlus: string;
     selected: string;
     choose: (name: string) => string;
+    durationLabel: string;
+    oneMonth: string;
+    monthsCount: (n: number) => string;
+    freeMonthBadge: string;
+    saveMonthOffer: string;
   }
 > = {
   ar: {
@@ -74,6 +79,11 @@ const LABELS: Record<
     startPlus: "كل ميزات Start، وزيادة:",
     selected: "الخطة المختارة ✓",
     choose: (name) => `اختر ${name}`,
+    durationLabel: "مدة الاشتراك",
+    oneMonth: "شهر واحد",
+    monthsCount: (n) => `${n} أشهر`,
+    freeMonthBadge: "شهر مجاني 🎁",
+    saveMonthOffer: "ادفع 5 أشهر واحصل على الـ 6 مجاناً",
   },
   en: {
     bestForTeams: "Best for teams",
@@ -82,6 +92,11 @@ const LABELS: Record<
     startPlus: "Everything in Start, plus:",
     selected: "Selected plan ✓",
     choose: (name) => `Choose ${name}`,
+    durationLabel: "Subscription duration",
+    oneMonth: "1 month",
+    monthsCount: (n) => `${n} months`,
+    freeMonthBadge: "1 month free 🎁",
+    saveMonthOffer: "Pay 5 months, get 6th free",
   },
   fr: {
     bestForTeams: "Idéal pour les équipes",
@@ -90,6 +105,11 @@ const LABELS: Record<
     startPlus: "Tout Start, plus :",
     selected: "Offre sélectionnée ✓",
     choose: (name) => `Choisir ${name}`,
+    durationLabel: "Durée de l'abonnement",
+    oneMonth: "1 mois",
+    monthsCount: (n) => `${n} mois`,
+    freeMonthBadge: "1 mois gratuit 🎁",
+    saveMonthOffer: "Payez 5 mois, 6ème offert",
   },
 };
 
@@ -104,12 +124,16 @@ export function PlanCards({
   onSelect,
   action,
   language = "ar",
+  months = 1,
+  onMonthsChange,
 }: {
   plans: PlanCardData[];
   selectedId?: string | null;
   onSelect?: (id: string) => void;
   action?: (plan: PlanCardData) => ReactNode;
   language?: LanguageCode;
+  months?: number;
+  onMonthsChange?: (months: number, planId?: string) => void;
 }) {
   const labels = LABELS[language];
   const sorted = [...plans].sort((a, b) => (a.tier === b.tier ? 0 : a.tier === "start" ? -1 : 1));
@@ -119,6 +143,13 @@ export function PlanCards({
         const pro = p.tier === "pro";
         const features = pro ? PRO_FEATURES[language] : START_FEATURES[language];
         const selected = selectedId === p.id;
+
+        // Dynamic price calculation
+        const cardMonths = months || 1;
+        const monthlyRate = p.price;
+        const totalPrice = cardMonths === 6 ? monthlyRate * 5 : monthlyRate * cardMonths;
+        const regularTotal = monthlyRate * cardMonths;
+
         const body = (
           <div className="flex flex-1 flex-col">
             <div className="flex items-center justify-between gap-2">
@@ -129,12 +160,61 @@ export function PlanCards({
                 </span>
               )}
             </div>
-            <p className="mt-4 flex items-baseline gap-1.5">
-              <span className="text-4xl font-medium text-foreground num">{formatDZD(p.price, language)}</span>
-              <span className="text-sm text-muted-foreground">
-                / {p.months === 1 ? labels.perMonth : `${p.months} ${labels.months}`}
-              </span>
-            </p>
+
+            {/* Price section with dynamic duration calculations */}
+            <div className="mt-4">
+              <div className="flex flex-wrap items-baseline gap-1.5">
+                <span className="text-3xl font-medium text-foreground num">
+                  {formatDZD(totalPrice, language)}
+                </span>
+                {cardMonths > 1 && (
+                  <span className="text-xs text-muted-foreground num">
+                    ({formatDZD(Math.round(totalPrice / cardMonths), language)} / {labels.perMonth})
+                  </span>
+                )}
+                {cardMonths === 6 && (
+                  <span className="text-xs text-muted-foreground line-through num">
+                    {formatDZD(regularTotal, language)}
+                  </span>
+                )}
+              </div>
+              {cardMonths === 1 && <span className="text-xs text-muted-foreground">/ {labels.perMonth}</span>}
+            </div>
+
+            {/* Duration Selector Dropdown with Arrow */}
+            {onMonthsChange && (
+              <div className="mt-3">
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  {labels.durationLabel}
+                </label>
+                <div className="relative">
+                  <select
+                    value={cardMonths}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      onMonthsChange(val, p.id);
+                    }}
+                    className="w-full appearance-none rounded-xl border border-border bg-background px-3.5 py-2 text-sm font-medium text-foreground shadow-xs transition-all hover:border-foreground/30 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand pe-9"
+                    dir={language === "ar" ? "rtl" : "ltr"}
+                  >
+                    <option value={1}>{labels.oneMonth} ({formatDZD(monthlyRate, language)})</option>
+                    <option value={2}>{labels.monthsCount(2)} ({formatDZD(monthlyRate * 2, language)})</option>
+                    <option value={3}>{labels.monthsCount(3)} ({formatDZD(monthlyRate * 3, language)})</option>
+                    <option value={4}>{labels.monthsCount(4)} ({formatDZD(monthlyRate * 4, language)})</option>
+                    <option value={5}>{labels.monthsCount(5)} ({formatDZD(monthlyRate * 5, language)})</option>
+                    <option value={6}>{labels.monthsCount(6)} — {labels.freeMonthBadge} ({formatDZD(monthlyRate * 5, language)})</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground">
+                    <ChevronDown className="size-4" />
+                  </div>
+                </div>
+                {cardMonths === 6 && (
+                  <p className="mt-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    {labels.saveMonthOffer}
+                  </p>
+                )}
+              </div>
+            )}
             {pro && <p className="mt-1 text-sm text-muted-foreground">{labels.startPlus}</p>}
             <ul className="mt-5 flex-1 space-y-3 text-sm">
               {features.map((f) => (
@@ -154,27 +234,24 @@ export function PlanCards({
         );
         if (onSelect) {
           return (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => onSelect(p.id)}
-              aria-pressed={selected}
-              className={cn(cardClass, "outline-none")}
-            >
+            <div key={p.id} className={cardClass}>
               {body}
               <div className="mt-auto w-full pt-8">
-                <span
+                <button
+                  type="button"
+                  onClick={() => onSelect(p.id)}
+                  aria-pressed={selected}
                   className={cn(
-                    "flex h-12 w-full items-center justify-center rounded-[12px] text-base font-medium transition-colors",
+                    "flex h-12 w-full items-center justify-center rounded-[12px] text-base font-medium outline-none transition-colors",
                     selected
                       ? "bg-primary text-primary-foreground shadow-xs"
                       : "border border-border bg-secondary/60 text-foreground hover:bg-secondary",
                   )}
                 >
                   {selected ? labels.selected : labels.choose(p.name)}
-                </span>
+                </button>
               </div>
-            </button>
+            </div>
           );
         }
         return (

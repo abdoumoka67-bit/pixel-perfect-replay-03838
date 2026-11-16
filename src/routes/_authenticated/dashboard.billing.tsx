@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useMyStore } from "@/hooks/use-my-store";
 import { RECEIPT_BUCKET, fileExt } from "@/lib/images";
-import { calculateSubscriptionPrice, formatDZD, SUBSCRIPTION_MAX_MONTHS } from "@/lib/commerce";
+import { calculateSubscriptionPrice, formatDZD } from "@/lib/commerce";
 import { PlanCards } from "@/components/PlanCards";
 import { cn } from "@/lib/utils";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
@@ -225,44 +225,28 @@ function Billing() {
       </div>
 
       <h2 className="mb-3 font-medium">{t("اختر الخطة")}</h2>
-      <PlanCards plans={plans.data ?? []} selectedId={planId} onSelect={setPlanId} language={language} />
+      <PlanCards
+        plans={plans.data ?? []}
+        selectedId={planId}
+        onSelect={setPlanId}
+        language={language}
+        months={months}
+        onMonthsChange={(m, id) => {
+          setMonths(m);
+          if (id) setPlanId(id);
+        }}
+      />
 
-      <div className="mt-4 rounded-2xl bg-card p-5 shadow-card">
-        <h2 className="font-medium">{t("مدة الاشتراك")}</h2>
-        <p className="mt-1 text-xs text-muted-foreground">{t("اختر عدد الأشهر التي تريد تفعيلها.")}</p>
-        <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
-          {Array.from({ length: SUBSCRIPTION_MAX_MONTHS }, (_, i) => i + 1).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMonths(m)}
-              className={[
-                "relative flex flex-col items-center rounded-2xl border px-2 py-3 transition-all",
-                months === m
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-white text-foreground hover:border-primary/30",
-              ].join(" ")}
-            >
-              <span className="font-medium num">{m}</span>
-              <span className="text-[11px]">{m === 1 ? t("شهر") : t("أشهر")}</span>
-              {m === 6 && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-brand px-2 py-0.5 text-[9px] text-white">
-                  {t("شهر مجاني")}
-                </span>
-              )}
-            </button>
-          ))}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-card p-4 shadow-card">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-foreground">{selectedPlan?.name ?? "Start"}</span>
+          <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-muted-foreground num">
+            {months === 1 ? t("شهر") : `${months} ${t("أشهر")}`}
+          </span>
         </div>
-        {months === 6 && (
-          <p className="mt-3 rounded-xl bg-warning-soft px-3 py-2 text-sm leading-6 text-warning">
-            {t("🎁 عرض خاص: ادفع 5 أشهر واحصل على شهر مجاناً — توفير {amount}.", {
-              amount: formatDZD(selectedTier === "pro" ? 3400 : 1700, language),
-            })}
-          </p>
-        )}
-        <p className="mt-4 flex items-baseline gap-2">
+        <p className="flex items-baseline gap-2">
           <span className="text-sm text-muted-foreground">{t("المبلغ المطلوب تحويله:")}</span>
-          <span className="text-xl font-medium num">{formatDZD(amountDue, language)}</span>
+          <span className="text-xl font-medium text-foreground num">{formatDZD(amountDue, language)}</span>
         </p>
       </div>
 
