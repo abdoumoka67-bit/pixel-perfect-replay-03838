@@ -304,7 +304,6 @@ function Billing() {
 
             <div className="mt-3.5 space-y-2.5">
               <CopyRow label={t("رقم الحساب البريدي الجاري (RIP)")} value={settings.data?.rip ?? "…"} />
-              <CopyRow label={t("اسم صاحب الحساب")} value={settings.data?.ccp_holder ?? "…"} />
             </div>
           </div>
         </div>
