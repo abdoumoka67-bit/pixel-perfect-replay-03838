@@ -227,7 +227,7 @@ export function StorefrontCheckoutShowcase() {
         ) : (
           /* Product + checkout form */
           <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-12 sm:gap-6">
-            <div className="relative overflow-hidden rounded-xl border border-border bg-zinc-50">
+            <div className="relative overflow-hidden rounded-xl border border-border bg-zinc-50 sm:col-span-5">
               <div className="aspect-[4/3] w-full overflow-hidden sm:aspect-[4/5]">
                 <img
                   src="/demo/california-tshirt.jpg"

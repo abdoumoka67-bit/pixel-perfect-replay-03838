@@ -368,6 +368,14 @@ function PixelCard(props: {
           value={props.meta}
           disabled={locked}
           onChange={(e) => props.onMeta(e.target.value)}
+          onKeyDown={(e) => {
+            // This card sits inside the store-settings <form>. Keep Enter from
+            // submitting that form — save the pixel instead.
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (!locked && !props.saving && !props.disabled) props.onSave();
+            }
+          }}
         />
       </div>
       {locked ? (
