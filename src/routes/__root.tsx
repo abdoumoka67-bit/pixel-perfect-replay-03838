@@ -84,15 +84,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-title", content: "oranix" },
     ],
     links: [
+      // Single consolidated font stylesheet: only the three families the UI
+      // actually uses (Cairo + Tajawal + Plus Jakarta Sans) instead of ~19.
+      // Declared in <head> so the browser discovers it immediately and fetches
+      // it in parallel with the app CSS — a CSS @import would serialize it.
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap",
-      },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800;900&display=swap",
       },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },

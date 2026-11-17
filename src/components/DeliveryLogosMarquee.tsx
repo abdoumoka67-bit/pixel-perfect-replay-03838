@@ -54,7 +54,13 @@ export function DeliveryLogosMarquee() {
                       key={`${copyIndex}-${src}-${index}`}
                       className="flex h-[84px] w-[140px] shrink-0 items-center justify-center rounded-[12px] border border-border bg-card p-3 shadow-xs sm:h-[96px] sm:w-[160px]"
                     >
-                      <img src={src} alt="" className="max-h-12 w-auto max-w-[110px] object-contain" />
+                      <img
+                        src={src}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="max-h-12 w-auto max-w-[110px] object-contain"
+                      />
                     </div>
                   )),
                 )}

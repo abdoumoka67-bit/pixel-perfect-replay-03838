@@ -40,7 +40,9 @@ function log(event: string, detail: unknown) {
   const w = window as PixelWindow;
   w.__oranixPixels = w.__oranixPixels ?? [];
   w.__oranixPixels.push({ at: Date.now(), event, detail });
-  console.info(`[oranix pixel] ${event}`, detail);
+  // Keep the in-page debug trail, but never print to the console in a
+  // production build — merchant storefronts should stay quiet.
+  if (import.meta.env.DEV) console.info(`[oranix pixel] ${event}`, detail);
 }
 
 function inject(code: string) {

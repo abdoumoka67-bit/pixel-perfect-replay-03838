@@ -11,6 +11,11 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
+    // Split each route into its own lazy chunk. Without this the landing page
+    // downloads the whole dashboard (recharts + every Radix UI primitive) up
+    // front. The router plugin regenerates routeTree.gen.ts automatically;
+    // we never edit that generated file by hand.
+    autoCodeSplitting: true,
   },
   vite: {
     // Pre-bundle every library used by lazily loaded pages at dev-server start.
