@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ArrowRight,
@@ -12,6 +12,8 @@ import {
   Search,
   ShieldAlert,
   Trash2,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -139,15 +141,50 @@ function AdminContent({ setLanguage }: { setLanguage: (lang: LanguageCode) => vo
   );
 }
 
+/** Two soft sine tones synthesized in-browser — no MP3 asset, no network request. */
+function playReceiptChime() {
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === "suspended") void ctx.resume();
+    const now = ctx.currentTime;
+    [
+      { frequency: 880, start: 0, stop: 0.35, gain: 0.15 },
+      { frequency: 1318.51, start: 0.12, stop: 0.65, gain: 0.18 },
+    ].forEach(({ frequency, start, stop, gain }) => {
+      const osc = ctx.createOscillator();
+      const volume = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(frequency, now + start);
+      volume.gain.setValueAtTime(gain, now + start);
+      volume.gain.exponentialRampToValueAtTime(0.001, now + stop);
+      osc.connect(volume);
+      volume.connect(ctx.destination);
+      osc.start(now + start);
+      osc.stop(now + stop);
+    });
+  } catch {
+    // AudioContext blocked or not supported — the toast still shows.
+  }
+}
+
+type ReceiptAlertPayload = {
+  id: string;
+  amount: number;
+  transaction_ref?: string | null;
+  stores?: { name: string } | null;
+};
+
 const HIDDEN_RECEIPTS_KEY = "oranix_hidden_payment_receipts";
 
 function readHiddenReceipts(): string[] {
   try {
     const raw = localStorage.getItem(HIDDEN_RECEIPTS_KEY);
     const parsed: unknown = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed)
-      ? parsed.filter((id): id is string => typeof id === "string")
-      : [];
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [];
   } catch {
     return [];
   }
@@ -166,6 +203,19 @@ function Receipts() {
   const [search, setSearch] = useState("");
   const [reason, setReason] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem("oranix_receipt_sound_enabled");
+      return stored !== null ? stored === "true" : true;
+    } catch {
+      return true;
+    }
+  });
+  const receiptsSectionRef = useRef<HTMLDivElement>(null);
+  const alertedIds = useRef<Set<string>>(new Set());
+  const initializedAlerts = useRef(false);
+  const soundRef = useRef(soundEnabled);
+  soundRef.current = soundEnabled;
 
   const receipts = useQuery({
     queryKey: ["admin-receipts"],
@@ -180,14 +230,134 @@ function Receipts() {
       if (error) throw error;
       return data;
     },
+    // Realtime publication is not guaranteed for payment_receipts; polling is the fallback.
+    refetchInterval: 30_000,
   });
   const urls = useSignedUrls(
     (receipts.data ?? []).map((r) => r.receipt_path),
     RECEIPT_BUCKET,
   );
 
-  const nonHiddenReceipts = (receipts.data ?? []).filter((r) => !hiddenIds.includes(r.id));
-  const hiddenOnlyReceipts = (receipts.data ?? []).filter((r) => hiddenIds.includes(r.id));
+  const alertForReceipt = useCallback(
+    (r: ReceiptAlertPayload) => {
+      if (alertedIds.current.has(r.id)) return;
+      alertedIds.current.add(r.id);
+      if (soundRef.current) playReceiptChime();
+
+      const store = r.stores?.name ? ` · ${r.stores.name}` : "";
+      const amount = typeof r.amount === "number" ? ` (${formatDZD(r.amount, language)})` : "";
+      const ref = r.transaction_ref ? ` · ${r.transaction_ref}` : "";
+      toast.success(
+        <div className="flex flex-col gap-0.5">
+          <span className="font-medium">{t("وصل دفع جديد وصل الآن!")}</span>
+          <span className="text-xs text-muted-foreground">
+            {store}
+            {amount}
+            {ref}
+          </span>
+        </div>,
+        {
+          duration: 7000,
+          action: {
+            label: t("عرض الإيصالات"),
+            onClick: () =>
+              receiptsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+          },
+        },
+      );
+    },
+    [language, t],
+  );
+
+  // Seed once so receipts that already existed before this page opened stay silent.
+  useEffect(() => {
+    if (!receipts.data) return;
+    const ids = receipts.data.map((r) => r.id);
+    if (!initializedAlerts.current) {
+      initializedAlerts.current = true;
+      ids.forEach((id) => alertedIds.current.add(id));
+      return;
+    }
+    const newIds = ids.filter((id) => !alertedIds.current.has(id));
+    newIds.forEach((id) => {
+      const receipt = receipts.data?.find((r) => r.id === id);
+      if (receipt) {
+        alertForReceipt({
+          id: receipt.id,
+          amount: receipt.amount,
+          transaction_ref: receipt.transaction_ref,
+          stores: receipt.stores as { name: string } | null,
+        });
+      }
+    });
+  }, [receipts.data, alertForReceipt]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("realtime-admin-payment-receipts")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "payment_receipts" },
+        (payload) => {
+          void qc.invalidateQueries({ queryKey: ["admin-receipts"] });
+          const receipt = payload.new as ReceiptAlertPayload;
+          alertForReceipt(receipt);
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [qc, alertForReceipt]);
+
+  const toggleSound = () => {
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("oranix_receipt_sound_enabled", String(next));
+      } catch {
+        // storage disabled
+      }
+      if (next) playReceiptChime();
+      return next;
+    });
+  };
+
+  type StoreInfo = {
+    name: string;
+    slug: string;
+    owner_email: string | null;
+    phone: string | null;
+    whatsapp: string | null;
+    trial_ends_at: string;
+    paid_until: string | null;
+  };
+
+  const activationEnd = (store: StoreInfo | null): Date | null => {
+    if (!store) return null;
+    const paid = store.paid_until ? new Date(store.paid_until) : null;
+    const trial = store.trial_ends_at ? new Date(store.trial_ends_at) : null;
+    if (paid && trial) return paid > trial ? paid : trial;
+    return paid ?? trial;
+  };
+
+  // Approved receipts retire themselves once the store's current activation window ends.
+  const now = Date.now();
+  const expiredApprovedIds = new Set(
+    (receipts.data ?? [])
+      .filter((r) => r.status === "approved")
+      .filter((r) => {
+        const end = activationEnd(r.stores as StoreInfo | null);
+        return end !== null && end.getTime() <= now;
+      })
+      .map((r) => r.id),
+  );
+  const nonHiddenReceipts = (receipts.data ?? []).filter(
+    (r) => !hiddenIds.includes(r.id) && !expiredApprovedIds.has(r.id),
+  );
+  const hiddenOnlyReceipts = (receipts.data ?? []).filter(
+    (r) => hiddenIds.includes(r.id) || expiredApprovedIds.has(r.id),
+  );
   const statusCounts = {
     pending: nonHiddenReceipts.filter((r) => r.status === "pending").length,
     approved: nonHiddenReceipts.filter((r) => r.status === "approved").length,
@@ -200,14 +370,9 @@ function Receipts() {
     if (!searchText) return true;
     const s = r.stores as StoreInfo | null;
     const planName = (r.plans as { name: string } | null)?.name ?? "";
-    return [
-      s?.name,
-      s?.owner_email,
-      s?.phone,
-      s?.whatsapp,
-      r.transaction_ref,
-      planName,
-    ].some((value) => value?.toLowerCase().includes(searchText));
+    return [s?.name, s?.owner_email, s?.phone, s?.whatsapp, r.transaction_ref, planName].some(
+      (value) => value?.toLowerCase().includes(searchText),
+    );
   });
 
   const refresh = () => {
@@ -278,16 +443,8 @@ function Receipts() {
     onError: () => toast.error(t("اكتب سبب الرفض (3 أحرف على الأقل)")),
   });
 
-  type StoreInfo = {
-    name: string;
-    slug: string;
-    owner_email: string | null;
-    phone: string | null;
-    whatsapp: string | null;
-  };
-
   return (
-    <>
+    <div ref={receiptsSectionRef}>
       <div className="relative mb-4">
         <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -357,6 +514,7 @@ function Receipts() {
           const s = r.stores as StoreInfo | null;
           const url = urls[r.receipt_path];
           const isHidden = hiddenIds.includes(r.id);
+          const isExpired = expiredApprovedIds.has(r.id);
           return (
             <div key={r.id} className="flex gap-4 rounded-2xl bg-card p-4 shadow-card">
               <button
@@ -382,6 +540,7 @@ function Receipts() {
                       <Badge variant="danger">{t("مرفوض")}</Badge>
                     )}
                     {isHidden && <Badge variant="outline">{t("مخفي محلياً")}</Badge>}
+                    {isExpired && <Badge variant="info">{t("منتهية تلقائياً")}</Badge>}
                   </div>
                 </div>
                 <MerchantContacts
@@ -398,7 +557,9 @@ function Receipts() {
                   {new Date(r.created_at).toLocaleDateString(locale)}
                 </p>
                 <div className="flex flex-wrap gap-2 pt-2">
-                  {isHidden ? (
+                  {isExpired ? (
+                    <span className="text-xs text-muted-foreground">{t("انتهت مدة التفعيل")}</span>
+                  ) : isHidden ? (
                     <Button size="sm" variant="outline" onClick={() => restoreReceipt(r.id)}>
                       <RotateCcw /> {t("استعادة الوصل")}
                     </Button>
@@ -424,14 +585,16 @@ function Receipts() {
                           </Button>
                         </>
                       )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-danger"
-                        onClick={() => setHiding(r.id)}
-                      >
-                        <Trash2 /> {t("إخفاء الوصل")}
-                      </Button>
+                      {r.status === "rejected" && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-danger"
+                          onClick={() => setHiding(r.id)}
+                        >
+                          <Trash2 /> {t("إخفاء الوصل")}
+                        </Button>
+                      )}
                     </>
                   )}
                 </div>
@@ -457,7 +620,9 @@ function Receipts() {
             <DialogTitle>{t("إخفاء الوصل من القائمة؟")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            {t("سيختفي الوصل من هذه القائمة على هذا الجهاز فقط، وسيبقى محفوظاً في قاعدة البيانات. يمكنك استعادته من زر عرض المخفية.")}
+            {t(
+              "سيختفي الوصل من هذه القائمة على هذا الجهاز فقط، وسيبقى محفوظاً في قاعدة البيانات. يمكنك استعادته من زر عرض المخفية.",
+            )}
           </p>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setHiding(null)}>
@@ -501,7 +666,29 @@ function Receipts() {
           )}
         </DialogContent>
       </Dialog>
-    </>
+
+      <button
+        type="button"
+        onClick={toggleSound}
+        aria-label={soundEnabled ? t("كتم تنبيه الإيصالات") : t("تفعيل تنبيه الإيصالات")}
+        title={soundEnabled ? t("تنبيه الإيصالات مفعل") : t("تنبيه الإيصالات مكتوم")}
+        className="fixed bottom-4 end-4 z-40 inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-card/95 px-3 py-1.5 text-xs text-foreground shadow-sm backdrop-blur transition-colors hover:bg-secondary"
+      >
+        {soundEnabled ? (
+          <>
+            <Volume2 className="size-3.5 text-brand" />
+            <span className="hidden sm:inline">{t("تنبيه الإيصالات مفعل")}</span>
+          </>
+        ) : (
+          <>
+            <VolumeX className="size-3.5 text-muted-foreground" />
+            <span className="hidden text-muted-foreground sm:inline">
+              {t("تنبيه الإيصالات مكتوم")}
+            </span>
+          </>
+        )}
+      </button>
+    </div>
   );
 }
 
