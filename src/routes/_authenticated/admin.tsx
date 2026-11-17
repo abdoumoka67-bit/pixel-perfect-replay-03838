@@ -2,7 +2,17 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowRight, Check, Loader2, MessageCircle, Phone, ShieldAlert, X } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Loader2,
+  MessageCircle,
+  Phone,
+  RotateCcw,
+  ShieldAlert,
+  Trash2,
+  X,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
@@ -128,6 +138,20 @@ function AdminContent({ setLanguage }: { setLanguage: (lang: LanguageCode) => vo
   );
 }
 
+const HIDDEN_RECEIPTS_KEY = "oranix_hidden_payment_receipts";
+
+function readHiddenReceipts(): string[] {
+  try {
+    const raw = localStorage.getItem(HIDDEN_RECEIPTS_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((id): id is string => typeof id === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 function Receipts() {
   const t = useTr();
   const language = useUiLanguage();
@@ -135,6 +159,9 @@ function Receipts() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<"pending" | "all">("pending");
   const [rejecting, setRejecting] = useState<string | null>(null);
+  const [hiding, setHiding] = useState<string | null>(null);
+  const [hiddenIds, setHiddenIds] = useState<string[]>(readHiddenReceipts);
+  const [showHidden, setShowHidden] = useState(false);
   const [reason, setReason] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -159,9 +186,45 @@ function Receipts() {
     RECEIPT_BUCKET,
   );
 
+  const visibleReceipts = (receipts.data ?? []).filter((r) =>
+    showHidden ? hiddenIds.includes(r.id) : !hiddenIds.includes(r.id),
+  );
+
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["admin-receipts"] });
     qc.invalidateQueries({ queryKey: ["admin-stores"] });
+  };
+
+  const persistHidden = (next: string[]) => {
+    try {
+      localStorage.setItem(HIDDEN_RECEIPTS_KEY, JSON.stringify(next));
+    } catch {
+      // Storage disabled — the receipt is still hidden for this session.
+    }
+  };
+
+  // True deletion is not available: authenticated users only have SELECT/INSERT on
+  // payment_receipts and there is no delete RPC. This is an explicit local hide.
+  const hideReceipt = (id: string) => {
+    setHiddenIds((prev) => {
+      const next = prev.includes(id) ? prev : [...prev, id];
+      persistHidden(next);
+      return next;
+    });
+    setHiding(null);
+    if (showHidden) setShowHidden(false);
+    toast.success(t("تم إخفاء الوصل من العرض فقط"), {
+      description: t("يمكن استعادته من زر عرض المخفية"),
+    });
+  };
+
+  const restoreReceipt = (id: string) => {
+    setHiddenIds((prev) => {
+      const next = prev.filter((hiddenId) => hiddenId !== id);
+      persistHidden(next);
+      return next;
+    });
+    toast.success(t("تمت استعادة الوصل"));
   };
 
   const approve = useMutation({
@@ -205,7 +268,7 @@ function Receipts() {
 
   return (
     <>
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <Button
           size="sm"
           variant={filter === "pending" ? "default" : "outline"}
@@ -220,11 +283,24 @@ function Receipts() {
         >
           {t("الكل")}
         </Button>
+        <Button
+          size="sm"
+          variant={showHidden ? "secondary" : "ghost"}
+          onClick={() => setShowHidden((prev) => !prev)}
+        >
+          {showHidden ? t("العودة للقائمة") : t("عرض المخفية")}
+          {hiddenIds.length > 0 && !showHidden && (
+            <Badge variant="outline" className="num me-1">
+              {hiddenIds.length}
+            </Badge>
+          )}
+        </Button>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        {receipts.data?.map((r) => {
+        {visibleReceipts.map((r) => {
           const s = r.stores as StoreInfo | null;
           const url = urls[r.receipt_path];
+          const isHidden = hiddenIds.includes(r.id);
           return (
             <div key={r.id} className="flex gap-4 rounded-2xl bg-card p-4 shadow-card">
               <button
@@ -241,13 +317,16 @@ function Receipts() {
               <div className="min-w-0 flex-1 space-y-1 text-sm">
                 <div className="flex items-start justify-between gap-2">
                   <p className="truncate font-medium">{s?.name}</p>
-                  {r.status === "pending" ? (
-                    <Badge variant="warning">{t("معلّق")}</Badge>
-                  ) : r.status === "approved" ? (
-                    <Badge variant="success">{t("مقبول")}</Badge>
-                  ) : (
-                    <Badge variant="danger">{t("مرفوض")}</Badge>
-                  )}
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
+                    {r.status === "pending" ? (
+                      <Badge variant="warning">{t("معلّق")}</Badge>
+                    ) : r.status === "approved" ? (
+                      <Badge variant="success">{t("مقبول")}</Badge>
+                    ) : (
+                      <Badge variant="danger">{t("مرفوض")}</Badge>
+                    )}
+                    {isHidden && <Badge variant="outline">{t("مخفي محلياً")}</Badge>}
+                  </div>
                 </div>
                 <MerchantContacts
                   email={s?.owner_email ?? null}
@@ -262,26 +341,44 @@ function Receipts() {
                   {t("رقم المعاملة:")} <span className="num">{r.transaction_ref}</span> ·{" "}
                   {new Date(r.created_at).toLocaleDateString(locale)}
                 </p>
-                {r.status === "pending" && (
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      size="sm"
-                      variant="success"
-                      disabled={approve.isPending}
-                      onClick={() => approve.mutate(r.id)}
-                    >
-                      <Check /> {t("قبول وتفعيل")}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {isHidden ? (
+                    <Button size="sm" variant="outline" onClick={() => restoreReceipt(r.id)}>
+                      <RotateCcw /> {t("استعادة الوصل")}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-danger"
-                      onClick={() => setRejecting(r.id)}
-                    >
-                      <X /> {t("رفض")}
-                    </Button>
-                  </div>
-                )}
+                  ) : (
+                    <>
+                      {r.status === "pending" && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="success"
+                            disabled={approve.isPending}
+                            onClick={() => approve.mutate(r.id)}
+                          >
+                            <Check /> {t("قبول وتفعيل")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-danger"
+                            onClick={() => setRejecting(r.id)}
+                          >
+                            <X /> {t("رفض")}
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-danger"
+                        onClick={() => setHiding(r.id)}
+                      >
+                        <Trash2 /> {t("إخفاء الوصل")}
+                      </Button>
+                    </>
+                  )}
+                </div>
                 {r.reject_reason && (
                   <p className="text-xs text-danger">
                     {t("السبب: {reason}", { reason: r.reject_reason })}
@@ -292,9 +389,28 @@ function Receipts() {
           );
         })}
       </div>
-      {receipts.data?.length === 0 && (
+      {visibleReceipts.length === 0 && (
         <p className="text-sm text-muted-foreground">{t("لا توجد إيصالات.")}</p>
       )}
+
+      <Dialog open={!!hiding} onOpenChange={(o) => !o && setHiding(null)}>
+        <DialogContent dir={locale === "ar-DZ" ? "rtl" : "ltr"}>
+          <DialogHeader className="text-start">
+            <DialogTitle>{t("إخفاء الوصل من القائمة؟")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {t("سيختفي الوصل من هذه القائمة على هذا الجهاز فقط، وسيبقى محفوظاً في قاعدة البيانات. يمكنك استعادته من زر عرض المخفية.")}
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setHiding(null)}>
+              {t("إلغاء")}
+            </Button>
+            <Button variant="destructive" onClick={() => hiding && hideReceipt(hiding)}>
+              {t("إخفاء")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!rejecting} onOpenChange={(o) => !o && setRejecting(null)}>
         <DialogContent dir={locale === "ar-DZ" ? "rtl" : "ltr"}>
