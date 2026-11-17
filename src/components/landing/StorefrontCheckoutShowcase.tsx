@@ -5,29 +5,76 @@ import { useUiLanguage } from "@/lib/ui-i18n";
 import { cn } from "@/lib/utils";
 
 // Simulation steps:
-// 0: Initial View
-// 1: Select Size (L)
-// 2: Select Color (White)
-// 3: Select Wilaya (16 - Alger)
-// 4: Fill Customer Info (Name + Phone)
-// 5: Click Order Button (Press + Loader)
-// 6: Success Confirmation Card
+// 0: Initial View → 1: Size → 2: Color → 3: Wilaya → 4: Details → 5: Submit → 6: Success
 type SimStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
+type Tr = { ar: string; fr: string; en: string };
+
 const SIZES = ["M", "L", "XL", "2XL"] as const;
-const COLORS = [
-  { id: "white", name: "أبيض", class: "bg-white border-zinc-300 ring-zinc-800" },
-  { id: "black", name: "أسود", class: "bg-zinc-900 border-zinc-900 ring-zinc-900" },
-  { id: "gray", name: "رمادي", class: "bg-zinc-300 border-zinc-400 ring-zinc-500" },
-] as const;
+const COLORS: { id: string; name: Tr; class: string }[] = [
+  { id: "white", name: { ar: "أبيض", fr: "Blanc", en: "White" }, class: "bg-white border-zinc-300 ring-zinc-800" },
+  { id: "black", name: { ar: "أسود", fr: "Noir", en: "Black" }, class: "bg-zinc-900 border-zinc-900 ring-zinc-900" },
+  { id: "gray", name: { ar: "رمادي", fr: "Gris", en: "Gray" }, class: "bg-zinc-300 border-zinc-400 ring-zinc-500" },
+];
+
+// French leads the example because the public landing page opens in French.
+const COPY = {
+  title: { ar: "طلب مكتمل في أقل من 20 ثانية", fr: "Commandé en moins de 20 s", en: "Ordered in under 20s" },
+  steps: [
+    { ar: "معاينة المنتج", fr: "Vue du produit", en: "Viewing product" },
+    { ar: "اختيار القياس", fr: "Choix de la taille", en: "Selecting size" },
+    { ar: "اختيار اللون", fr: "Choix de la couleur", en: "Selecting color" },
+    { ar: "تحديد ولاية التوصيل", fr: "Wilaya de livraison", en: "Selecting wilaya" },
+    { ar: "ملء بيانات الزبون", fr: "Coordonnées du client", en: "Entering details" },
+    { ar: "تأكيد الطلب", fr: "Confirmation de la commande", en: "Submitting order" },
+    { ar: "تم استلام الطلب بنجاح", fr: "Commande confirmée", en: "Order confirmed" },
+  ] as Tr[],
+  replay: { ar: "إعادة العرض", fr: "Rejouer", en: "Replay" },
+  product: { ar: "تيشيرت أوفرسايز California 23", fr: "T-shirt oversize California 23", en: "California 23 Oversize T-Shirt" },
+  bestSeller: { ar: "الأكثر طلباً", fr: "Meilleure vente", en: "Best Seller" },
+  size: { ar: "القياس:", fr: "Taille :", en: "Size:" },
+  color: { ar: "اللون:", fr: "Couleur :", en: "Color:" },
+  wilaya: { ar: "الولاية والتوصيل:", fr: "Wilaya :", en: "Wilaya:" },
+  selectWilaya: { ar: "اختر الولاية...", fr: "Choisir la wilaya...", en: "Select wilaya..." },
+  wilayaValue: { ar: "16 - الجزائر العاصمة", fr: "16 - Alger", en: "16 - Algiers" },
+  name: { ar: "الاسم الكامل", fr: "Votre nom", en: "Full name" },
+  fakeName: { ar: "أمين بلقاسم", fr: "Amine Belkacem", en: "John Doe" },
+  confirm: { ar: "تأكيد الطلب الآن", fr: "Confirmer la commande", en: "Confirm order now" },
+  confirming: { ar: "جارٍ تأكيد الطلب...", fr: "Confirmation...", en: "Confirming..." },
+  successTitle: { ar: "تم تسجيل طلبك بنجاح!", fr: "Commande confirmée !", en: "Order confirmed!" },
+  successSub: {
+    ar: "شكراً لتسوقك! سيتصل بك فريق العمل لتأكيد الشحن.",
+    fr: "Merci ! Le vendeur vous appellera pour confirmer l'expédition.",
+    en: "Thank you! The merchant will call to confirm dispatch.",
+  },
+  orderNo: { ar: "رقم الطلبية:", fr: "N° de commande :", en: "Order #:" },
+  productLabel: { ar: "المنتج:", fr: "Produit :", en: "Product:" },
+  specsLabel: { ar: "المواصفات:", fr: "Détails :", en: "Specs:" },
+  specsValue: { ar: "قياس (L) - أبيض", fr: "Taille L - Blanc", en: "Size L - White" },
+  destLabel: { ar: "الوجهة:", fr: "Destination :", en: "Destination:" },
+  destValue: { ar: "الجزائر العاصمة (توصيل سريع)", fr: "Alger (16) - livraison rapide", en: "Algiers (16) - express delivery" },
+  totalLabel: { ar: "المبلغ الإجمالي:", fr: "Total :", en: "Total amount:" },
+  cod: { ar: "الدفع عند استلام الطرد", fr: "Paiement à la livraison", en: "Cash on delivery" },
+} as const;
+
+const money = (n: number) => `${n.toLocaleString("fr-DZ")} دج`;
+
+function SummaryRow({ label, value, num = false }: { label: string; value: string; num?: boolean }) {
+  return (
+    <div className="flex items-start justify-between gap-2">
+      <span className="shrink-0">{label}</span>
+      <span className={cn("min-w-0 truncate text-end text-foreground", num && "num")}>{value}</span>
+    </div>
+  );
+}
 
 export function StorefrontCheckoutShowcase() {
   const language = useUiLanguage();
-  const isRtl = language === "ar";
+  const L = (v?: Tr) => (v ? v[language] ?? v.fr : "");
   const [step, setStep] = useState<SimStep>(0);
   const { ref, inView } = useInView<HTMLElement>({ settleMs: 150 });
 
-  // Auto-play loop sequence
+  // Auto-play while on screen, pause and reset once off screen.
   useEffect(() => {
     if (!inView) {
       setStep(0);
@@ -35,13 +82,13 @@ export function StorefrontCheckoutShowcase() {
     }
 
     const stepTimings: Record<SimStep, number> = {
-      0: 1200, // Look at product
-      1: 1400, // Size selected
-      2: 1400, // Color selected
-      3: 1600, // Wilaya selected
-      4: 1600, // Form filled
-      5: 1200, // Order button pressed
-      6: 3800, // Success screen display before looping
+      0: 1200,
+      1: 1400,
+      2: 1400,
+      3: 1600,
+      4: 1600,
+      5: 1200,
+      6: 3800,
     };
 
     const timer = window.setTimeout(() => {
@@ -53,140 +100,85 @@ export function StorefrontCheckoutShowcase() {
 
   const selectedSize = step >= 1 ? "L" : null;
   const selectedColor = step >= 2 ? "white" : null;
-  const selectedWilaya = step >= 3 ? "16 - الجزائر العاصمة" : null;
-  const deliveryFee = step >= 3 ? 400 : 0;
-  const productPrice = 3200;
-  const totalPrice = productPrice + deliveryFee;
+  const selectedWilaya = step >= 3 ? L(COPY.wilayaValue) : null;
+  const totalPrice = 3200 + (step >= 3 ? 400 : 0);
 
   return (
-    <section ref={ref} className="mx-auto w-full max-w-4xl px-4 py-12 sm:py-16">
-      {/* Section Header */}
-      <div className="mb-8 text-center sm:mb-12">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 px-3.5 py-1 text-xs font-medium text-[#EA580C]">
-          <Sparkles className="h-3.5 w-3.5" />
-          {isRtl ? "تجربة زبائنك في المتجر" : "Customer Checkout Experience"}
-        </span>
-        <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          {isRtl ? "طلب مكتمل في أقل من 20 ثانية" : "Complete Order in under 20s"}
-        </h2>
-        <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
-          {isRtl
-            ? "نموذج طلب الدفع عند الاستلام الأسرع والأكثر تحويلاً لزيادة مبيعاتك"
-            : "Ultra-fast Cash on Delivery checkout designed to maximize conversions"}
-        </p>
-      </div>
-
-      {/* Main Showcase Container */}
-      <div className="relative mx-auto overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8">
-        {/* Subtle Step Progress Indicator */}
-        <div className="mb-6 flex items-center justify-between border-b pb-4">
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#111111] text-[10px] text-white">
-              {step < 6 ? step + 1 : 6}
+    <section ref={ref} className="mx-auto w-full max-w-2xl px-4 py-6 sm:py-8">
+      <div className="rounded-xl border border-border bg-card p-3 shadow-sm sm:p-4">
+        {/* Compact header */}
+        <div className="mb-3 flex items-center justify-between gap-2 border-b border-border/60 pb-2.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-[#EA580C]">
+              <Sparkles className="size-3" />
             </span>
-            <span>
-              {step === 0 && (isRtl ? "معاينة المنتج" : "Viewing Product")}
-              {step === 1 && (isRtl ? "اختيار القياس" : "Selecting Size")}
-              {step === 2 && (isRtl ? "اختيار اللون" : "Selecting Color")}
-              {step === 3 && (isRtl ? "تحديد ولاية التوصيل" : "Selecting Wilaya")}
-              {step === 4 && (isRtl ? "ملء بيانات الزبون" : "Entering Details")}
-              {step === 5 && (isRtl ? "تأكيد الطلب" : "Submitting Order")}
-              {step === 6 && (isRtl ? "تم استلام الطلب بنجاح" : "Order Confirmed")}
+            <span className="truncate text-xs font-bold text-foreground">{L(COPY.title)}</span>
+            <span className="hidden shrink-0 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground sm:inline">
+              {step < 6 ? step + 1 : 6}/6
             </span>
+            <span className="hidden truncate text-[11px] text-muted-foreground md:inline">{L(COPY.steps[step])}</span>
           </div>
-
           <button
             type="button"
             onClick={() => setStep(0)}
-            className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="shrink-0 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
           >
-            {isRtl ? "إعادة العرض ↺" : "Replay ↺"}
+            {L(COPY.replay)} ↺
           </button>
         </div>
 
-        {/* Content Box */}
         {step === 6 ? (
-          /* SUCCESS SCREEN */
-          <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in-95 duration-500">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-8 ring-emerald-50/50">
-              <CheckCircle2 className="h-9 w-9 stroke-[2.2]" />
+          /* Compact success card */
+          <div className="flex flex-col items-center py-4 text-center animate-in fade-in zoom-in-95 duration-500">
+            <div className="mb-2 flex size-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-4 ring-emerald-50/50">
+              <CheckCircle2 className="size-6 stroke-[2.2]" />
             </div>
-            <h3 className="text-xl font-bold text-foreground sm:text-2xl">
-              {isRtl ? "تم تسجيل طلبك بنجاح!" : "Order Confirmed!"}
-            </h3>
-            <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
-              {isRtl
-                ? "شكراً لتسوقك! سيتصل بك فريق العمل هاتفياً لتأكيد الشحن."
-                : "Thank you! Our merchant team will call to confirm dispatch."}
+            <p className="text-sm font-bold text-foreground">{L(COPY.successTitle)}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">{L(COPY.successSub)}</p>
+
+            <div className="mt-3 w-full max-w-xs space-y-1 rounded-lg border border-border bg-secondary/20 p-2.5 text-left text-[11px] text-muted-foreground">
+              <SummaryRow label={L(COPY.orderNo)} value="#ORX-001048" num />
+              <SummaryRow label={L(COPY.productLabel)} value={L(COPY.product)} />
+              <SummaryRow label={L(COPY.specsLabel)} value={L(COPY.specsValue)} />
+              <SummaryRow label={L(COPY.destLabel)} value={L(COPY.destValue)} />
+              <div className="flex justify-between border-t pt-1.5 text-xs font-bold text-foreground">
+                <span>{L(COPY.totalLabel)}</span>
+                <span className="num text-[#EA580C]">{money(3600)}</span>
+              </div>
+            </div>
+
+            <p className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
+              <ShieldCheck className="size-3 text-emerald-600" />
+              {L(COPY.cod)}
             </p>
-
-            <div className="mt-6 w-full max-w-sm space-y-2 rounded-xl border border-border bg-secondary/20 p-4 text-xs text-muted-foreground">
-              <div className="flex justify-between">
-                <span>{isRtl ? "رقم الطلبية:" : "Order #:"}</span>
-                <span className="font-bold text-foreground num">#ORX-001048</span>
-              </div>
-              <div className="flex justify-between">
-                <span>{isRtl ? "المنتج:" : "Product:"}</span>
-                <span className="font-medium text-foreground">تيشيرت أوفرسايز California 23</span>
-              </div>
-              <div className="flex justify-between">
-                <span>{isRtl ? "المواصفات:" : "Specs:"}</span>
-                <span className="text-foreground">قياس (L) - أبيض</span>
-              </div>
-              <div className="flex justify-between">
-                <span>{isRtl ? "الوجهة:" : "Destination:"}</span>
-                <span className="text-foreground">الجزائر العاصمة (توصيل سريع)</span>
-              </div>
-              <div className="flex justify-between border-t pt-2 text-sm font-bold text-foreground">
-                <span>{isRtl ? "المبلغ الإجمالي:" : "Total Amount:"}</span>
-                <span className="num text-[#EA580C]">3,600 دج</span>
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
-              <ShieldCheck className="h-4 w-4 text-emerald-600" />
-              <span>{isRtl ? "الدفع بأمان عند استلام الطرد" : "Cash on Delivery"}</span>
-            </div>
           </div>
         ) : (
-          /* PRODUCT & CHECKOUT FORM */
-          <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12 lg:gap-8">
-            {/* Left: Product Image Card */}
-            <div className="group relative overflow-hidden rounded-xl border border-border bg-zinc-50 md:col-span-5">
-              <div className="aspect-[4/5] w-full overflow-hidden">
-                <img
-                  src="/demo/california-tshirt.jpg"
-                  alt="California 23 Oversize T-Shirt"
-                  className="h-full w-full object-cover object-center transition-transform duration-700 hover:scale-105"
-                />
-              </div>
-              <span className="absolute end-3 top-3 rounded-full bg-[#111111] px-2.5 py-1 text-[11px] font-medium text-white shadow-xs">
-                {isRtl ? "الأكثر طلباً" : "Best Seller"}
+          /* Compact product + mini checkout form */
+          <div className="grid grid-cols-[76px_1fr] gap-3 sm:grid-cols-[104px_1fr]">
+            <div className="relative overflow-hidden rounded-lg border border-border bg-zinc-50">
+              <img
+                src="/demo/california-tshirt.jpg"
+                alt="California 23"
+                className="aspect-square w-full object-cover object-center"
+              />
+              <span className="absolute bottom-1 start-1 rounded bg-[#111111] px-1.5 py-0.5 text-[9px] text-white">
+                {L(COPY.bestSeller)}
               </span>
             </div>
 
-            {/* Right: Interactive Ordering Form */}
-            <div className="flex flex-col space-y-4 md:col-span-7">
+            <div className="min-w-0 space-y-2">
               <div>
-                <h3 className="text-lg font-bold text-foreground sm:text-xl">
-                  تيشيرت أوفرسايز California 23
-                </h3>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-foreground num">3,200 دج</span>
-                  <span className="text-xs text-muted-foreground line-through num">3,900 دج</span>
-                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
-                    {isRtl ? "وفر 700 دج" : "-18%"}
-                  </span>
+                <p className="truncate text-sm font-bold text-foreground">{L(COPY.product)}</p>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-base font-bold text-foreground num">{money(3200)}</span>
+                  <span className="text-[11px] text-muted-foreground line-through num">{money(3900)}</span>
                 </div>
               </div>
 
-              {/* 1. Size Selection */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex justify-between text-xs">
-                  <span className="font-medium text-foreground">{isRtl ? "القياس:" : "Size:"}</span>
-                  {selectedSize && <span className="font-bold text-muted-foreground">({selectedSize})</span>}
-                </div>
-                <div className="flex flex-wrap gap-2">
+              {/* Size */}
+              <div className="flex items-center gap-1.5">
+                <span className="w-12 shrink-0 text-[11px] text-muted-foreground">{L(COPY.size)}</span>
+                <div className="flex flex-wrap gap-1">
                   {SIZES.map((size) => {
                     const isSelected = selectedSize === size;
                     return (
@@ -195,17 +187,17 @@ export function StorefrontCheckoutShowcase() {
                         type="button"
                         onClick={() => setStep(1)}
                         className={cn(
-                          "relative flex h-9 min-w-10 items-center justify-center rounded-lg border text-xs font-medium transition-all duration-300",
+                          "relative flex h-6 min-w-7 items-center justify-center rounded-md border px-1 text-[10px] transition-all duration-300",
                           isSelected
-                            ? "scale-105 border-[#111111] bg-[#111111] text-white shadow-xs"
+                            ? "scale-105 border-[#111111] bg-[#111111] text-white"
                             : "border-border bg-white text-foreground hover:border-zinc-400",
                         )}
                       >
                         {size}
                         {isSelected && step === 1 && (
-                          <span className="absolute -end-1 -top-1 flex h-2 w-2">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#EA580C]"></span>
+                          <span className="absolute -end-0.5 -top-0.5 flex size-1.5">
+                            <span className="absolute inline-flex size-full animate-ping rounded-full bg-orange-400 opacity-75" />
+                            <span className="relative inline-flex size-1.5 rounded-full bg-[#EA580C]" />
                           </span>
                         )}
                       </button>
@@ -214,15 +206,10 @@ export function StorefrontCheckoutShowcase() {
                 </div>
               </div>
 
-              {/* 2. Color Selection */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex justify-between text-xs">
-                  <span className="font-medium text-foreground">{isRtl ? "اللون:" : "Color:"}</span>
-                  {selectedColor && (
-                    <span className="text-muted-foreground">{selectedColor === "white" ? (isRtl ? "أبيض" : "White") : ""}</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2.5">
+              {/* Color */}
+              <div className="flex items-center gap-1.5">
+                <span className="w-12 shrink-0 text-[11px] text-muted-foreground">{L(COPY.color)}</span>
+                <div className="flex items-center gap-1.5">
                   {COLORS.map((col) => {
                     const isSelected = selectedColor === col.id;
                     return (
@@ -230,91 +217,75 @@ export function StorefrontCheckoutShowcase() {
                         key={col.id}
                         type="button"
                         onClick={() => setStep(2)}
-                        aria-label={col.name}
+                        aria-label={L(col.name)}
                         className={cn(
-                          "relative flex h-8 w-8 items-center justify-center rounded-full border shadow-2xs transition-all duration-300",
+                          "flex size-5 items-center justify-center rounded-full border transition-all duration-300",
                           col.class,
-                          isSelected && "scale-110 ring-2 ring-offset-2",
+                          isSelected && "scale-110 ring-2 ring-offset-1",
                         )}
                       >
                         {isSelected && (
-                          <Check className={cn("h-3.5 w-3.5", col.id === "white" ? "text-zinc-900" : "text-white")} />
+                          <Check className={cn("size-2.5", col.id === "white" ? "text-zinc-900" : "text-white")} />
                         )}
                       </button>
                     );
                   })}
-                </div>
-              </div>
-
-              {/* 3. Wilaya Selection */}
-              <div className="space-y-1.5 pt-1">
-                <label className="text-xs font-medium text-foreground">{isRtl ? "الولاية والتوصيل:" : "Wilaya:"}</label>
-                <div
-                  onClick={() => setStep(3)}
-                  className={cn(
-                    "flex cursor-pointer items-center justify-between rounded-lg border bg-secondary/15 px-3 py-2 text-xs transition-all",
-                    step >= 3 ? "border-[#111111] bg-white ring-1 ring-[#111111]/10" : "border-border",
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <Truck className="h-3.5 w-3.5 text-[#EA580C]" />
-                    <span className={step >= 3 ? "font-bold text-foreground" : "text-muted-foreground"}>
-                      {selectedWilaya || (isRtl ? "اختر الولاية لتحديد سعر التوصيل..." : "Select Wilaya...")}
+                  {selectedColor && (
+                    <span className="text-[11px] text-foreground">
+                      {L(COLORS.find((c) => c.id === selectedColor)?.name)}
                     </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {step >= 3 && <span className="font-bold text-foreground num">+ 400 دج</span>}
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. Customer Info Fields */}
-              <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <span className="text-[11px] text-muted-foreground">{isRtl ? "الاسم الكامل" : "Full Name"}</span>
-                  <div className="flex h-8 items-center rounded-lg border border-border bg-secondary/10 px-2.5 text-xs font-medium text-foreground">
-                    {step >= 4 ? "أمين بلقاسم" : <span className="text-muted-foreground/50">{isRtl ? "مثال: أمين بلقاسم" : "John Doe"}</span>}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[11px] text-muted-foreground">{isRtl ? "رقم الهاتف" : "Phone"}</span>
-                  <div className="flex h-8 items-center rounded-lg border border-border bg-secondary/10 px-2.5 text-xs font-medium text-foreground num">
-                    {step >= 4 ? "0550 12 34 56" : <span className="text-muted-foreground/50">05XX XX XX XX</span>}
-                  </div>
-                </div>
-              </div>
-
-              {/* Order Total & Submit CTA */}
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep(5)}
-                  className={cn(
-                    "relative flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium shadow-xs transition-all",
-                    step === 5
-                      ? "scale-[0.98] bg-zinc-800 text-white"
-                      : "bg-[#111111] text-white hover:bg-black active:scale-[0.99]",
                   )}
-                >
-                  <span className="flex items-center gap-2">
-                    {step === 5 ? (
-                      <>
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        <span>{isRtl ? "جارٍ تأكيد الطلب..." : "Confirming..."}</span>
-                      </>
-                    ) : (
-                      <>
-                        <MousePointerClick className="h-4 w-4" />
-                        <span>{isRtl ? "اضغط هنا لتأكيد الطلب الآن" : "Confirm Order Now"}</span>
-                      </>
-                    )}
-                  </span>
-                  <span className="num rounded-md bg-white/10 px-2.5 py-0.5 text-sm font-bold">
-                    {totalPrice.toLocaleString("fr-DZ")} دج
+                </div>
+              </div>
+
+              {/* Wilaya */}
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-secondary/15 px-2.5 py-1.5 text-[11px]">
+                <button type="button" onClick={() => setStep(3)} className="flex min-w-0 items-center gap-1.5 text-start">
+                  <Truck className="size-3 shrink-0 text-[#EA580C]" />
+                  <span className={cn("truncate", step >= 3 ? "font-bold text-foreground" : "text-muted-foreground")}>
+                    {selectedWilaya || L(COPY.selectWilaya)}
                   </span>
                 </button>
+                <span className="flex shrink-0 items-center gap-1">
+                  {step >= 3 && <span className="font-bold text-foreground num">+ {money(400)}</span>}
+                  <ChevronDown className="size-3 text-muted-foreground" />
+                </span>
               </div>
+
+              {/* Customer details */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex h-7 items-center truncate rounded-md border border-border bg-secondary/10 px-2 text-[11px] text-foreground">
+                  {step >= 4 ? L(COPY.fakeName) : <span className="text-muted-foreground/50">{L(COPY.name)}</span>}
+                </div>
+                <div className="flex h-7 items-center truncate rounded-md border border-border bg-secondary/10 px-2 text-[11px] text-foreground num">
+                  {step >= 4 ? "0550 12 34 56" : <span className="text-muted-foreground/50">05XX XX XX XX</span>}
+                </div>
+              </div>
+
+              {/* CTA */}
+              <button
+                type="button"
+                onClick={() => setStep(5)}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs text-white transition-all",
+                  step === 5 ? "scale-[0.99] bg-zinc-800" : "bg-[#111111] hover:bg-black",
+                )}
+              >
+                <span className="flex items-center gap-1.5">
+                  {step === 5 ? (
+                    <>
+                      <span className="size-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      {L(COPY.confirming)}
+                    </>
+                  ) : (
+                    <>
+                      <MousePointerClick className="size-3.5" />
+                      {L(COPY.confirm)}
+                    </>
+                  )}
+                </span>
+                <span className="num rounded bg-white/10 px-1.5 py-0.5 font-bold">{money(totalPrice)}</span>
+              </button>
             </div>
           </div>
         )}
