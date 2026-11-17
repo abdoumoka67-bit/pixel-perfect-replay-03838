@@ -19,7 +19,7 @@
 /* The band clips with overflow only: a logo leaves exactly at one screen edge
    and the next enters at the other, with identical spacing on both sides. */
 .delivery-logos-track {
-  animation: delivery-logos-scroll 28s linear infinite;
+  animation: delivery-logos-scroll 55s linear infinite;
   touch-action: pan-y;
 }
 
@@ -661,7 +661,7 @@ html[lang="en"] {
 }
 
 .animate-delivery-marquee {
-  animation: delivery-marquee 28s linear infinite;
+  animation: delivery-marquee 55s linear infinite;
   will-change: transform;
 }
 

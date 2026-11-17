@@ -12,10 +12,15 @@ const DELIVERY_LOGOS = [
 ];
 
 const LOGO_SET_WIDTH = DELIVERY_LOGOS.length * 176;
+// A steady, comfortable pace (like major platforms) instead of a fixed
+// duration that runs too fast on wide screens. Derived from width so every
+// viewport scrolls at the same pixels-per-second.
+const MARQUEE_PX_PER_SECOND = 55;
 
 export function DeliveryLogosMarquee() {
   const language = useUiLanguage();
   const [logoCopies, setLogoCopies] = useState(3);
+  const marqueeDuration = (logoCopies * LOGO_SET_WIDTH) / MARQUEE_PX_PER_SECOND;
 
   useEffect(() => {
     const updateCopies = () => {
@@ -40,7 +45,11 @@ export function DeliveryLogosMarquee() {
       </div>
       {DELIVERY_LOGOS.length > 0 && (
         <div className="delivery-logos-mask w-full overflow-hidden" dir="ltr">
-          <div className="delivery-logos-track flex w-max py-1" dir="ltr">
+          <div
+            className="delivery-logos-track flex w-max py-1"
+            dir="ltr"
+            style={{ animationDuration: `${marqueeDuration}s` }}
+          >
             {[0, 1].map((setIndex) => (
               <div
                 key={setIndex}
