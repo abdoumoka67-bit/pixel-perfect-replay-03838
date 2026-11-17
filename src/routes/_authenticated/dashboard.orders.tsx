@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useMyStore } from "@/hooks/use-my-store";
 import { ShippingLabelModal } from "@/components/dashboard/ShippingLabelModal";
+import { ManualShippingDialog } from "@/components/dashboard/ManualShippingDialog";
 import {
   ORDER_STATUSES,
   STATUS_LABELS,
@@ -91,6 +92,7 @@ function OrdersPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Order | null>(null);
   const [labelOrders, setLabelOrders] = useState<Order[] | null>(null);
+  const [manualOrder, setManualOrder] = useState<Order | null>(null);
   const { updateStatus, remove, sendYalidine } = useOrderActions();
 
   const { data: connectedCarriers = [] } = useQuery({
@@ -99,17 +101,26 @@ function OrdersPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("carrier_integrations")
-        .select("carrier_id, connected")
+        .select("carrier_id, connected, token, api_key, account_id, updated_at")
         .eq("store_id", store!.id)
-        .eq("connected", true);
+        .eq("connected", true)
+        .order("updated_at", { ascending: false });
       return data ?? [];
     },
   });
-  // Only Yalidine has a real dispatch API. Other carriers store keys only, so
-  // never offer a "send" action that would actually dispatch via Yalidine.
-  const hasConnectedCarrier = connectedCarriers.some((c) => c.carrier_id === "yalidine");
-  const activeCarrier = carrierById("yalidine");
+  // Any carrier linked with the merchant's keys enables the send action.
+  // Yalidine is preferred because it has a real dispatch API; every other
+  // carrier goes through the honest manual handover dialog (label + tracking).
+  const configuredCarriers = connectedCarriers.filter((c) =>
+    Boolean(c.token || c.api_key || c.account_id),
+  );
+  const activeCarrierId =
+    configuredCarriers.find((c) => c.carrier_id === "yalidine")?.carrier_id ??
+    configuredCarriers[0]?.carrier_id ??
+    null;
+  const activeCarrier = activeCarrierId ? carrierById(activeCarrierId) : undefined;
   const activeCarrierName = activeCarrier ? t(activeCarrier.name) : "شركة التوصيل";
+  const hasConnectedCarrier = Boolean(activeCarrierId);
 
   const syncShipping = useMutation({
     mutationFn: () => syncYalidineStatuses(),
@@ -364,7 +375,9 @@ function OrdersPage() {
         {hasConnectedCarrier && (
           <DropdownMenuItem
             disabled={readOnly || !!o.tracking_number}
-            onClick={() => sendYalidine.mutate(o.id)}
+            onClick={() =>
+              activeCarrierId === "yalidine" ? sendYalidine.mutate(o.id) : setManualOrder(o)
+            }
           >
             <Send className="size-4" /> {t("إرسال إلى {name}", { name: activeCarrierName })}
           </DropdownMenuItem>
@@ -571,9 +584,22 @@ function OrdersPage() {
       <OrderDetailsSheet
         order={openOrder}
         storeName={store?.name ?? ""}
+        storePhone={store?.whatsapp ?? store?.phone ?? ""}
         readOnly={readOnly}
         trust={openOrder ? trustOf(openOrder) : null}
         onOpenChange={(o) => !o && setOpenId(null)}
+      />
+
+      <ManualShippingDialog
+        order={manualOrder}
+        carrierName={activeCarrierName}
+        storeName={store?.name ?? ""}
+        storePhone={store?.whatsapp ?? store?.phone ?? ""}
+        onClose={() => setManualOrder(null)}
+        onSaved={() => {
+          qc.invalidateQueries({ queryKey: ["orders"] });
+          qc.invalidateQueries({ queryKey: ["order-stats"] });
+        }}
       />
 
       <ShippingLabelModal

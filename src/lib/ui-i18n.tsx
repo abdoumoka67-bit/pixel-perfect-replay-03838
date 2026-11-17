@@ -1041,6 +1041,15 @@ const en: Record<string, string> = {
     "Can I connect a custom domain for my store (.com or .dz)?",
   "نعم بكل تأكيد! يمكنك ربط دومين خاص بمتجرك لتبدو علامتك التجارية احترافية ومستقلة تماماً أمام زبائنك.":
     "Yes, absolutely! You can connect a custom domain to your store so your brand looks professional and fully independent to your customers.",
+  // Manual carrier handoff (any linked carrier)
+  "تسليم الطلب يدوياً": "Hand over the order manually",
+  "اطبع البوليصة وسلّم الطرد إلى {name}، ثم أدخل رقم التتبع الذي أعطتك به الشركة (إن وُجد).":
+    "Print the label and hand the parcel to {name}, then enter the tracking number the carrier gave you (if any).",
+  "رقم التتبع (اختياري)": "Tracking number (optional)",
+  "تأكيد التسليم": "Confirm handover",
+  "تم تسليم الطلب بنجاح": "Order handed over successfully",
+  "اربط شركة توصيل أولاً من صفحة أسعار التوصيل لتفعيل زر الإرسال.":
+    "Link a carrier first from the delivery pricing page to enable the send button.",
 };
 
 const fr: Record<string, string> = {
@@ -2091,6 +2100,15 @@ const fr: Record<string, string> = {
     "Puis-je connecter un domaine personnalisé à ma boutique (.com ou .dz) ?",
   "نعم بكل تأكيد! يمكنك ربط دومين خاص بمتجرك لتبدو علامتك التجارية احترافية ومستقلة تماماً أمام زبائنك.":
     "Oui, bien sûr ! Vous pouvez connecter un domaine personnalisé à votre boutique pour une marque professionnelle et totalement indépendante.",
+  // Remise manuelle aux transporteurs (tout transporteur lié)
+  "تسليم الطلب يدوياً": "Remettre la commande manuellement",
+  "اطبع البوليصة وسلّم الطرد إلى {name}، ثم أدخل رقم التتبع الذي أعطتك به الشركة (إن وُجد).":
+    "Imprimez l'étiquette et remettez le colis à {name}, puis saisissez le numéro de suivi fourni par le transporteur (le cas échéant).",
+  "رقم التتبع (اختياري)": "Numéro de suivi (facultatif)",
+  "تأكيد التسليم": "Confirmer la remise",
+  "تم تسليم الطلب بنجاح": "Commande remise avec succès",
+  "اربط شركة توصيل أولاً من صفحة أسعار التوصيل لتفعيل زر الإرسال.":
+    "Lie d'abord un transporteur depuis la page des tarifs de livraison pour activer le bouton d'envoi.",
 };
 
 /** Translates an Arabic UI string into `language`, falling back to Arabic. */
