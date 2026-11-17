@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowRight, Check, Loader2, ShieldAlert, X } from "lucide-react";
+import { ArrowRight, Check, Loader2, MessageCircle, Phone, ShieldAlert, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { isAdminQuery, useMyStore } from "@/hooks/use-my-store";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
 import { RECEIPT_BUCKET } from "@/lib/images";
-import { formatDZD, subscriptionState, type LanguageCode } from "@/lib/commerce";
+import { formatDZD, subscriptionState, whatsappLink, type LanguageCode } from "@/lib/commerce";
 import { parseStorefrontConfig } from "@/lib/storefront-theme";
 import {
   LanguageMenu,
@@ -143,7 +143,9 @@ function Receipts() {
     queryFn: async () => {
       let q = supabase
         .from("payment_receipts")
-        .select("*, stores(name, slug, owner_email, phone, trial_ends_at, paid_until), plans(name)")
+        .select(
+          "*, stores(name, slug, owner_email, phone, whatsapp, trial_ends_at, paid_until), plans(name)",
+        )
         .order("created_at", { ascending: false })
         .limit(200);
       if (filter === "pending") q = q.eq("status", "pending");
@@ -193,7 +195,13 @@ function Receipts() {
     onError: () => toast.error(t("اكتب سبب الرفض (3 أحرف على الأقل)")),
   });
 
-  type StoreInfo = { name: string; slug: string; owner_email: string | null; phone: string | null };
+  type StoreInfo = {
+    name: string;
+    slug: string;
+    owner_email: string | null;
+    phone: string | null;
+    whatsapp: string | null;
+  };
 
   return (
     <>
@@ -241,9 +249,11 @@ function Receipts() {
                     <Badge variant="danger">{t("مرفوض")}</Badge>
                   )}
                 </div>
-                <p className="truncate text-xs text-muted-foreground" dir="ltr">
-                  {s?.owner_email}
-                </p>
+                <MerchantContacts
+                  email={s?.owner_email ?? null}
+                  phone={s?.phone ?? null}
+                  whatsapp={s?.whatsapp ?? null}
+                />
                 <p>
                   {(r.plans as { name: string } | null)?.name} ·{" "}
                   <b className="num">{formatDZD(r.amount, language)}</b>
@@ -352,6 +362,7 @@ function Merchants() {
                 <p className="text-xs text-muted-foreground" dir="ltr">
                   /m/{s.slug} · {s.owner_email}
                 </p>
+                <MerchantContacts email={null} phone={s.phone} whatsapp={s.whatsapp} />
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-muted-foreground">
@@ -369,6 +380,49 @@ function Merchants() {
           );
         })}
       </ul>
+    </div>
+  );
+}
+
+/** Merchant contact details for platform admins: email + direct call/WhatsApp. */
+function MerchantContacts({
+  email,
+  phone,
+  whatsapp,
+}: {
+  email: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+}) {
+  if (!email && !phone && !whatsapp) return null;
+  return (
+    <div className="space-y-0.5 text-xs">
+      {email ? (
+        <p className="truncate text-muted-foreground" dir="ltr">
+          {email}
+        </p>
+      ) : null}
+      {phone || whatsapp ? (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1" dir="ltr">
+          {phone ? (
+            <a href={`tel:${phone}`} className="num inline-flex items-center gap-1 hover:underline">
+              <Phone className="size-3.5 shrink-0" />
+              {phone}
+            </a>
+          ) : null}
+          {whatsapp ? (
+            <a
+              href={whatsappLink(whatsapp, "")}
+              target="_blank"
+              rel="noreferrer"
+              className="num inline-flex items-center gap-1 text-[#25D366] hover:underline"
+            >
+              <MessageCircle className="size-3.5 shrink-0" />
+              {whatsapp}
+            </a>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
