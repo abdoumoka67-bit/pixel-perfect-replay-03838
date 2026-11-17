@@ -349,7 +349,12 @@ function CarrierHub({
       : Boolean(integrations[id]?.connected);
 
   const linkedCarriers = useMemo(
-    () => DELIVERY_CARRIERS.filter((c) => isLinked(c.id)),
+    () =>
+      DELIVERY_CARRIERS.filter((c) =>
+        c.id === "yalidine"
+          ? Boolean(integrations["yalidine"]?.connected || yalidineCreds.data)
+          : Boolean(integrations[c.id]?.connected),
+      ),
     [integrations, yalidineCreds.data],
   );
   const filteredAllCarriers = useMemo(() => {

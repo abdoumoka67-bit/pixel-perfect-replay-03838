@@ -105,9 +105,10 @@ function OrdersPage() {
       return data ?? [];
     },
   });
-  const hasConnectedCarrier = connectedCarriers.length > 0;
-  const activeCarrierId = connectedCarriers[0]?.carrier_id ?? "yalidine";
-  const activeCarrier = carrierById(activeCarrierId);
+  // Only Yalidine has a real dispatch API. Other carriers store keys only, so
+  // never offer a "send" action that would actually dispatch via Yalidine.
+  const hasConnectedCarrier = connectedCarriers.some((c) => c.carrier_id === "yalidine");
+  const activeCarrier = carrierById("yalidine");
   const activeCarrierName = activeCarrier ? t(activeCarrier.name) : "شركة التوصيل";
 
   const syncShipping = useMutation({

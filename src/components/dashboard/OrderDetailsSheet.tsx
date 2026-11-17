@@ -178,21 +178,6 @@ export function OrderDetailsSheet({
     },
   });
 
-  const connectedCarriers = useQuery({
-    queryKey: ["connected-carriers", order?.store_id],
-    enabled: !!order,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("carrier_integrations")
-        .select("carrier_id, token, api_key, account_id, updated_at")
-        .eq("store_id", order!.store_id)
-        .eq("connected", true)
-        .order("updated_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
-
   const yalidineLinked = useQuery({
     queryKey: ["yalidine-linked", order?.store_id],
     enabled: !!order,
@@ -207,13 +192,11 @@ export function OrderDetailsSheet({
     },
   });
 
-  const configuredCarrierIds =
-    connectedCarriers.data
-      ?.filter((row) => Boolean(row.token || row.api_key || row.account_id))
-      .map((row) => row.carrier_id) ?? [];
-  const shippingCarrierId = yalidineLinked.data
-    ? "yalidine"
-    : (configuredCarrierIds.find((id) => id !== "yalidine") ?? null);
+  // Only Yalidine has a real dispatch API. Every other "linked" carrier only
+  // stores keys for now — showing a send button for them would create a
+  // Yalidine parcel under a different carrier's name (or fail with "link first").
+  // Never claim dispatch for a carrier we cannot actually send to.
+  const shippingCarrierId = yalidineLinked.data ? "yalidine" : null;
   const shippingCarrier = shippingCarrierId ? carrierById(shippingCarrierId) : undefined;
 
   const hasConnectedCarrier = Boolean(shippingCarrier);

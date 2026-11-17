@@ -60,10 +60,24 @@ function YalidinePage() {
         .from("yalidine_credentials")
         .upsert({ store_id: store!.id, api_id: apiId.trim(), api_token: apiToken.trim() });
       if (error) throw new Error(t("تعذر الحفظ"));
+      // Keep the carrier hub in sync so "connected" and dispatch agree on both pages.
+      const { error: carrierError } = await supabase.from("carrier_integrations").upsert(
+        {
+          store_id: store!.id,
+          carrier_id: "yalidine",
+          connected: true,
+          account_id: apiId.trim(),
+          token: apiToken.trim(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "store_id,carrier_id" },
+      );
+      if (carrierError) throw new Error(t("تعذر الحفظ"));
     },
     onSuccess: () => {
       toast.success(t("تم حفظ مفاتيح Yalidine"));
       qc.invalidateQueries({ queryKey: ["yalidine"] });
+      qc.invalidateQueries({ queryKey: ["connected-carriers"] });
     },
     onError: (e: Error) => toast.error(t(e.message)),
   });
@@ -75,12 +89,21 @@ function YalidinePage() {
         .delete()
         .eq("store_id", store!.id);
       if (error) throw error;
+      // Removing the link must clear the carrier-hub row too, otherwise the UI
+      // keeps claiming "connected" and dispatch fails with "link first".
+      const { error: carrierError } = await supabase
+        .from("carrier_integrations")
+        .delete()
+        .eq("store_id", store!.id)
+        .eq("carrier_id", "yalidine");
+      if (carrierError) throw carrierError;
     },
     onSuccess: () => {
       setApiId("");
       setApiToken("");
       toast.success(t("تم فصل حساب Yalidine"));
       qc.invalidateQueries({ queryKey: ["yalidine"] });
+      qc.invalidateQueries({ queryKey: ["connected-carriers"] });
     },
     onError: () => toast.error(t("تعذر فصل حساب Yalidine.")),
   });
