@@ -130,6 +130,34 @@ function NavLinks({
     },
   });
   const newOrders = Number(stats.data?.find((r) => r.status === "new")?.orders_count ?? 0);
+
+  // The red number is an unread marker, not a permanent total: visiting the
+  // orders page clears it, and only orders that arrive afterwards light it up
+  // again. Persisted per store so a refresh does not bring old numbers back.
+  const seenKey = `oranix_seen_new_orders_${store?.id ?? ""}`;
+  const [seenNewOrders, setSeenNewOrders] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    const stored = Number(window.localStorage.getItem(seenKey));
+    return Number.isFinite(stored) && stored > 0 ? stored : 0;
+  });
+  const unreadOrders = Math.max(0, newOrders - seenNewOrders);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = Number(window.localStorage.getItem(seenKey));
+    setSeenNewOrders(Number.isFinite(stored) && stored > 0 ? stored : 0);
+  }, [seenKey]);
+
+  useEffect(() => {
+    if (path !== "/dashboard/orders" || !store?.id) return;
+    setSeenNewOrders(newOrders);
+    try {
+      window.localStorage.setItem(seenKey, String(newOrders));
+    } catch {
+      // Storage blocked (private mode): the in-memory clear still works.
+    }
+  }, [path, newOrders, store?.id, seenKey]);
+
   const isActive = (to: string) =>
     to === "/dashboard" ? path === "/dashboard" || path === "/dashboard/" : path.startsWith(to);
 
@@ -161,9 +189,9 @@ function NavLinks({
         <item.icon className="size-[19px]" strokeWidth={1.6} />
         <span>{t(item.label)}</span>
         <span className="ms-auto flex items-center gap-2">
-          {item.to === "/dashboard/orders" && newOrders > 0 && (
+          {item.to === "/dashboard/orders" && unreadOrders > 0 && (
             <span className="flex min-w-5 items-center justify-center rounded-full bg-notify px-1.5 text-[10px] font-medium text-primary-foreground num">
-              {newOrders}
+              {unreadOrders}
             </span>
           )}
           {!isPro && PRO_AREAS.includes(item.area) && <ProPill className="hidden sm:inline-flex" />}
