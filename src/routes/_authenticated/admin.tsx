@@ -9,6 +9,7 @@ import {
   MessageCircle,
   Phone,
   RotateCcw,
+  Search,
   ShieldAlert,
   Trash2,
   X,
@@ -162,6 +163,7 @@ function Receipts() {
   const [hiding, setHiding] = useState<string | null>(null);
   const [hiddenIds, setHiddenIds] = useState<string[]>(readHiddenReceipts);
   const [showHidden, setShowHidden] = useState(false);
+  const [search, setSearch] = useState("");
   const [reason, setReason] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -192,9 +194,21 @@ function Receipts() {
     rejected: nonHiddenReceipts.filter((r) => r.status === "rejected").length,
     all: nonHiddenReceipts.length,
   };
-  const visibleReceipts = (showHidden ? hiddenOnlyReceipts : nonHiddenReceipts).filter(
-    (r) => filter === "all" || r.status === filter,
-  );
+  const searchText = search.trim().toLowerCase();
+  const visibleReceipts = (showHidden ? hiddenOnlyReceipts : nonHiddenReceipts).filter((r) => {
+    if (filter !== "all" && r.status !== filter) return false;
+    if (!searchText) return true;
+    const s = r.stores as StoreInfo | null;
+    const planName = (r.plans as { name: string } | null)?.name ?? "";
+    return [
+      s?.name,
+      s?.owner_email,
+      s?.phone,
+      s?.whatsapp,
+      r.transaction_ref,
+      planName,
+    ].some((value) => value?.toLowerCase().includes(searchText));
+  });
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["admin-receipts"] });
@@ -274,6 +288,16 @@ function Receipts() {
 
   return (
     <>
+      <div className="relative mb-4">
+        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("ابحث في الإيصالات...")}
+          className="ps-9"
+          aria-label={t("ابحث في الإيصالات...")}
+        />
+      </div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Button
           size="sm"
@@ -422,7 +446,9 @@ function Receipts() {
         })}
       </div>
       {visibleReceipts.length === 0 && (
-        <p className="text-sm text-muted-foreground">{t("لا توجد إيصالات.")}</p>
+        <p className="text-sm text-muted-foreground">
+          {searchText ? t("لا توجد إيصالات مطابقة للبحث.") : t("لا توجد إيصالات.")}
+        </p>
       )}
 
       <Dialog open={!!hiding} onOpenChange={(o) => !o && setHiding(null)}>
