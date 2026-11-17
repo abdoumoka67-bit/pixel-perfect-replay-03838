@@ -157,7 +157,7 @@ function Receipts() {
   const language = useUiLanguage();
   const locale = language === "ar" ? "ar-DZ" : language === "fr" ? "fr-DZ" : "en-GB";
   const qc = useQueryClient();
-  const [filter, setFilter] = useState<"pending" | "all">("pending");
+  const [filter, setFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
   const [rejecting, setRejecting] = useState<string | null>(null);
   const [hiding, setHiding] = useState<string | null>(null);
   const [hiddenIds, setHiddenIds] = useState<string[]>(readHiddenReceipts);
@@ -166,17 +166,15 @@ function Receipts() {
   const [preview, setPreview] = useState<string | null>(null);
 
   const receipts = useQuery({
-    queryKey: ["admin-receipts", filter],
+    queryKey: ["admin-receipts"],
     queryFn: async () => {
-      let q = supabase
+      const { data, error } = await supabase
         .from("payment_receipts")
         .select(
           "*, stores(name, slug, owner_email, phone, whatsapp, trial_ends_at, paid_until), plans(name)",
         )
         .order("created_at", { ascending: false })
         .limit(200);
-      if (filter === "pending") q = q.eq("status", "pending");
-      const { data, error } = await q;
       if (error) throw error;
       return data;
     },
@@ -186,8 +184,16 @@ function Receipts() {
     RECEIPT_BUCKET,
   );
 
-  const visibleReceipts = (receipts.data ?? []).filter((r) =>
-    showHidden ? hiddenIds.includes(r.id) : !hiddenIds.includes(r.id),
+  const nonHiddenReceipts = (receipts.data ?? []).filter((r) => !hiddenIds.includes(r.id));
+  const hiddenOnlyReceipts = (receipts.data ?? []).filter((r) => hiddenIds.includes(r.id));
+  const statusCounts = {
+    pending: nonHiddenReceipts.filter((r) => r.status === "pending").length,
+    approved: nonHiddenReceipts.filter((r) => r.status === "approved").length,
+    rejected: nonHiddenReceipts.filter((r) => r.status === "rejected").length,
+    all: nonHiddenReceipts.length,
+  };
+  const visibleReceipts = (showHidden ? hiddenOnlyReceipts : nonHiddenReceipts).filter(
+    (r) => filter === "all" || r.status === filter,
   );
 
   const refresh = () => {
@@ -275,6 +281,29 @@ function Receipts() {
           onClick={() => setFilter("pending")}
         >
           {t("قيد المراجعة")}
+          <Badge variant="outline" className="num ms-1">
+            {statusCounts.pending}
+          </Badge>
+        </Button>
+        <Button
+          size="sm"
+          variant={filter === "approved" ? "default" : "outline"}
+          onClick={() => setFilter("approved")}
+        >
+          {t("مقبولة")}
+          <Badge variant="outline" className="num ms-1">
+            {statusCounts.approved}
+          </Badge>
+        </Button>
+        <Button
+          size="sm"
+          variant={filter === "rejected" ? "default" : "outline"}
+          onClick={() => setFilter("rejected")}
+        >
+          {t("مرفوضة")}
+          <Badge variant="outline" className="num ms-1">
+            {statusCounts.rejected}
+          </Badge>
         </Button>
         <Button
           size="sm"
@@ -282,6 +311,9 @@ function Receipts() {
           onClick={() => setFilter("all")}
         >
           {t("الكل")}
+          <Badge variant="outline" className="num ms-1">
+            {statusCounts.all}
+          </Badge>
         </Button>
         <Button
           size="sm"

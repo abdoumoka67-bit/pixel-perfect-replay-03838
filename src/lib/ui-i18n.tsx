@@ -705,6 +705,8 @@ const en: Record<string, string> = {
   "كل الطلبات والمنتجات": "All orders and products",
   "كيف تحصل على المفاتيح؟": "How do you get the keys?",
   "لا توجد إيصالات.": "No receipts.",
+  "مقبولة": "Approved",
+  "مرفوضة": "Rejected",
   "إخفاء الوصل": "Hide receipt",
   "إخفاء الوصل من القائمة؟": "Hide receipt from the list?",
   "سيختفي الوصل من هذه القائمة على هذا الجهاز فقط، وسيبقى محفوظاً في قاعدة البيانات. يمكنك استعادته من زر عرض المخفية.":
@@ -1759,6 +1761,8 @@ const fr: Record<string, string> = {
   "كل الطلبات والمنتجات": "Toutes les commandes et produits",
   "كيف تحصل على المفاتيح؟": "Comment obtenir les clés ?",
   "لا توجد إيصالات.": "Aucun reçu.",
+  "مقبولة": "Approuvées",
+  "مرفوضة": "Rejetées",
   "إخفاء الوصل": "Masquer le reçu",
   "إخفاء الوصل من القائمة؟": "Masquer le reçu de la liste ?",
   "سيختفي الوصل من هذه القائمة على هذا الجهاز فقط، وسيبقى محفوظاً في قاعدة البيانات. يمكنك استعادته من زر عرض المخفية.":
