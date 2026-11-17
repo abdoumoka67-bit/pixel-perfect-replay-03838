@@ -14,6 +14,7 @@ import { useInView } from "@/hooks/use-in-view";
 import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
 import { DashboardShowcase } from "@/components/landing/DashboardShowcase";
 import { DispatchShowcase } from "@/components/landing/DispatchShowcase";
+import { StorefrontCheckoutShowcase } from "@/components/landing/StorefrontCheckoutShowcase";
 import { PixelAttribution } from "@/components/landing/PixelAttribution";
 
 const FAQS = [
@@ -384,6 +385,7 @@ function Home() {
 
         <DashboardShowcase />
         <DispatchShowcase />
+        <StorefrontCheckoutShowcase />
         <PixelAttribution />
 
         <section className="mx-auto w-full max-w-3xl px-5 pb-16">
