@@ -13,7 +13,7 @@ type Tr = { ar: string; fr: string; en: string };
 const SIZES = ["M", "L", "XL", "2XL"] as const;
 const COLORS: { id: string; name: Tr; class: string }[] = [
   { id: "white", name: { ar: "أبيض", fr: "Blanc", en: "White" }, class: "bg-white border-zinc-300 ring-zinc-800" },
-  { id: "black", name: { ar: "أسود", fr: "Noir", en: "Black" }, class: "bg-zinc-900 border-zinc-900 ring-zinc-900" },
+  { id: "black", name: { ar: "أسود", fr: "Noir", en: "Black" }, class: "bg-zinc-900 border-zinc-800 ring-zinc-800" },
   { id: "gray", name: { ar: "رمادي", fr: "Gris", en: "Gray" }, class: "bg-zinc-300 border-zinc-400 ring-zinc-500" },
 ];
 
@@ -118,14 +118,14 @@ export function StorefrontCheckoutShowcase() {
           {L(COPY.badge)}
         </span>
         <h2 className="mt-2.5 text-xl font-bold tracking-tight text-foreground sm:text-2xl">{L(COPY.title)}</h2>
-        <p className="mx-auto mt-1.5 max-w-lg text-xs text-muted-foreground sm:text-sm">{L(COPY.subtitle)}</p>
+        <p className="mx-auto mt-1.5 max-w-lg text-sm text-muted-foreground sm:text-base">{L(COPY.subtitle)}</p>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
         {/* Step progress */}
         <div className="mb-4 flex items-center justify-between border-b border-border/60 pb-3">
-          <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground sm:text-xs">
-            <span className="flex size-5 items-center justify-center rounded-full bg-[#111111] text-[10px] text-white">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground sm:text-xs">
+            <span className="flex size-5 items-center justify-center rounded-full bg-[#111111] text-xs text-white">
               {step < 6 ? step + 1 : 6}
             </span>
             <span>{L(COPY.steps[step])}</span>
@@ -133,7 +133,7 @@ export function StorefrontCheckoutShowcase() {
           <button
             type="button"
             onClick={() => setStep(0)}
-            className="flex items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {L(COPY.replay)} ↺
           </button>
@@ -146,9 +146,9 @@ export function StorefrontCheckoutShowcase() {
               <CheckCircle2 className="size-8 stroke-[2.2]" />
             </div>
             <p className="text-base font-bold text-foreground sm:text-lg">{L(COPY.successTitle)}</p>
-            <p className="mt-1 max-w-sm text-xs text-muted-foreground">{L(COPY.successSub)}</p>
+            <p className="mt-1 max-w-sm text-sm text-muted-foreground">{L(COPY.successSub)}</p>
 
-            <div className="mt-4 w-full max-w-sm space-y-1.5 rounded-xl border border-border bg-secondary/20 p-3 text-left text-[11px] text-muted-foreground">
+            <div className="mt-4 w-full max-w-sm space-y-2 rounded-xl border border-border bg-secondary/20 p-3 text-left text-sm text-muted-foreground">
               <SummaryRow label={L(COPY.orderNo)} value="#ORX-001048" num />
               <SummaryRow label={L(COPY.productLabel)} value={L(COPY.product)} />
               <SummaryRow label={L(COPY.specsLabel)} value={L(COPY.specsValue)} />
@@ -159,23 +159,23 @@ export function StorefrontCheckoutShowcase() {
               </div>
             </div>
 
-            <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <p className="mt-4 flex items-center gap-1.5 text-sm text-muted-foreground">
               <ShieldCheck className="size-3.5 text-emerald-600" />
               {L(COPY.cod)}
             </p>
           </div>
         ) : (
           /* Product + checkout form */
-          <div className="grid grid-cols-[120px_1fr] items-start gap-3 sm:grid-cols-12 sm:gap-6">
-            <div className="relative overflow-hidden rounded-xl border border-border bg-zinc-50 sm:col-span-5">
-              <div className="aspect-square w-full overflow-hidden sm:aspect-[4/5]">
+          <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-12 sm:gap-6">
+            <div className="relative overflow-hidden rounded-xl border border-border bg-zinc-50">
+              <div className="aspect-[4/3] w-full overflow-hidden sm:aspect-[4/5]">
                 <img
                   src="/demo/california-tshirt.jpg"
                   alt="California 23"
                   className="size-full object-cover object-center transition-transform duration-700 hover:scale-105"
                 />
               </div>
-              <span className="absolute end-1.5 top-1.5 rounded-full bg-[#111111] px-1.5 py-0.5 text-[9px] font-medium text-white shadow-xs sm:end-2.5 sm:top-2.5 sm:px-2 sm:py-1 sm:text-[10px]">
+              <span className="absolute end-2 top-2 rounded-full bg-[#111111] px-2 py-0.5 text-xs font-medium text-white shadow-xs sm:end-2.5 sm:top-2.5 sm:px-2 sm:py-1 sm:text-[10px]">
                 {L(COPY.bestSeller)}
               </span>
             </div>
@@ -185,18 +185,18 @@ export function StorefrontCheckoutShowcase() {
                 <h3 className="truncate text-base font-bold text-foreground sm:text-lg">{L(COPY.product)}</h3>
                 <div className="mt-1 flex items-baseline gap-2">
                   <span className="text-lg font-bold text-foreground num">{money(3200)}</span>
-                  <span className="text-xs text-muted-foreground line-through num">{money(3900)}</span>
-                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">-18%</span>
+                  <span className="text-sm text-muted-foreground line-through num">{money(3900)}</span>
+                  <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-[#EA580C] sm:text-sm">-18%</span>
                 </div>
               </div>
 
               {/* Size */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[11px]">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
                   <span className="font-medium text-foreground">{L(COPY.size)}</span>
-                  {selectedSize && <span className="font-bold text-muted-foreground">({selectedSize})</span>}
+                  {selectedSize && <span className="font-bold text-[#EA580C]">({selectedSize})</span>}
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {SIZES.map((size) => {
                     const isSelected = selectedSize === size;
                     return (
@@ -205,9 +205,9 @@ export function StorefrontCheckoutShowcase() {
                         type="button"
                         onClick={() => setStep(1)}
                         className={cn(
-                          "relative flex h-8 min-w-8 items-center justify-center rounded-lg border px-1.5 text-[11px] font-medium transition-all duration-300",
+                          "relative flex h-10 min-w-10 items-center justify-center rounded-lg border px-1.5 text-sm font-medium transition-all duration-300",
                           isSelected
-                            ? "scale-105 border-[#111111] bg-[#111111] text-white shadow-xs"
+                            ? "scale-105 border-2 border-[#EA580C] bg-orange-50 text-[#EA580C] shadow-xs"
                             : "border-border bg-white text-foreground hover:border-zinc-400",
                         )}
                       >
@@ -225,8 +225,8 @@ export function StorefrontCheckoutShowcase() {
               </div>
 
               {/* Color */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[11px]">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
                   <span className="font-medium text-foreground">{L(COPY.color)}</span>
                   {selectedColor && (
                     <span className="text-muted-foreground">{L(COLORS.find((c) => c.id === selectedColor)?.name)}</span>
@@ -257,8 +257,8 @@ export function StorefrontCheckoutShowcase() {
               </div>
 
               {/* Wilaya */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-secondary/15 px-2.5 py-2 text-[11px]">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-secondary/15 px-3 py-2.5 text-sm">
                   <button type="button" onClick={() => setStep(3)} className="flex min-w-0 items-center gap-1.5 text-start">
                     <Truck className="size-3.5 shrink-0 text-[#EA580C]" />
                     <span className={cn("truncate", step >= 3 ? "font-bold text-foreground" : "text-muted-foreground")}>
@@ -273,11 +273,11 @@ export function StorefrontCheckoutShowcase() {
               </div>
 
               {/* Customer details */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex h-8 items-center truncate rounded-lg border border-border bg-secondary/10 px-2.5 text-[11px] text-foreground">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex h-10 items-center truncate rounded-lg border border-border bg-secondary/10 px-3 text-sm text-foreground">
                   {step >= 4 ? L(COPY.fakeName) : <span className="text-muted-foreground/50">{L(COPY.name)}</span>}
                 </div>
-                <div className="flex h-8 items-center truncate rounded-lg border border-border bg-secondary/10 px-2.5 text-[11px] text-foreground num">
+                <div className="flex h-10 items-center truncate rounded-lg border border-border bg-secondary/10 px-3 text-sm text-foreground num">
                   {step >= 4 ? "0550 12 34 56" : <span className="text-muted-foreground/50">05XX XX XX XX</span>}
                 </div>
               </div>
@@ -287,7 +287,7 @@ export function StorefrontCheckoutShowcase() {
                 type="button"
                 onClick={() => setStep(5)}
                 className={cn(
-                  "flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs text-white transition-all",
+                  "flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm text-white transition-all",
                   step === 5 ? "scale-[0.99] bg-zinc-800" : "bg-[#111111] hover:bg-black",
                 )}
               >
