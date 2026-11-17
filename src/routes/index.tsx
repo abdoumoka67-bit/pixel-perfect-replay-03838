@@ -1,11 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronDown, MessageCircle } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { getPublicPlans } from "@/lib/storefront.functions";
-import { whatsappLink } from "@/lib/commerce";
 import { PlanCards } from "@/components/PlanCards";
 import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
@@ -449,23 +448,6 @@ function Home() {
             <p>© {new Date().getFullYear()} oranix</p>
           </div>
         </footer>
-
-        {/* Floating WhatsApp Support Button */}
-        <a
-          href={whatsappLink(
-            "0562552582",
-            isRtl ? tr(language, "السلام عليكم، عندي استفسار بخصوص منصة oranix") : "Hello, I have an inquiry about oranix platform",
-          )}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="WhatsApp Support"
-          className="fixed bottom-6 end-6 z-40 flex items-center gap-2.5 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-lg transition-transform hover:scale-105 active:scale-95 sm:bottom-8 sm:end-8"
-        >
-          <MessageCircle className="size-5 fill-current" />
-          <span className="hidden text-sm font-medium sm:inline">
-            {isRtl ? tr(language, "تواصل معنا واتساب") : "Chat on WhatsApp"}
-          </span>
-        </a>
       </div>
     </UiLanguageProvider>
   );
