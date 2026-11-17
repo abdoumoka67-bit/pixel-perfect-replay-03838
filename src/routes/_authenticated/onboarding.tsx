@@ -236,7 +236,7 @@ function Onboarding() {
           <div className="space-y-1.5">
             <Label htmlFor="slug">{t("onb.slug")}</Label>
             <div className="flex h-11 items-center overflow-hidden rounded-xl border border-input bg-card focus-within:ring-2 focus-within:ring-ring/50" dir="ltr">
-              <span className="border-e bg-muted px-3 py-2.5 text-sm text-muted-foreground">oranix.app/m/</span>
+              <span className="border-e bg-muted px-3 py-2.5 text-sm text-muted-foreground">oranix.co/m/</span>
               <input
                 id="slug"
                 className="h-full flex-1 bg-transparent px-3 text-sm outline-none"

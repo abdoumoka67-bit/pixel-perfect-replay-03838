@@ -368,7 +368,7 @@ export const SUBSCRIPTION_MAX_MONTHS = 6;
 // ---------- Custom domain add-on (Pro) ----------
 
 /** DNS CNAME target every custom store domain points to. */
-export const CUSTOM_DOMAIN_CNAME_TARGET = "cname.oranix.app";
+export const CUSTOM_DOMAIN_CNAME_TARGET = "cname.oranix.co";
 
 /** Lowercases and strips a pasted protocol/path from a domain input. */
 export function cleanDomainName(input: string): string {

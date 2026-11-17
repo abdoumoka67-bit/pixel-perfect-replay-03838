@@ -472,7 +472,7 @@ export function DashboardShowcase() {
                     <span className="size-2.5 rounded-full bg-amber-400/80" />
                     <span className="size-2.5 rounded-full bg-emerald-400/80" />
                     <span className="showcase-dash-url ms-3 hidden font-mono text-[10px] text-muted-foreground sm:inline">
-                      oranix.store/dashboard
+                      oranix.co/dashboard
                     </span>
                   </div>
                   <span className="font-mono text-[10px] text-muted-foreground">● LIVE</span>
@@ -625,7 +625,7 @@ export function DashboardShowcase() {
                               ? "Statistiques"
                               : "Livraison"}
                         </div>
-                        <div className="mt-0.5 text-[9px] text-[#74777B]">oranix.store</div>
+                        <div className="mt-0.5 text-[9px] text-[#74777B]">oranix.co</div>
                       </div>
                       <span className="flex size-7 items-center justify-center rounded-full bg-white text-[#45464A] shadow-sm">
                         <Smartphone className="size-3.5" aria-hidden />
