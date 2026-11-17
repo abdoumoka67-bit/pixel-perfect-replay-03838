@@ -19,7 +19,13 @@ const COLORS: { id: string; name: Tr; class: string }[] = [
 
 // French leads the example because the public landing page opens in French.
 const COPY = {
+  badge: { ar: "تجربة زبائنك في المتجر", fr: "Expérience d'achat en boutique", en: "Customer checkout experience" },
   title: { ar: "طلب مكتمل في أقل من 20 ثانية", fr: "Commandé en moins de 20 s", en: "Ordered in under 20s" },
+  subtitle: {
+    ar: "نموذج طلب الدفع عند الاستلام الأسرع والأكثر تحويلاً لزيادة مبيعاتك",
+    fr: "Un parcours de commande COD rapide et conçu pour convertir davantage",
+    en: "A fast, conversion-focused cash-on-delivery checkout",
+  },
   steps: [
     { ar: "معاينة المنتج", fr: "Vue du produit", en: "Viewing product" },
     { ar: "اختيار القياس", fr: "Choix de la taille", en: "Selecting size" },
@@ -35,15 +41,15 @@ const COPY = {
   size: { ar: "القياس:", fr: "Taille :", en: "Size:" },
   color: { ar: "اللون:", fr: "Couleur :", en: "Color:" },
   wilaya: { ar: "الولاية والتوصيل:", fr: "Wilaya :", en: "Wilaya:" },
-  selectWilaya: { ar: "اختر الولاية...", fr: "Choisir la wilaya...", en: "Select wilaya..." },
+  selectWilaya: { ar: "اختر الولاية لتحديد سعر التوصيل...", fr: "Choisir la wilaya pour le tarif de livraison...", en: "Select wilaya for delivery rate..." },
   wilayaValue: { ar: "16 - الجزائر العاصمة", fr: "16 - Alger", en: "16 - Algiers" },
-  name: { ar: "الاسم الكامل", fr: "Votre nom", en: "Full name" },
+  name: { ar: "الاسم الكامل", fr: "Nom complet", en: "Full name" },
   fakeName: { ar: "أمين بلقاسم", fr: "Amine Belkacem", en: "John Doe" },
-  confirm: { ar: "تأكيد الطلب الآن", fr: "Confirmer la commande", en: "Confirm order now" },
+  confirm: { ar: "اضغط هنا لتأكيد الطلب الآن", fr: "Confirmer la commande", en: "Confirm order now" },
   confirming: { ar: "جارٍ تأكيد الطلب...", fr: "Confirmation...", en: "Confirming..." },
   successTitle: { ar: "تم تسجيل طلبك بنجاح!", fr: "Commande confirmée !", en: "Order confirmed!" },
   successSub: {
-    ar: "شكراً لتسوقك! سيتصل بك فريق العمل لتأكيد الشحن.",
+    ar: "شكراً لتسوقك! سيتصل بك فريق العمل هاتفياً لتأكيد الشحن.",
     fr: "Merci ! Le vendeur vous appellera pour confirmer l'expédition.",
     en: "Thank you! The merchant will call to confirm dispatch.",
   },
@@ -54,7 +60,7 @@ const COPY = {
   destLabel: { ar: "الوجهة:", fr: "Destination :", en: "Destination:" },
   destValue: { ar: "الجزائر العاصمة (توصيل سريع)", fr: "Alger (16) - livraison rapide", en: "Algiers (16) - express delivery" },
   totalLabel: { ar: "المبلغ الإجمالي:", fr: "Total :", en: "Total amount:" },
-  cod: { ar: "الدفع عند استلام الطرد", fr: "Paiement à la livraison", en: "Cash on delivery" },
+  cod: { ar: "الدفع بأمان عند استلام الطرد", fr: "Paiement à la livraison", en: "Cash on delivery" },
 } as const;
 
 const money = (n: number) => `${n.toLocaleString("fr-DZ")} دج`;
@@ -104,81 +110,93 @@ export function StorefrontCheckoutShowcase() {
   const totalPrice = 3200 + (step >= 3 ? 400 : 0);
 
   return (
-    <section ref={ref} className="mx-auto w-full max-w-2xl px-4 py-6 sm:py-8">
-      <div className="rounded-xl border border-border bg-card p-3 shadow-sm sm:p-4">
-        {/* Compact header */}
-        <div className="mb-3 flex items-center justify-between gap-2 border-b border-border/60 pb-2.5">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-[#EA580C]">
-              <Sparkles className="size-3" />
+    <section ref={ref} className="mx-auto w-full max-w-3xl px-4 py-8 sm:py-10">
+      {/* Section header */}
+      <div className="mb-5 text-center sm:mb-6">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 text-[11px] font-medium text-[#EA580C]">
+          <Sparkles className="size-3" />
+          {L(COPY.badge)}
+        </span>
+        <h2 className="mt-2.5 text-xl font-bold tracking-tight text-foreground sm:text-2xl">{L(COPY.title)}</h2>
+        <p className="mx-auto mt-1.5 max-w-lg text-xs text-muted-foreground sm:text-sm">{L(COPY.subtitle)}</p>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
+        {/* Step progress */}
+        <div className="mb-4 flex items-center justify-between border-b border-border/60 pb-3">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground sm:text-xs">
+            <span className="flex size-5 items-center justify-center rounded-full bg-[#111111] text-[10px] text-white">
+              {step < 6 ? step + 1 : 6}
             </span>
-            <span className="truncate text-xs font-bold text-foreground">{L(COPY.title)}</span>
-            <span className="hidden shrink-0 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground sm:inline">
-              {step < 6 ? step + 1 : 6}/6
-            </span>
-            <span className="hidden truncate text-[11px] text-muted-foreground md:inline">{L(COPY.steps[step])}</span>
+            <span>{L(COPY.steps[step])}</span>
           </div>
           <button
             type="button"
             onClick={() => setStep(0)}
-            className="shrink-0 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            className="flex items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
           >
             {L(COPY.replay)} ↺
           </button>
         </div>
 
         {step === 6 ? (
-          /* Compact success card */
-          <div className="flex flex-col items-center py-4 text-center animate-in fade-in zoom-in-95 duration-500">
-            <div className="mb-2 flex size-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-4 ring-emerald-50/50">
-              <CheckCircle2 className="size-6 stroke-[2.2]" />
+          /* Success screen */
+          <div className="flex flex-col items-center py-8 text-center animate-in fade-in zoom-in-95 duration-500">
+            <div className="mb-3 flex size-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-8 ring-emerald-50/50">
+              <CheckCircle2 className="size-8 stroke-[2.2]" />
             </div>
-            <p className="text-sm font-bold text-foreground">{L(COPY.successTitle)}</p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">{L(COPY.successSub)}</p>
+            <p className="text-base font-bold text-foreground sm:text-lg">{L(COPY.successTitle)}</p>
+            <p className="mt-1 max-w-sm text-xs text-muted-foreground">{L(COPY.successSub)}</p>
 
-            <div className="mt-3 w-full max-w-xs space-y-1 rounded-lg border border-border bg-secondary/20 p-2.5 text-left text-[11px] text-muted-foreground">
+            <div className="mt-4 w-full max-w-sm space-y-1.5 rounded-xl border border-border bg-secondary/20 p-3 text-left text-[11px] text-muted-foreground">
               <SummaryRow label={L(COPY.orderNo)} value="#ORX-001048" num />
               <SummaryRow label={L(COPY.productLabel)} value={L(COPY.product)} />
               <SummaryRow label={L(COPY.specsLabel)} value={L(COPY.specsValue)} />
               <SummaryRow label={L(COPY.destLabel)} value={L(COPY.destValue)} />
-              <div className="flex justify-between border-t pt-1.5 text-xs font-bold text-foreground">
+              <div className="flex justify-between border-t pt-2 text-sm font-bold text-foreground">
                 <span>{L(COPY.totalLabel)}</span>
                 <span className="num text-[#EA580C]">{money(3600)}</span>
               </div>
             </div>
 
-            <p className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
-              <ShieldCheck className="size-3 text-emerald-600" />
+            <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <ShieldCheck className="size-3.5 text-emerald-600" />
               {L(COPY.cod)}
             </p>
           </div>
         ) : (
-          /* Compact product + mini checkout form */
-          <div className="grid grid-cols-[76px_1fr] gap-3 sm:grid-cols-[104px_1fr]">
-            <div className="relative overflow-hidden rounded-lg border border-border bg-zinc-50">
-              <img
-                src="/demo/california-tshirt.jpg"
-                alt="California 23"
-                className="aspect-square w-full object-cover object-center"
-              />
-              <span className="absolute bottom-1 start-1 rounded bg-[#111111] px-1.5 py-0.5 text-[9px] text-white">
+          /* Product + checkout form */
+          <div className="grid grid-cols-[120px_1fr] items-start gap-3 sm:grid-cols-12 sm:gap-6">
+            <div className="relative overflow-hidden rounded-xl border border-border bg-zinc-50 sm:col-span-5">
+              <div className="aspect-square w-full overflow-hidden sm:aspect-[4/5]">
+                <img
+                  src="/demo/california-tshirt.jpg"
+                  alt="California 23"
+                  className="size-full object-cover object-center transition-transform duration-700 hover:scale-105"
+                />
+              </div>
+              <span className="absolute end-1.5 top-1.5 rounded-full bg-[#111111] px-1.5 py-0.5 text-[9px] font-medium text-white shadow-xs sm:end-2.5 sm:top-2.5 sm:px-2 sm:py-1 sm:text-[10px]">
                 {L(COPY.bestSeller)}
               </span>
             </div>
 
-            <div className="min-w-0 space-y-2">
+            <div className="flex flex-col space-y-3 sm:col-span-7">
               <div>
-                <p className="truncate text-sm font-bold text-foreground">{L(COPY.product)}</p>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-base font-bold text-foreground num">{money(3200)}</span>
-                  <span className="text-[11px] text-muted-foreground line-through num">{money(3900)}</span>
+                <h3 className="truncate text-base font-bold text-foreground sm:text-lg">{L(COPY.product)}</h3>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="text-lg font-bold text-foreground num">{money(3200)}</span>
+                  <span className="text-xs text-muted-foreground line-through num">{money(3900)}</span>
+                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">-18%</span>
                 </div>
               </div>
 
               {/* Size */}
-              <div className="flex items-center gap-1.5">
-                <span className="w-12 shrink-0 text-[11px] text-muted-foreground">{L(COPY.size)}</span>
-                <div className="flex flex-wrap gap-1">
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[11px]">
+                  <span className="font-medium text-foreground">{L(COPY.size)}</span>
+                  {selectedSize && <span className="font-bold text-muted-foreground">({selectedSize})</span>}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
                   {SIZES.map((size) => {
                     const isSelected = selectedSize === size;
                     return (
@@ -187,17 +205,17 @@ export function StorefrontCheckoutShowcase() {
                         type="button"
                         onClick={() => setStep(1)}
                         className={cn(
-                          "relative flex h-6 min-w-7 items-center justify-center rounded-md border px-1 text-[10px] transition-all duration-300",
+                          "relative flex h-8 min-w-8 items-center justify-center rounded-lg border px-1.5 text-[11px] font-medium transition-all duration-300",
                           isSelected
-                            ? "scale-105 border-[#111111] bg-[#111111] text-white"
+                            ? "scale-105 border-[#111111] bg-[#111111] text-white shadow-xs"
                             : "border-border bg-white text-foreground hover:border-zinc-400",
                         )}
                       >
                         {size}
                         {isSelected && step === 1 && (
-                          <span className="absolute -end-0.5 -top-0.5 flex size-1.5">
+                          <span className="absolute -end-1 -top-1 flex size-2">
                             <span className="absolute inline-flex size-full animate-ping rounded-full bg-orange-400 opacity-75" />
-                            <span className="relative inline-flex size-1.5 rounded-full bg-[#EA580C]" />
+                            <span className="relative inline-flex size-2 rounded-full bg-[#EA580C]" />
                           </span>
                         )}
                       </button>
@@ -207,9 +225,14 @@ export function StorefrontCheckoutShowcase() {
               </div>
 
               {/* Color */}
-              <div className="flex items-center gap-1.5">
-                <span className="w-12 shrink-0 text-[11px] text-muted-foreground">{L(COPY.color)}</span>
-                <div className="flex items-center gap-1.5">
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[11px]">
+                  <span className="font-medium text-foreground">{L(COPY.color)}</span>
+                  {selectedColor && (
+                    <span className="text-muted-foreground">{L(COLORS.find((c) => c.id === selectedColor)?.name)}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
                   {COLORS.map((col) => {
                     const isSelected = selectedColor === col.id;
                     return (
@@ -219,45 +242,42 @@ export function StorefrontCheckoutShowcase() {
                         onClick={() => setStep(2)}
                         aria-label={L(col.name)}
                         className={cn(
-                          "flex size-5 items-center justify-center rounded-full border transition-all duration-300",
+                          "flex size-6 items-center justify-center rounded-full border shadow-2xs transition-all duration-300",
                           col.class,
-                          isSelected && "scale-110 ring-2 ring-offset-1",
+                          isSelected && "scale-110 ring-2 ring-offset-2",
                         )}
                       >
                         {isSelected && (
-                          <Check className={cn("size-2.5", col.id === "white" ? "text-zinc-900" : "text-white")} />
+                          <Check className={cn("size-3", col.id === "white" ? "text-zinc-900" : "text-white")} />
                         )}
                       </button>
                     );
                   })}
-                  {selectedColor && (
-                    <span className="text-[11px] text-foreground">
-                      {L(COLORS.find((c) => c.id === selectedColor)?.name)}
-                    </span>
-                  )}
                 </div>
               </div>
 
               {/* Wilaya */}
-              <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-secondary/15 px-2.5 py-1.5 text-[11px]">
-                <button type="button" onClick={() => setStep(3)} className="flex min-w-0 items-center gap-1.5 text-start">
-                  <Truck className="size-3 shrink-0 text-[#EA580C]" />
-                  <span className={cn("truncate", step >= 3 ? "font-bold text-foreground" : "text-muted-foreground")}>
-                    {selectedWilaya || L(COPY.selectWilaya)}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-secondary/15 px-2.5 py-2 text-[11px]">
+                  <button type="button" onClick={() => setStep(3)} className="flex min-w-0 items-center gap-1.5 text-start">
+                    <Truck className="size-3.5 shrink-0 text-[#EA580C]" />
+                    <span className={cn("truncate", step >= 3 ? "font-bold text-foreground" : "text-muted-foreground")}>
+                      {selectedWilaya || L(COPY.selectWilaya)}
+                    </span>
+                  </button>
+                  <span className="flex shrink-0 items-center gap-1">
+                    {step >= 3 && <span className="font-bold text-foreground num">+ {money(400)}</span>}
+                    <ChevronDown className="size-3.5 text-muted-foreground" />
                   </span>
-                </button>
-                <span className="flex shrink-0 items-center gap-1">
-                  {step >= 3 && <span className="font-bold text-foreground num">+ {money(400)}</span>}
-                  <ChevronDown className="size-3 text-muted-foreground" />
-                </span>
+                </div>
               </div>
 
               {/* Customer details */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="flex h-7 items-center truncate rounded-md border border-border bg-secondary/10 px-2 text-[11px] text-foreground">
+                <div className="flex h-8 items-center truncate rounded-lg border border-border bg-secondary/10 px-2.5 text-[11px] text-foreground">
                   {step >= 4 ? L(COPY.fakeName) : <span className="text-muted-foreground/50">{L(COPY.name)}</span>}
                 </div>
-                <div className="flex h-7 items-center truncate rounded-md border border-border bg-secondary/10 px-2 text-[11px] text-foreground num">
+                <div className="flex h-8 items-center truncate rounded-lg border border-border bg-secondary/10 px-2.5 text-[11px] text-foreground num">
                   {step >= 4 ? "0550 12 34 56" : <span className="text-muted-foreground/50">05XX XX XX XX</span>}
                 </div>
               </div>
@@ -267,24 +287,24 @@ export function StorefrontCheckoutShowcase() {
                 type="button"
                 onClick={() => setStep(5)}
                 className={cn(
-                  "flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs text-white transition-all",
+                  "flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs text-white transition-all",
                   step === 5 ? "scale-[0.99] bg-zinc-800" : "bg-[#111111] hover:bg-black",
                 )}
               >
-                <span className="flex items-center gap-1.5">
+                <span className="flex items-center gap-2">
                   {step === 5 ? (
                     <>
-                      <span className="size-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <span className="size-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                       {L(COPY.confirming)}
                     </>
                   ) : (
                     <>
-                      <MousePointerClick className="size-3.5" />
+                      <MousePointerClick className="size-4" />
                       {L(COPY.confirm)}
                     </>
                   )}
                 </span>
-                <span className="num rounded bg-white/10 px-1.5 py-0.5 font-bold">{money(totalPrice)}</span>
+                <span className="num rounded-md bg-white/10 px-2 py-0.5 font-bold">{money(totalPrice)}</span>
               </button>
             </div>
           </div>
