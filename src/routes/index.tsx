@@ -1,20 +1,90 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MessageCircle } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { getPublicPlans } from "@/lib/storefront.functions";
+import { whatsappLink } from "@/lib/commerce";
 import { PlanCards } from "@/components/PlanCards";
 import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
-import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-i18n";
+import { tr, UiLanguageProvider, useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { useInView } from "@/hooks/use-in-view";
 import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
 import { DashboardShowcase } from "@/components/landing/DashboardShowcase";
 import { DispatchShowcase } from "@/components/landing/DispatchShowcase";
 import { PixelAttribution } from "@/components/landing/PixelAttribution";
+
+const FAQS = [
+  {
+    q: "هل أحتاج إلى سجل تجاري للبدء في البيع عبر oranix؟",
+    a: "لا، لست بحاجة إلى سجل تجاري إطلاقاً. يمكنك إطلاق متجرك الإلكتروني فوراً كتاجر تجزئة أو صاحب مشروع ناشئ والبدء باستقبال الطلبيات بكل حرية وبدون أي تعقيدات.",
+  },
+  {
+    q: "كيف أستلم أموال المبيعات من الزبائن؟",
+    a: "المنصة مخصصة للتجارة الإلكترونية بالدفع عند الاستلام (COD) في الـ 58 ولاية. يدفع الزبون نقداً لشركة التوصيل عند استلام الطرد، وتقوم شركة التوصيل بتحويل مستحقاتك إلى حسابك البريدي (CCP) أو البنكي بشكل دوري.",
+  },
+  {
+    q: "هل تخصم المنصة أي عمولة من مبيعاتي وأرباحي؟",
+    a: "أبداً، نسبة العمولة 0%. نحن لا نقتطع أي سنتيم من أرباحك، كل مداخيل تجارتك تعود لك بنسبة 100%.",
+  },
+  {
+    q: "كيف أقوم بربط متجري مع شركات التوصيل؟",
+    a: "توفر لك oranix ربطاً مباشراً مع 19 شركة توصيل جزائرية (Yalidine، Maystro، ZR Express، Procolis...) بنقرة زر لطباعة البواليص ومزامنة التتبع آلياً.",
+  },
+  {
+    q: "كيف يتم دفع رسوم الاشتراك في المنصة؟",
+    a: "الدفع محلي 100% وبسيط للغاية عبر تطبيق بريدي موب (BaridiMob) أو عبر أي مركز بريد (CCP). بعد التحويل ترفع صورة الوصل ويتم تفعيل حسابك مباشرة.",
+  },
+  {
+    q: "هل يمكنني ربط دومين خاص باسم متجري (.com أو .dz)؟",
+    a: "نعم بكل تأكيد! يمكنك ربط دومين خاص بمتجرك لتبدو علامتك التجارية احترافية ومستقلة تماماً أمام زبائنك.",
+  },
+];
+
+function FaqAccordion() {
+  const tf = useTr();
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  return (
+    <div className="space-y-3">
+      {FAQS.map((faq, i) => {
+        const isOpen = openFaq === i;
+        return (
+          <div
+            key={i}
+            className={cn(
+              "rounded-2xl border transition-colors",
+              isOpen ? "border-border/80 bg-card shadow-xs" : "border-border/40 bg-secondary/30 hover:bg-secondary/60",
+            )}
+          >
+            <button
+              type="button"
+              onClick={() => setOpenFaq(isOpen ? null : i)}
+              className="flex w-full items-center justify-between gap-4 p-4 text-start sm:p-5"
+            >
+              <span className="text-base font-medium sm:text-lg">{tf(faq.q)}</span>
+              <span
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary transition-transform",
+                  isOpen && "rotate-180",
+                )}
+              >
+                <ChevronDown className="size-4" />
+              </span>
+            </button>
+            {isOpen && (
+              <div className="px-4 pb-4 pt-1 sm:px-5 sm:pb-5">
+                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">{tf(faq.a)}</p>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -329,6 +399,20 @@ function Home() {
           <FeaturesAccordion />
         </section>
 
+        {/* FAQ Section */}
+        <section className="border-t bg-secondary/15 py-16">
+          <div className="mx-auto w-full max-w-3xl px-5">
+            <div className="mb-10 text-center">
+              <span className="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground">
+                {tr(language, "الأسئلة الأكثر شيوعاً")}
+              </span>
+              <h2 className="mt-4 text-2xl font-medium sm:text-3xl">{tr(language, "كل ما تحتاج معرفته عن oranix")}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{tr(language, "إجابات واضحة ومباشرة لأهم الأسئلة التي يطرحها التجار")}</p>
+            </div>
+            <FaqAccordion />
+          </div>
+        </section>
+
         {plans.length > 0 && (
           <section className="border-t bg-background">
             <div className="mx-auto w-full max-w-3xl px-5 py-16">
@@ -365,6 +449,23 @@ function Home() {
             <p>© {new Date().getFullYear()} oranix</p>
           </div>
         </footer>
+
+        {/* Floating WhatsApp Support Button */}
+        <a
+          href={whatsappLink(
+            "0562552582",
+            isRtl ? tr(language, "السلام عليكم، عندي استفسار بخصوص منصة oranix") : "Hello, I have an inquiry about oranix platform",
+          )}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="WhatsApp Support"
+          className="fixed bottom-6 end-6 z-40 flex items-center gap-2.5 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-lg transition-transform hover:scale-105 active:scale-95 sm:bottom-8 sm:end-8"
+        >
+          <MessageCircle className="size-5 fill-current" />
+          <span className="hidden text-sm font-medium sm:inline">
+            {isRtl ? tr(language, "تواصل معنا واتساب") : "Chat on WhatsApp"}
+          </span>
+        </a>
       </div>
     </UiLanguageProvider>
   );

@@ -1175,6 +1175,21 @@ export function StorefrontThemeSettings({
                   />
                 </div>
               ))}
+
+              <div className="flex items-center justify-between rounded-xl border p-3">
+                <div>
+                  <Label htmlFor="f-wa-order" className="cursor-pointer">{t("زر الطلب المباشر عبر واتساب")}</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t("إظهار زر يتيح للزبون إرسال تفاصيل طلبه مباشرة إلى محادثة واتساب الخاصة بك.")}
+                  </p>
+                </div>
+                <Switch
+                  id="f-wa-order"
+                  checked={formFields.whatsapp_order ?? true}
+                  onCheckedChange={(checked) => setFormFields({ ...formFields, whatsapp_order: checked })}
+                  disabled={readOnly}
+                />
+              </div>
             </div>
 
             <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card">

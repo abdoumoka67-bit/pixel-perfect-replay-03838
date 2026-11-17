@@ -1,7 +1,7 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
-import { Check, Loader2, Lock, Minus, Plus, ShieldCheck, Truck, Banknote, Home, Building2 } from "lucide-react";
+import { Check, Loader2, Lock, MessageCircle, Minus, Plus, ShieldCheck, Truck, Banknote, Home, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getProductPage } from "@/lib/storefront.functions";
 import { WILAYAS, wilayaByCode } from "@/data/wilayas";
@@ -15,6 +15,7 @@ import {
   friendlyError,
   isValidDzPhone,
   normalizeDzPhone,
+  whatsappLink,
   orderTotal,
   shippingPrice,
   ORDER_NETWORK_ERROR,
@@ -97,6 +98,8 @@ function ProductLanding() {
   const showConfirmPhone = formFields?.confirm_phone === true;
   const showBackupPhone = formFields?.backup_phone === true;
   const showNotes = formFields?.notes === true;
+  const showWhatsappOrder = formFields?.whatsapp_order ?? true;
+  const whatsappTarget = (store.storefront_config?.sections?.social?.whatsapp || store.whatsapp || "").trim();
   const formButtonRadius =
     formConfig?.button_radius === "none"
       ? "0px"
@@ -554,6 +557,31 @@ function ProductLanding() {
                 {busy ? <Loader2 className="animate-spin" /> : <Check />}{" "}
                 {t(formConfig?.button_text || "تأكيد الطلب الآن")}
               </Button>
+              {showWhatsappOrder && whatsappTarget && (
+                <Button
+                  asChild
+                  type="button"
+                  variant="outline"
+                  size="xl"
+                  className="w-full border-emerald-500/40 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                  style={{ borderRadius: formButtonRadius }}
+                >
+                  <a
+                    href={whatsappLink(
+                      whatsappTarget,
+                      isRtl
+                        ? `السلام عليكم، أريد طلب منتج: ${product.name}${size ? ` - المقاس: ${size}` : ""}${color ? ` - اللون: ${color}` : ""} - الكمية: ${qty} - الإجمالي: ${formatDZD(total, language)}`
+                        : `Hello, I would like to order: ${product.name}${size ? ` - Size: ${size}` : ""}${color ? ` - Color: ${color}` : ""} - Qty: ${qty} - Total: ${formatDZD(total, language)}`,
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <MessageCircle className="size-5 text-emerald-600 dark:text-emerald-400" />
+                    <span>{t("أو اطلب مباشرة عبر واتساب")}</span>
+                  </a>
+                </Button>
+              )}
               {formConfig?.guarantee_text ? (
                 <p className="text-center text-xs text-muted-foreground">{t(formConfig.guarantee_text)}</p>
               ) : null}

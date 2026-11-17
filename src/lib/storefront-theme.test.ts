@@ -203,6 +203,7 @@ describe("storefront theme config", () => {
       address: true,
       delivery_type: true,
       notes: false,
+      whatsapp_order: true,
     });
   });
 

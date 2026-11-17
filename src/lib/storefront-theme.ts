@@ -255,6 +255,7 @@ export const formConfigSchema = z.object({
     address: z.boolean().default(true),        // Detailed street/neighborhood
     delivery_type: z.boolean().default(true),   // Home vs Office/Stopdesk
     notes: z.boolean().default(false),          // Customer notes
+    whatsapp_order: z.boolean().default(true),  // Direct WhatsApp order button
   }).default({}),
 }).default({});
 

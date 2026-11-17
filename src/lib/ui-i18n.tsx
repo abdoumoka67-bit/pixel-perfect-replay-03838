@@ -936,6 +936,49 @@ const en: Record<string, string> = {
   "تحديث حالات الشحن": "Sync shipping statuses",
   "طلب": "orders",
   "تم عرض": "Showing",
+
+  // Order alerts, WhatsApp support and landing FAQ
+  "طلب جديد وصل الآن!": "New order just arrived!",
+  "عرض الطلبات": "View orders",
+  "كتم تنبيه الطلبات": "Mute order alerts",
+  "تفعيل تنبيه الطلبات": "Enable order alerts",
+  "تنبيه الطلبات مفعل": "Order alert active",
+  "تنبيه الطلبات مكتوم": "Order alert muted",
+  "تحتاج مساعدة في الدفع أو تفعيل الحساب؟": "Need help with payment or account activation?",
+  "فريق الدعم متاح عبر واتساب للمساعدة وتأكيد وصول الإيصالات فورياً.":
+    "Support team is available on WhatsApp to assist and confirm receipts instantly.",
+  "تواصل مع الدعم عبر واتساب": "Chat with support on WhatsApp",
+  "زر الطلب المباشر عبر واتساب": "Direct WhatsApp Order Button",
+  "إظهار زر يتيح للزبون إرسال تفاصيل طلبه مباشرة إلى محادثة واتساب الخاصة بك.":
+    "Show a button allowing customers to send order details directly to your WhatsApp.",
+  "أو اطلب مباشرة عبر واتساب": "Or order directly via WhatsApp",
+  "السلام عليكم، عندي استفسار بخصوص تجديد اشتراك متجري على منصة oranix":
+    "Hello, I have a question about renewing my store subscription on Oranix",
+  "الأسئلة الأكثر شيوعاً": "Most frequently asked questions",
+  "كل ما تحتاج معرفته عن oranix": "Everything you need to know about Oranix",
+  "إجابات واضحة ومباشرة لأهم الأسئلة التي يطرحها التجار":
+    "Clear, direct answers to the questions merchants ask most",
+  "السلام عليكم، عندي استفسار بخصوص منصة oranix": "Hello, I have a question about the Oranix platform",
+  "تواصل معنا واتساب": "Chat with us on WhatsApp",
+  "هل أحتاج إلى سجل تجاري للبدء في البيع عبر oranix؟":
+    "Do I need a business registration to start selling on Oranix?",
+  "لا، لست بحاجة إلى سجل تجاري إطلاقاً. يمكنك إطلاق متجرك الإلكتروني فوراً كتاجر تجزئة أو صاحب مشروع ناشئ والبدء باستقبال الطلبيات بكل حرية وبدون أي تعقيدات.":
+    "No, you don't need any business registration. You can launch your online store right away as a retailer or a startup and start receiving orders freely, with no hassle.",
+  "كيف أستلم أموال المبيعات من الزبائن؟": "How do I receive sales payments from customers?",
+  "المنصة مخصصة للتجارة الإلكترونية بالدفع عند الاستلام (COD) في الـ 58 ولاية. يدفع الزبون نقداً لشركة التوصيل عند استلام الطرد، وتقوم شركة التوصيل بتحويل مستحقاتك إلى حسابك البريدي (CCP) أو البنكي بشكل دوري.":
+    "The platform is built for cash-on-delivery (COD) e-commerce across all 58 wilayas. The customer pays the carrier in cash on delivery, and the carrier transfers your earnings to your postal (CCP) or bank account periodically.",
+  "هل تخصم المنصة أي عمولة من مبيعاتي وأرباحي؟": "Does the platform take a commission on my sales and profits?",
+  "أبداً، نسبة العمولة 0%. نحن لا نقتطع أي سنتيم من أرباحك، كل مداخيل تجارتك تعود لك بنسبة 100%.":
+    "Never — the commission rate is 0%. We don't deduct a single cent from your earnings; 100% of your store revenue goes to you.",
+  "كيف أقوم بربط متجري مع شركات التوصيل؟": "How do I connect my store to delivery companies?",
+  "توفر لك oranix ربطاً مباشراً مع 19 شركة توصيل جزائرية (Yalidine، Maystro، ZR Express، Procolis...) بنقرة زر لطباعة البواليص ومزامنة التتبع آلياً.":
+    "Oranix gives you a direct integration with 19 Algerian delivery companies (Yalidine, Maystro, ZR Express, Procolis...) in one click to print waybills and sync tracking automatically.",
+  "كيف يتم دفع رسوم الاشتراك في المنصة؟": "How do I pay the platform subscription fees?",
+  "الدفع محلي 100% وبسيط للغاية عبر تطبيق بريدي موب (BaridiMob) أو عبر أي مركز بريد (CCP). بعد التحويل ترفع صورة الوصل ويتم تفعيل حسابك مباشرة.":
+    "Payment is 100% local and very simple via BaridiMob or any post office (CCP). After the transfer, upload a photo of the receipt and your account is activated immediately.",
+  "هل يمكنني ربط دومين خاص باسم متجري (.com أو .dz)؟": "Can I connect a custom domain for my store (.com or .dz)?",
+  "نعم بكل تأكيد! يمكنك ربط دومين خاص بمتجرك لتبدو علامتك التجارية احترافية ومستقلة تماماً أمام زبائنك.":
+    "Yes, absolutely! You can connect a custom domain to your store so your brand looks professional and fully independent to your customers.",
 };
 
 const fr: Record<string, string> = {
@@ -1863,6 +1906,49 @@ const fr: Record<string, string> = {
   "تحديث حالات الشحن": "Synchroniser les statuts d'expédition",
   "طلب": "commandes",
   "تم عرض": "Affichage de",
+
+  // Order alerts, WhatsApp support and landing FAQ
+  "طلب جديد وصل الآن!": "Nouvelle commande reçue !",
+  "عرض الطلبات": "Voir les commandes",
+  "كتم تنبيه الطلبات": "Couper les alertes de commandes",
+  "تفعيل تنبيه الطلبات": "Activer les alertes de commandes",
+  "تنبيه الطلبات مفعل": "Alerte commandes active",
+  "تنبيه الطلبات مكتوم": "Alerte commandes coupée",
+  "تحتاج مساعدة في الدفع أو تفعيل الحساب؟": "Besoin d'aide pour le paiement ou l'activation ?",
+  "فريق الدعم متاح عبر واتساب للمساعدة وتأكيد وصول الإيصالات فورياً.":
+    "L'équipe d'assistance est disponible sur WhatsApp pour vous aider et confirmer les reçus instantanément.",
+  "تواصل مع الدعم عبر واتساب": "Contacter le support via WhatsApp",
+  "زر الطلب المباشر عبر واتساب": "Bouton de commande directe via WhatsApp",
+  "إظهار زر يتيح للزبون إرسال تفاصيل طلبه مباشرة إلى محادثة واتساب الخاصة بك.":
+    "Afficher un bouton permettant aux clients d'envoyer les détails de leur commande sur WhatsApp.",
+  "أو اطلب مباشرة عبر واتساب": "Ou commander directement via WhatsApp",
+  "السلام عليكم، عندي استفسار بخصوص تجديد اشتراك متجري على منصة oranix":
+    "Bonjour, j'ai une question concernant le renouvellement de mon abonnement sur Oranix",
+  "الأسئلة الأكثر شيوعاً": "Questions les plus fréquentes",
+  "كل ما تحتاج معرفته عن oranix": "Tout ce qu'il faut savoir sur Oranix",
+  "إجابات واضحة ومباشرة لأهم الأسئلة التي يطرحها التجار":
+    "Des réponses claires et directes aux questions les plus posées par les commerçants",
+  "السلام عليكم، عندي استفسار بخصوص منصة oranix": "Bonjour, j'ai une question sur la plateforme Oranix",
+  "تواصل معنا واتساب": "Écrivez-nous sur WhatsApp",
+  "هل أحتاج إلى سجل تجاري للبدء في البيع عبر oranix؟":
+    "Ai-je besoin d'un registre de commerce pour vendre sur Oranix ?",
+  "لا، لست بحاجة إلى سجل تجاري إطلاقاً. يمكنك إطلاق متجرك الإلكتروني فوراً كتاجر تجزئة أو صاحب مشروع ناشئ والبدء باستقبال الطلبيات بكل حرية وبدون أي تعقيدات.":
+    "Non, aucun registre de commerce n'est nécessaire. Lancez votre boutique en ligne immédiatement en tant que détaillant ou jeune entreprise et recevez vos commandes librement, sans complications.",
+  "كيف أستلم أموال المبيعات من الزبائن؟": "Comment recevoir l'argent des ventes des clients ?",
+  "المنصة مخصصة للتجارة الإلكترونية بالدفع عند الاستلام (COD) في الـ 58 ولاية. يدفع الزبون نقداً لشركة التوصيل عند استلام الطرد، وتقوم شركة التوصيل بتحويل مستحقاتك إلى حسابك البريدي (CCP) أو البنكي بشكل دوري.":
+    "La plateforme est dédiée au e-commerce en paiement à la livraison (COD) dans les 58 wilayas. Le client paie en espèces au livreur, qui vous transfère votre dû sur votre compte postal (CCP) ou bancaire périodiquement.",
+  "هل تخصم المنصة أي عمولة من مبيعاتي وأرباحي؟": "La plateforme prélève-t-elle une commission sur mes ventes ?",
+  "أبداً، نسبة العمولة 0%. نحن لا نقتطع أي سنتيم من أرباحك، كل مداخيل تجارتك تعود لك بنسبة 100%.":
+    "Jamais — la commission est de 0 %. Nous ne prélevons aucun centime sur vos bénéfices ; 100 % de vos revenus vous reviennent.",
+  "كيف أقوم بربط متجري مع شركات التوصيل؟": "Comment connecter ma boutique aux sociétés de livraison ?",
+  "توفر لك oranix ربطاً مباشراً مع 19 شركة توصيل جزائرية (Yalidine، Maystro، ZR Express، Procolis...) بنقرة زر لطباعة البواليص ومزامنة التتبع آلياً.":
+    "Oranix vous offre une connexion directe avec 19 sociétés de livraison algériennes (Yalidine, Maystro, ZR Express, Procolis...) en un clic pour imprimer les bons et synchroniser le suivi automatiquement.",
+  "كيف يتم دفع رسوم الاشتراك في المنصة؟": "Comment payer les frais d'abonnement ?",
+  "الدفع محلي 100% وبسيط للغاية عبر تطبيق بريدي موب (BaridiMob) أو عبر أي مركز بريد (CCP). بعد التحويل ترفع صورة الوصل ويتم تفعيل حسابك مباشرة.":
+    "Le paiement est 100 % local et très simple via BaridiMob ou n'importe quel bureau de poste (CCP). Après le virement, téléversez une photo du reçu et votre compte est activé immédiatement.",
+  "هل يمكنني ربط دومين خاص باسم متجري (.com أو .dz)؟": "Puis-je connecter un domaine personnalisé à ma boutique (.com ou .dz) ?",
+  "نعم بكل تأكيد! يمكنك ربط دومين خاص بمتجرك لتبدو علامتك التجارية احترافية ومستقلة تماماً أمام زبائنك.":
+    "Oui, bien sûr ! Vous pouvez connecter un domaine personnalisé à votre boutique pour une marque professionnelle et totalement indépendante.",
 };
 
 /** Translates an Arabic UI string into `language`, falling back to Arabic. */

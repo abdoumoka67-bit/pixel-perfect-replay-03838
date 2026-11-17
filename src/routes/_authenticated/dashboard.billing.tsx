@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Check, Copy, FileImage, Loader2, Upload, X } from "lucide-react";
+import { Check, Copy, FileImage, Loader2, MessageCircle, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useMyStore } from "@/hooks/use-my-store";
 import { RECEIPT_BUCKET, fileExt } from "@/lib/images";
-import { calculateSubscriptionPrice, formatDZD } from "@/lib/commerce";
+import { calculateSubscriptionPrice, formatDZD, whatsappLink } from "@/lib/commerce";
 import { PlanCards } from "@/components/PlanCards";
 import { cn } from "@/lib/utils";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
@@ -127,7 +127,7 @@ function Billing() {
       // 2. Fallback to direct table query on platform_settings
       const tableRes = await supabase
         .from("platform_settings")
-        .select("ccp_number, ccp_key, ccp_holder, rip")
+        .select("ccp_number, ccp_key, ccp_holder, rip, support_phone")
         .limit(1)
         .maybeSingle();
 
@@ -395,6 +395,37 @@ function Billing() {
             {submit.isPending && <Loader2 className="animate-spin" />} {t("إرسال للمراجعة")}
           </Button>
         </form>
+      </div>
+
+      {/* WhatsApp Support Assistance Card */}
+      <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-2xl border border-emerald-500/25 bg-emerald-50/40 p-4 sm:flex-row dark:bg-emerald-950/20">
+        <div className="flex items-center gap-3">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+            <MessageCircle className="size-5" />
+          </span>
+          <div>
+            <p className="text-sm font-medium text-foreground">{t("تحتاج مساعدة في الدفع أو تفعيل الحساب؟")}</p>
+            <p className="text-xs text-muted-foreground">{t("فريق الدعم متاح عبر واتساب للمساعدة وتأكيد وصول الإيصالات فورياً.")}</p>
+          </div>
+        </div>
+        <Button
+          asChild
+          variant="outline"
+          className="h-10 shrink-0 rounded-full border-emerald-500/40 bg-white text-emerald-600 hover:bg-emerald-50 dark:bg-card dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+        >
+          <a
+            href={whatsappLink(
+              (settings.data as { support_phone?: string } | null)?.support_phone || "0562552582",
+              t("السلام عليكم، عندي استفسار بخصوص تجديد اشتراك متجري على منصة oranix"),
+            )}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2"
+          >
+            <MessageCircle className="size-4" />
+            <span>{t("تواصل مع الدعم عبر واتساب")}</span>
+          </a>
+        </Button>
       </div>
 
       <div className="mt-6 rounded-2xl bg-card p-5 shadow-card">
