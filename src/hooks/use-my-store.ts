@@ -26,10 +26,15 @@ export const myStoreQuery = queryOptions({
     if (accessError) throw accessError;
     const row = access?.[0];
     if (!row) return null;
-    const { data, error } = await supabase.from("stores").select("*").eq("id", row.store_id).maybeSingle();
+    const { data, error } = await supabase
+      .from("stores")
+      .select("*")
+      .eq("id", row.store_id)
+      .maybeSingle();
     if (error) throw error;
     if (!data) return null;
-    const role: StoreAccess = row.access === "manager" || row.access === "agent" ? row.access : "owner";
+    const role: StoreAccess =
+      row.access === "manager" || row.access === "agent" ? row.access : "owner";
     return { store: data, access: role, memberId: row.member_id ?? null };
   },
 });
@@ -41,9 +46,17 @@ export function useMyStore() {
   // Platform admin: no limits, no trial banners, every Pro feature open.
   const { data: isAdmin = false } = useQuery(isAdminQuery);
   const rawSub = store ? subscriptionState(store) : null;
-  const sub = rawSub && isAdmin
-    ? { ...rawSub, isActive: true, isTrial: false, showWarning: false, isGracePeriod: false, graceEndsAt: null }
-    : rawSub;
+  const sub =
+    rawSub && isAdmin
+      ? {
+          ...rawSub,
+          isActive: true,
+          isTrial: false,
+          showWarning: false,
+          isGracePeriod: false,
+          graceEndsAt: null,
+        }
+      : rawSub;
   const tier = isAdmin ? "pro" : store ? effectiveTier(store) : "start";
   // An admin owns every screen: the DB helpers already let them manage any
   // store, and the dashboard should not gate areas or disable controls.

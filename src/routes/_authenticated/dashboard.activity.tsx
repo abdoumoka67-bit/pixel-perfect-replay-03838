@@ -5,7 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { ProLock } from "@/components/dashboard/ProLock";
 import { useMyStore } from "@/hooks/use-my-store";
-import { ACTIVITY_LABELS, CALL_LABELS, MEMBER_ROLE_LABELS, STATUS_LABELS, type CallOutcome, type OrderStatus } from "@/lib/commerce";
+import {
+  ACTIVITY_LABELS,
+  CALL_LABELS,
+  MEMBER_ROLE_LABELS,
+  STATUS_LABELS,
+  type CallOutcome,
+  type OrderStatus,
+} from "@/lib/commerce";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/activity")({
@@ -21,7 +28,9 @@ function ActivityPage() {
         <PageHeader title={t("سجل الأنشطة")} description={t("كل ما يحدث في متجرك.")} />
         <ProLock
           title={t("سجل الأنشطة في Pro")}
-          description={t("تابع ما يفعله فريقك: من غيّر حالة طلب، من اتصل بالزبون، ومن عدّل منتجاً.")}
+          description={t(
+            "تابع ما يفعله فريقك: من غيّر حالة طلب، من اتصل بالزبون، ومن عدّل منتجاً.",
+          )}
           points={[
             t("تاريخ ووقت كل عملية"),
             t("اسم العضو الذي قام بها"),
@@ -46,7 +55,11 @@ type Details = {
   role?: string;
 };
 
-function describe(action: string, d: Details, t: (text: string, vars?: Record<string, string | number>) => string): string {
+function describe(
+  action: string,
+  d: Details,
+  t: (text: string, vars?: Record<string, string | number>) => string,
+): string {
   const order = d.order_number ? `ORX-${d.order_number}` : "";
   switch (action) {
     case "order.status":
@@ -111,13 +124,22 @@ function ActivityPro() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm">
-                      <span className="font-medium" dir="ltr">{who}</span>{" "}
-                      <span className="text-muted-foreground">{ACTIVITY_LABELS[l.action] ? t(ACTIVITY_LABELS[l.action]!) : l.action}</span>
+                      <span className="font-medium" dir="ltr">
+                        {who}
+                      </span>{" "}
+                      <span className="text-muted-foreground">
+                        {ACTIVITY_LABELS[l.action] ? t(ACTIVITY_LABELS[l.action]!) : l.action}
+                      </span>
                     </p>
                     <p className="truncate text-sm">{describe(l.action, d, t)}</p>
                   </div>
                   <time className="shrink-0 text-xs text-muted-foreground num">
-                    {new Date(l.created_at).toLocaleString(dateLocale, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    {new Date(l.created_at).toLocaleString(dateLocale, {
+                      day: "2-digit",
+                      month: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </time>
                 </li>
               );
@@ -125,7 +147,9 @@ function ActivityPro() {
           </ul>
         ) : (
           <p className="p-10 text-center text-sm text-muted-foreground">
-            {logs.isLoading ? "…" : t("لا توجد أنشطة بعد. ستظهر هنا تغييرات الطلبات والمكالمات والمنتجات.")}
+            {logs.isLoading
+              ? "…"
+              : t("لا توجد أنشطة بعد. ستظهر هنا تغييرات الطلبات والمكالمات والمنتجات.")}
           </p>
         )}
       </div>

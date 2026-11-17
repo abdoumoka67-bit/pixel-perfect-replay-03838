@@ -24,7 +24,9 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="font-display text-7xl font-medium text-brand">404</h1>
         <h2 className="mt-4 text-xl font-medium text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">The link you opened is invalid or has been removed.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          The link you opened is invalid or has been removed.
+        </p>
         <div className="mt-6">
           <Link
             to="/"
@@ -48,8 +50,12 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-medium tracking-tight text-foreground">Couldn't load the page</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Something unexpected happened. Try again or go back home.</p>
+        <h1 className="text-xl font-medium tracking-tight text-foreground">
+          Couldn't load the page
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Something unexpected happened. Try again or go back home.
+        </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {

@@ -1,8 +1,16 @@
-node_modules
-dist
+# Generated / build output — never reformatted.
 .output
+dist
+node_modules
 .vinxi
-pnpm-lock.yaml
-package-lock.json
+build.log
+
+# TanStack Router generated file — must never be touched by hand or formatter.
+src/routeTree.gen.ts
+
+# Lockfiles are managed by the package manager.
 bun.lock
-routeTree.gen.ts
+bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

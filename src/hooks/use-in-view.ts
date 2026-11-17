@@ -18,12 +18,7 @@ export type InViewOptions = {
  * The observer is disconnected on unmount to avoid leaked listeners.
  */
 export function useInView<T extends Element = HTMLElement>(options: InViewOptions = {}) {
-  const {
-    threshold = 0.2,
-    rootMargin = "0px 0px -60px 0px",
-    settleMs = 0,
-    once = false,
-  } = options;
+  const { threshold = 0.2, rootMargin = "0px 0px -60px 0px", settleMs = 0, once = false } = options;
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
 

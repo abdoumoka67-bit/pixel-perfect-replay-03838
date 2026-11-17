@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { attributionFromJson, attributionLabel, hasAttribution, parseAttribution } from "./attribution";
+import {
+  attributionFromJson,
+  attributionLabel,
+  hasAttribution,
+  parseAttribution,
+} from "./attribution";
 
 describe("ad attribution", () => {
   it("reads UTMs and platform click ids", () => {
@@ -48,7 +53,9 @@ describe("ad attribution", () => {
   });
 
   it("reads an order's stored jsonb and drops unknown keys", () => {
-    expect(attributionFromJson({ source: "facebook", campaign: "sept", evil: "x", term: 5 })).toEqual({
+    expect(
+      attributionFromJson({ source: "facebook", campaign: "sept", evil: "x", term: 5 }),
+    ).toEqual({
       source: "facebook",
       campaign: "sept",
     });

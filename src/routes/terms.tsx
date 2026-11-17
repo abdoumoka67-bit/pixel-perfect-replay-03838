@@ -17,12 +17,14 @@ export const Route = createFileRoute("/terms")({
       { title: "Terms of Service — Oranix" },
       {
         name: "description",
-        content: "The terms that govern the use of Oranix, orders, payments, merchant responsibilities and refunds.",
+        content:
+          "The terms that govern the use of Oranix, orders, payments, merchant responsibilities and refunds.",
       },
       { property: "og:title", content: "Terms of Service — Oranix" },
       {
         property: "og:description",
-        content: "The terms that govern the use of Oranix, orders, payments, merchant responsibilities and refunds.",
+        content:
+          "The terms that govern the use of Oranix, orders, payments, merchant responsibilities and refunds.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -32,5 +34,7 @@ export const Route = createFileRoute("/terms")({
 });
 
 function TermsPage() {
-  return <LegalPage titleKey="legal.terms.title" introKey="legal.terms.intro" sections={SECTIONS} />;
+  return (
+    <LegalPage titleKey="legal.terms.title" introKey="legal.terms.intro" sections={SECTIONS} />
+  );
 }

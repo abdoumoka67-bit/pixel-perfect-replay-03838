@@ -1,6 +1,13 @@
 import { z } from "zod";
 
-export const PRESET_KEYS = ["noir", "charcoal_gold", "midnight", "emerald", "plum", "minimal"] as const;
+export const PRESET_KEYS = [
+  "noir",
+  "charcoal_gold",
+  "midnight",
+  "emerald",
+  "plum",
+  "minimal",
+] as const;
 export type PresetKey = (typeof PRESET_KEYS)[number];
 
 /** Interface language of a store, saved with its storefront settings. */
@@ -9,13 +16,29 @@ export type StorefrontLanguage = (typeof STOREFRONT_LANGUAGES)[number];
 export const STOREFRONT_LANGUAGE_DEFAULT: StorefrontLanguage = "en";
 
 export const ARABIC_FONTS = [
-  "Tajawal", "Cairo", "Almarai", "Readex Pro", "Alexandria",
-  "Changa", "Noto Sans Arabic", "Rubik", "IBM Plex Sans Arabic", "Amiri",
+  "Tajawal",
+  "Cairo",
+  "Almarai",
+  "Readex Pro",
+  "Alexandria",
+  "Changa",
+  "Noto Sans Arabic",
+  "Rubik",
+  "IBM Plex Sans Arabic",
+  "Amiri",
 ] as const;
 
 export const LATIN_FONTS = [
-  "Inter", "Plus Jakarta Sans", "Outfit", "Poppins", "Montserrat",
-  "Space Grotesk", "Syne", "Playfair Display", "DM Sans", "Manrope",
+  "Inter",
+  "Plus Jakarta Sans",
+  "Outfit",
+  "Poppins",
+  "Montserrat",
+  "Space Grotesk",
+  "Syne",
+  "Playfair Display",
+  "DM Sans",
+  "Manrope",
 ] as const;
 
 /** Every font a storefront may store in `font_family` (Arabic first, then Latin). */
@@ -237,27 +260,46 @@ export const socialLinksSchema = z.object({
   tiktok: z.string().trim().optional().or(z.literal("")),
 });
 
-export const formConfigSchema = z.object({
-  bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
-  border_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#EEEEEE"),
-  input_focus_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
-  button_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
-  button_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
-  button_text: z.string().trim().max(50).default("تأكيد الطلب الآن"),
-  button_radius: z.enum(["none", "md", "lg", "full"]).default("full"),
-  guarantee_text: z.string().trim().max(100).default("الدفع عند الاستلام · ضمان الفحص قبل الدفع"),
-  fields: z.object({
-    full_name: z.boolean().default(true),
-    phone: z.boolean().default(true),
-    confirm_phone: z.boolean().default(false), // Re-enter phone verification
-    backup_phone: z.boolean().default(false),  // Secondary phone
-    wilaya_commune: z.boolean().default(true),
-    address: z.boolean().default(true),        // Detailed street/neighborhood
-    delivery_type: z.boolean().default(true),   // Home vs Office/Stopdesk
-    notes: z.boolean().default(false),          // Customer notes
-    whatsapp_order: z.boolean().default(true),  // Direct WhatsApp order button
-  }).default({}),
-}).default({});
+export const formConfigSchema = z
+  .object({
+    bg_color: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/)
+      .default("#FFFFFF"),
+    border_color: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/)
+      .default("#EEEEEE"),
+    input_focus_color: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/)
+      .default("#111111"),
+    button_bg_color: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/)
+      .default("#111111"),
+    button_text_color: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/)
+      .default("#FFFFFF"),
+    button_text: z.string().trim().max(50).default("تأكيد الطلب الآن"),
+    button_radius: z.enum(["none", "md", "lg", "full"]).default("full"),
+    guarantee_text: z.string().trim().max(100).default("الدفع عند الاستلام · ضمان الفحص قبل الدفع"),
+    fields: z
+      .object({
+        full_name: z.boolean().default(true),
+        phone: z.boolean().default(true),
+        confirm_phone: z.boolean().default(false), // Re-enter phone verification
+        backup_phone: z.boolean().default(false), // Secondary phone
+        wilaya_commune: z.boolean().default(true),
+        address: z.boolean().default(true), // Detailed street/neighborhood
+        delivery_type: z.boolean().default(true), // Home vs Office/Stopdesk
+        notes: z.boolean().default(false), // Customer notes
+        whatsapp_order: z.boolean().default(true), // Direct WhatsApp order button
+      })
+      .default({}),
+  })
+  .default({});
 
 export type FormConfig = z.infer<typeof formConfigSchema>;
 
@@ -269,16 +311,28 @@ export const storefrontConfigSchema = z.object({
   hero_button: z.string().trim().max(30).default("تسوق الآن"),
   hero_bg_type: z.enum(["color", "image"]).default("color"),
   hero_image_url: z.string().trim().max(500).optional(),
-  hero_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
-  hero_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
+  hero_bg_color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .default("#111111"),
+  hero_text_color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .default("#FFFFFF"),
   hero_overlay_opacity: z.number().int().min(0).max(90).default(40),
   font_family: z.enum(STOREFRONT_FONTS).default("Tajawal"),
   title_size: z.enum(HERO_TITLE_SIZES).default("xl"),
   title_offset_x: z.number().int().min(-50).max(50).default(0),
   title_offset_y: z.number().int().min(-50).max(50).default(0),
   text_align: z.enum(ELEMENT_ALIGNMENTS).default("center"),
-  button_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
-  button_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
+  button_bg_color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .default("#FFFFFF"),
+  button_text_color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .default("#111111"),
   button_size: z.enum(BUTTON_SIZES).default("md"),
   button_radius: z.enum(BUTTON_RADII).default("lg"),
   button_align: z.enum(ELEMENT_ALIGNMENTS).default("center"),
@@ -286,29 +340,37 @@ export const storefrontConfigSchema = z.object({
   button_offset_y: z.number().int().min(-50).max(50).default(0),
   bar_enabled: z.boolean().default(true),
   bar_text: z.string().trim().max(80).default("مرحبا بك في متجرنا"),
-  bar_bg_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#111111"),
-  bar_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
-  sections: z.object({
-    faq: z
-      .object({
-        enabled: z.boolean().default(true),
-        items: z.array(faqItemSchema).max(8).default(DEFAULT_FAQ),
-      })
-      .default({ enabled: true, items: DEFAULT_FAQ }),
-    reviews: z
-      .object({
-        enabled: z.boolean().default(false),
-        items: z.array(reviewItemSchema).max(10).default([]),
-      })
-      .default({ enabled: false, items: [] }),
-    social: socialLinksSchema.default({ enabled: true }),
-    trust: z
-      .object({
-        enabled: z.boolean().default(true),
-        badges: z.array(z.enum(TRUST_BADGE_KEYS)).default([...TRUST_BADGE_KEYS]),
-      })
-      .default({ enabled: true, badges: [...TRUST_BADGE_KEYS] }),
-  }).default({}),
+  bar_bg_color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .default("#111111"),
+  bar_text_color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .default("#FFFFFF"),
+  sections: z
+    .object({
+      faq: z
+        .object({
+          enabled: z.boolean().default(true),
+          items: z.array(faqItemSchema).max(8).default(DEFAULT_FAQ),
+        })
+        .default({ enabled: true, items: DEFAULT_FAQ }),
+      reviews: z
+        .object({
+          enabled: z.boolean().default(false),
+          items: z.array(reviewItemSchema).max(10).default([]),
+        })
+        .default({ enabled: false, items: [] }),
+      social: socialLinksSchema.default({ enabled: true }),
+      trust: z
+        .object({
+          enabled: z.boolean().default(true),
+          badges: z.array(z.enum(TRUST_BADGE_KEYS)).default([...TRUST_BADGE_KEYS]),
+        })
+        .default({ enabled: true, badges: [...TRUST_BADGE_KEYS] }),
+    })
+    .default({}),
   form_config: formConfigSchema.default({}),
 });
 
@@ -324,14 +386,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isRawFaqItem(value: unknown): value is RawFaqItem {
-  return isRecord(value) &&
+  return (
+    isRecord(value) &&
     typeof value["q"] === "string" &&
     Boolean(value["q"].trim()) &&
-    typeof value["a"] === "string";
+    typeof value["a"] === "string"
+  );
 }
 
 function isRawReviewItem(value: unknown): value is RawReviewItem {
-  return isRecord(value) &&
+  return (
+    isRecord(value) &&
     typeof value["name"] === "string" &&
     Boolean(value["name"].trim()) &&
     typeof value["text"] === "string" &&
@@ -339,7 +404,8 @@ function isRawReviewItem(value: unknown): value is RawReviewItem {
     typeof value["rating"] === "number" &&
     Number.isInteger(value["rating"]) &&
     value["rating"] >= 1 &&
-    value["rating"] <= 5;
+    value["rating"] <= 5
+  );
 }
 
 function isPresetKey(value: unknown): value is PresetKey {
@@ -415,9 +481,7 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
 
   const rawTitle = obj["hero_title"];
   const hero_title =
-    typeof rawTitle === "string" && rawTitle.trim()
-      ? rawTitle.trim().slice(0, 80)
-      : fallbackTitle;
+    typeof rawTitle === "string" && rawTitle.trim() ? rawTitle.trim().slice(0, 80) : fallbackTitle;
 
   const rawSubtitle = obj["hero_subtitle"];
   const hero_subtitle =
@@ -432,16 +496,22 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
       : texts.heroButton;
 
   const rawHeroImage = obj["hero_image_url"];
-  const candidateHeroImage = typeof rawHeroImage === "string" ? rawHeroImage.trim().slice(0, 500) : "";
+  const candidateHeroImage =
+    typeof rawHeroImage === "string" ? rawHeroImage.trim().slice(0, 500) : "";
   const hero_image_url =
-    (/^https?:\/\/[^\s"'<>]+$/i.test(candidateHeroImage) || /^[A-Za-z0-9._/-]+$/.test(candidateHeroImage))
+    /^https?:\/\/[^\s"'<>]+$/i.test(candidateHeroImage) ||
+    /^[A-Za-z0-9._/-]+$/.test(candidateHeroImage)
       ? candidateHeroImage || undefined
       : undefined;
   const isHexColor = (value: unknown): value is string =>
     typeof value === "string" && /^#[0-9A-Fa-f]{6}$/.test(value);
   const hero_bg_type = obj["hero_bg_type"] === "image" ? "image" : "color";
-  const hero_bg_color = isHexColor(obj["hero_bg_color"]) ? obj["hero_bg_color"] : HERO_PRESETS[preset].from;
-  const hero_text_color = isHexColor(obj["hero_text_color"]) ? obj["hero_text_color"] : HERO_PRESETS[preset].textColor;
+  const hero_bg_color = isHexColor(obj["hero_bg_color"])
+    ? obj["hero_bg_color"]
+    : HERO_PRESETS[preset].from;
+  const hero_text_color = isHexColor(obj["hero_text_color"])
+    ? obj["hero_text_color"]
+    : HERO_PRESETS[preset].textColor;
   const rawOverlay = obj["hero_overlay_opacity"];
   const hero_overlay_opacity =
     typeof rawOverlay === "number" && Number.isFinite(rawOverlay)
@@ -462,8 +532,12 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
     ELEMENT_ALIGNMENTS.some((align) => align === obj["text_align"])
       ? (obj["text_align"] as (typeof ELEMENT_ALIGNMENTS)[number])
       : defaultDesign.text_align;
-  const button_bg_color = isHexColor(obj["button_bg_color"]) ? obj["button_bg_color"] : HERO_PRESETS[preset].buttonBg;
-  const button_text_color = isHexColor(obj["button_text_color"]) ? obj["button_text_color"] : HERO_PRESETS[preset].buttonText;
+  const button_bg_color = isHexColor(obj["button_bg_color"])
+    ? obj["button_bg_color"]
+    : HERO_PRESETS[preset].buttonBg;
+  const button_text_color = isHexColor(obj["button_text_color"])
+    ? obj["button_text_color"]
+    : HERO_PRESETS[preset].buttonText;
   const button_size =
     typeof obj["button_size"] === "string" &&
     BUTTON_SIZES.some((size) => size === obj["button_size"])
@@ -504,8 +578,12 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
       ? Math.max(-50, Math.min(50, Math.round(rawButtonOffset)))
       : 0;
 
-  const bar_bg_color = isHexColor(obj["bar_bg_color"]) ? obj["bar_bg_color"] : defaultDesign.bar_bg_color;
-  const bar_text_color = isHexColor(obj["bar_text_color"]) ? obj["bar_text_color"] : defaultDesign.bar_text_color;
+  const bar_bg_color = isHexColor(obj["bar_bg_color"])
+    ? obj["bar_bg_color"]
+    : defaultDesign.bar_bg_color;
+  const bar_text_color = isHexColor(obj["bar_text_color"])
+    ? obj["bar_text_color"]
+    : defaultDesign.bar_text_color;
 
   const rawBarEnabled = obj["bar_enabled"];
   const bar_enabled = typeof rawBarEnabled === "boolean" ? rawBarEnabled : true;
@@ -537,7 +615,9 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
 
   // Reviews: max 10, ratings 1-5 only, outside 1-5 rejected
   const rawReviewsConfig = isRecord(sec["reviews"]) ? sec["reviews"] : {};
-  const rawReviews: unknown[] = Array.isArray(rawReviewsConfig["items"]) ? rawReviewsConfig["items"] : [];
+  const rawReviews: unknown[] = Array.isArray(rawReviewsConfig["items"])
+    ? rawReviewsConfig["items"]
+    : [];
   const reviewItems: ReviewItem[] = rawReviews
     .filter(isRawReviewItem)
     .slice(0, 10)
@@ -558,7 +638,8 @@ export function parseStorefrontConfig(raw: unknown, storeName = ""): StorefrontC
   const social = {
     enabled: typeof rawSocial["enabled"] === "boolean" ? rawSocial["enabled"] : true,
     whatsapp: typeof rawSocial["whatsapp"] === "string" ? rawSocial["whatsapp"].trim() : undefined,
-    instagram: typeof rawSocial["instagram"] === "string" ? rawSocial["instagram"].trim() : undefined,
+    instagram:
+      typeof rawSocial["instagram"] === "string" ? rawSocial["instagram"].trim() : undefined,
     facebook: typeof rawSocial["facebook"] === "string" ? rawSocial["facebook"].trim() : undefined,
     tiktok: typeof rawSocial["tiktok"] === "string" ? rawSocial["tiktok"].trim() : undefined,
   };

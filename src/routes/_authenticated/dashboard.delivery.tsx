@@ -619,12 +619,18 @@ function CarrierHub({
                     <CarrierLogo id={carrier.id} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{t(carrier.name)}</p>
-                      <p className="line-clamp-1 text-xs text-muted-foreground">{t(carrier.note)}</p>
+                      <p className="line-clamp-1 text-xs text-muted-foreground">
+                        {t(carrier.note)}
+                      </p>
                     </div>
                     <Button
                       size="sm"
                       variant={linked ? "outline" : "secondary"}
-                      className={linked ? "shrink-0" : "shrink-0 bg-[#F1F2F4] text-[#111111] hover:bg-[#E2E4E8] font-medium shadow-none"}
+                      className={
+                        linked
+                          ? "shrink-0"
+                          : "shrink-0 bg-[#F1F2F4] text-[#111111] hover:bg-[#E2E4E8] font-medium shadow-none"
+                      }
                       disabled={readOnly}
                       onClick={() => {
                         setCarrierPickerOpen(false);

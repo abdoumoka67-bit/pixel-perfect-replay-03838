@@ -85,7 +85,10 @@ export function subscriptionState(
   const graceEndsAt = new Date(trial.getTime() + GRACE_PERIOD_DAYS * DAY);
   const isTrialActive = now.getTime() < trial.getTime();
   const isPaidActive = Boolean(paid && paid.getTime() > now.getTime());
-  const isGracePeriod = now.getTime() > trial.getTime() && now.getTime() <= graceEndsAt.getTime() && (!paid || paid.getTime() <= now.getTime());
+  const isGracePeriod =
+    now.getTime() > trial.getTime() &&
+    now.getTime() <= graceEndsAt.getTime() &&
+    (!paid || paid.getTime() <= now.getTime());
 
   const isActive = isTrialActive || isPaidActive;
   const endsAt = paid && paid > trial ? paid : trial;
@@ -99,12 +102,14 @@ export function subscriptionState(
     daysLeft = Math.max(0, Math.ceil((graceEndsAt.getTime() - now.getTime()) / DAY));
   }
 
-  const showWarning = (isTrialActive && daysLeft <= EXPIRY_WARNING_DAYS) || (isGracePeriod && daysLeft <= EXPIRY_WARNING_DAYS);
+  const showWarning =
+    (isTrialActive && daysLeft <= EXPIRY_WARNING_DAYS) ||
+    (isGracePeriod && daysLeft <= EXPIRY_WARNING_DAYS);
 
   return {
     endsAt: isGracePeriod ? graceEndsAt : endsAt,
     isActive,
-    isTrial: isTrialActive || (!paid || paid <= trial),
+    isTrial: isTrialActive || !paid || paid <= trial,
     daysLeft,
     showWarning,
     isGracePeriod,
@@ -132,12 +137,20 @@ export function isValidStoreSlug(slug: string): boolean {
   return /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(slug);
 }
 
-export function suggestedStoreSlug(storeName: string, email: string | null, userId: string): string {
+export function suggestedStoreSlug(
+  storeName: string,
+  email: string | null,
+  userId: string,
+): string {
   const candidates = [slugify(storeName), slugify(email?.split("@")[0] ?? "")];
   const existingCandidate = candidates.find((candidate) => isValidStoreSlug(candidate));
   if (existingCandidate) return existingCandidate;
 
-  const userSuffix = userId.replace(/[^a-z0-9]/gi, "").slice(0, 8).toLowerCase() || "account";
+  const userSuffix =
+    userId
+      .replace(/[^a-z0-9]/gi, "")
+      .slice(0, 8)
+      .toLowerCase() || "account";
   return `store-${userSuffix}`;
 }
 
@@ -209,13 +222,20 @@ export const TRUST_RAPID_DUPLICATE_WINDOW_MS = 15 * 60 * 1000;
  * - risky: cancellations outweigh delivered orders.
  * - spam: rapid duplicate orders (same phone within 15 minutes) or repeated cancellations.
  */
-export function evaluateCustomerTrust(orders: CustomerTrustInput[], currentPhone: string): CustomerTrust {
+export function evaluateCustomerTrust(
+  orders: CustomerTrustInput[],
+  currentPhone: string,
+): CustomerTrust {
   const phone = normalizeDzPhone(currentPhone);
   const history = phone
-    ? orders.filter((o) => Boolean(o.customer_phone) && normalizeDzPhone(o.customer_phone) === phone)
+    ? orders.filter(
+        (o) => Boolean(o.customer_phone) && normalizeDzPhone(o.customer_phone) === phone,
+      )
     : [];
   const delivered = history.filter((o) => o.status === "delivered").length;
-  const cancelled = history.filter((o) => o.status === "cancelled" || o.status === "returned").length;
+  const cancelled = history.filter(
+    (o) => o.status === "cancelled" || o.status === "returned",
+  ).length;
 
   const createdTimes = history
     .map((o) => new Date(o.created_at).getTime())
@@ -277,28 +297,45 @@ export const ORDER_NETWORK_ERROR = "تعذر الاتصال بالخادم. تح
 export const ORDER_TECHNICAL_ERROR = "تعذر إتمام الطلب الآن. أعد المحاولة بعد لحظات.";
 export const SESSION_EXPIRED_ERROR = "انتهت صلاحية الجلسة. أعد تحميل الصفحة وحاول مرة أخرى.";
 
-export function friendlyError(message: string | undefined | null, fallback = "حدث خطأ، حاول مرة أخرى."): string {
+export function friendlyError(
+  message: string | undefined | null,
+  fallback = "حدث خطأ، حاول مرة أخرى.",
+): string {
   if (!message) return fallback;
   // Already a user-facing text (e.g. thrown by the storefront timeout guard).
-  if (message === ORDER_NETWORK_ERROR || message === ORDER_TECHNICAL_ERROR || message === SESSION_EXPIRED_ERROR) {
+  if (
+    message === ORDER_NETWORK_ERROR ||
+    message === ORDER_TECHNICAL_ERROR ||
+    message === SESSION_EXPIRED_ERROR
+  ) {
     return message;
   }
   for (const [key, text] of Object.entries(ORDER_ERRORS)) {
     if (message.includes(key)) return text;
   }
   const technical = message.toLowerCase();
-  if (/network|timeout|timed out|aborted|abort|failed to fetch|load failed|fetch failed|econnreset|etimedout|offline/.test(technical)) {
+  if (
+    /network|timeout|timed out|aborted|abort|failed to fetch|load failed|fetch failed|econnreset|etimedout|offline/.test(
+      technical,
+    )
+  ) {
     return ORDER_NETWORK_ERROR;
   }
-  if (/42883|normalize_dz_phone|pgrst202|schema cache|could not find the function/.test(technical)) {
+  if (
+    /42883|normalize_dz_phone|pgrst202|schema cache|could not find the function/.test(technical)
+  ) {
     return ORDER_TECHNICAL_ERROR;
   }
   if (/jwt|pgrst301|invalid claim|\b401\b/.test(technical)) return SESSION_EXPIRED_ERROR;
   if (/duplicate key.*orders|orders_order_number/.test(technical)) return ORDER_TECHNICAL_ERROR;
-  if (message.includes("INVALID_SLUG")) return "الرابط يجب أن يحتوي على حروف لاتينية صغيرة وأرقام وشرطات فقط.";
-  if (message.includes("duplicate key") && message.includes("store_members")) return "هذا العضو مضاف مسبقاً.";
-  if (message.includes("duplicate key") && message.includes("slug")) return "هذا الرابط مستعمل، اختر رابطاً آخر.";
-  if (message.includes("row-level security")) return "حسابك في وضع القراءة فقط. جدّد اشتراكك لمتابعة التعديل.";
+  if (message.includes("INVALID_SLUG"))
+    return "الرابط يجب أن يحتوي على حروف لاتينية صغيرة وأرقام وشرطات فقط.";
+  if (message.includes("duplicate key") && message.includes("store_members"))
+    return "هذا العضو مضاف مسبقاً.";
+  if (message.includes("duplicate key") && message.includes("slug"))
+    return "هذا الرابط مستعمل، اختر رابطاً آخر.";
+  if (message.includes("row-level security"))
+    return "حسابك في وضع القراءة فقط. جدّد اشتراكك لمتابعة التعديل.";
   return fallback;
 }
 
@@ -392,12 +429,16 @@ export function isValidDomainName(input: string): boolean {
  * Returns 0 for out-of-range durations.
  */
 export function calculateSubscriptionPrice(tier: PlanTier, months: number): number {
-  if (!Number.isInteger(months) || months < SUBSCRIPTION_MIN_MONTHS || months > SUBSCRIPTION_MAX_MONTHS) return 0;
+  if (
+    !Number.isInteger(months) ||
+    months < SUBSCRIPTION_MIN_MONTHS ||
+    months > SUBSCRIPTION_MAX_MONTHS
+  )
+    return 0;
   const monthly = SUBSCRIPTION_MONTHLY_RATES[tier];
   if (months === SUBSCRIPTION_MAX_MONTHS) return monthly * 5;
   return monthly * months;
 }
-
 
 /** Start plan: orders accepted per calendar month (Algiers time). Pro has no limit. */
 export const START_MONTHLY_ORDER_LIMIT = 300;
@@ -424,7 +465,8 @@ export function effectiveTier(
 }
 
 export function orderLimitState(tier: PlanTier, monthOrders: number) {
-  if (tier === "pro") return { limit: null, used: monthOrders, remaining: null, nearLimit: false, reached: false };
+  if (tier === "pro")
+    return { limit: null, used: monthOrders, remaining: null, nearLimit: false, reached: false };
   const limit = START_MONTHLY_ORDER_LIMIT;
   return {
     limit,
@@ -534,11 +576,18 @@ export const DEFAULT_ONBOARDING_INDUSTRIES = [
 
 export type ProductTypeValue = "physical";
 
-export function isProductInGracePeriod(store: { trial_ends_at: string; paid_until: string | null }, now: Date = new Date()): boolean {
+export function isProductInGracePeriod(
+  store: { trial_ends_at: string; paid_until: string | null },
+  now: Date = new Date(),
+): boolean {
   const trial = new Date(store.trial_ends_at);
   const paid = store.paid_until ? new Date(store.paid_until) : null;
   const graceEndsAt = new Date(trial.getTime() + GRACE_PERIOD_DAYS * DAY);
-  return now.getTime() > trial.getTime() && now.getTime() <= graceEndsAt.getTime() && (!paid || paid.getTime() <= now.getTime());
+  return (
+    now.getTime() > trial.getTime() &&
+    now.getTime() <= graceEndsAt.getTime() &&
+    (!paid || paid.getTime() <= now.getTime())
+  );
 }
 
 export function effectivePlanTier(

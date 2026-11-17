@@ -154,7 +154,10 @@ export const getProductPage = createServerFn({ method: "GET" })
         hero_image_url: config.hero_image_url ? urls[config.hero_image_url] : undefined,
       },
     };
-    const product: PublicProduct = { ...p, images: p.images.map((i) => urls[i]).filter((x): x is string => !!x) };
+    const product: PublicProduct = {
+      ...p,
+      images: p.images.map((i) => urls[i]).filter((x): x is string => !!x),
+    };
     return { store, product, rates: rates ?? [] };
   });
 

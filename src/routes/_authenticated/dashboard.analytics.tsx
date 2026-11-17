@@ -2,7 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { ArrowDownRight, ArrowUpRight, MapPin } from "lucide-react";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { ProLock } from "@/components/dashboard/ProLock";
@@ -36,7 +46,9 @@ function Analytics() {
         <PageHeader title={t("الإحصائيات")} description={t("أداء متجرك ومبيعاتك.")} />
         <ProLock
           title={t("الإحصائيات المتقدمة في Pro")}
-          description={t("اعرف من أين تأتي طلباتك، وما هي منتجاتك الرابحة، ونسبة التأكيد والتوصيل.")}
+          description={t(
+            "اعرف من أين تأتي طلباتك، وما هي منتجاتك الرابحة، ونسبة التأكيد والتوصيل.",
+          )}
           points={[
             t("الطلبات والمداخيل يوماً بيوم"),
             t("أكثر الولايات طلباً"),
@@ -59,7 +71,10 @@ function AnalyticsPro() {
     queryKey: ["analytics", store?.id, DAYS],
     enabled: !!store,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("store_analytics", { _store_id: store!.id, _days: DAYS });
+      const { data, error } = await supabase.rpc("store_analytics", {
+        _store_id: store!.id,
+        _days: DAYS,
+      });
       if (error) throw error;
       return data as unknown as AnalyticsData;
     },
@@ -76,7 +91,10 @@ function AnalyticsPro() {
       revenue: d?.delivered_revenue ?? 0,
       confirmRate: pct(Math.max(0, confirmed)),
       deliveryRate: pct(st.delivered ?? 0),
-      daily: (d?.daily ?? []).map((x) => ({ ...x, label: x.day.slice(8, 10) + "/" + x.day.slice(5, 7) })),
+      daily: (d?.daily ?? []).map((x) => ({
+        ...x,
+        label: x.day.slice(8, 10) + "/" + x.day.slice(5, 7),
+      })),
       wilayas: d?.wilayas ?? [],
       products: d?.products ?? [],
       sources: d?.sources ?? [],
@@ -161,7 +179,13 @@ function AnalyticsPro() {
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} interval={4} />
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                tickLine={false}
+                axisLine={false}
+                interval={4}
+              />
               <YAxis
                 allowDecimals={false}
                 domain={[0, (max: number) => Math.max(max, 1)]}
@@ -176,8 +200,7 @@ function AnalyticsPro() {
                 content={({ active, payload, label }) => {
                   if (!active || !payload?.length) return null;
                   const point = payload[0]?.payload as
-                    | { label: string; orders: number; revenue: number }
-                    | undefined;
+                    { label: string; orders: number; revenue: number } | undefined;
                   if (!point) return null;
                   return (
                     <div
@@ -241,7 +264,11 @@ function AnalyticsPro() {
                     />
                     <Tooltip
                       cursor={{ fill: "var(--muted)/30" }}
-                      contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }}
+                      contentStyle={{
+                        borderRadius: 12,
+                        border: "1px solid var(--border)",
+                        fontSize: 12,
+                      }}
                     />
                     <Bar
                       dataKey="count"
@@ -292,13 +319,18 @@ function AnalyticsPro() {
                   <div className="min-w-0">
                     <p className="truncate">{p.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {t("{orders} طلب · {delivered} مُسلّم", { orders: p.orders, delivered: p.delivered })}
+                      {t("{orders} طلب · {delivered} مُسلّم", {
+                        orders: p.orders,
+                        delivered: p.delivered,
+                      })}
                     </p>
                   </div>
                   <span className="shrink-0 font-medium num">{formatDZD(p.revenue, language)}</span>
                 </li>
               ))}
-              {m.products.length === 0 && <li className="text-muted-foreground">{t("لا توجد بيانات بعد.")}</li>}
+              {m.products.length === 0 && (
+                <li className="text-muted-foreground">{t("لا توجد بيانات بعد.")}</li>
+              )}
             </ul>
           </div>
         </div>
@@ -332,7 +364,9 @@ function AnalyticsPro() {
               </li>
             );
           })}
-          {m.sources.length === 0 && <li className="text-sm text-muted-foreground">{t("لا توجد بيانات بعد.")}</li>}
+          {m.sources.length === 0 && (
+            <li className="text-sm text-muted-foreground">{t("لا توجد بيانات بعد.")}</li>
+          )}
         </ul>
       </div>
     </>

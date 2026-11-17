@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Check, CheckCircle2, ChevronDown, MousePointerClick, ShieldCheck, Sparkles, Truck } from "lucide-react";
+import {
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  MousePointerClick,
+  ShieldCheck,
+  Sparkles,
+  Truck,
+} from "lucide-react";
 import { useInView } from "@/hooks/use-in-view";
 import { useUiLanguage } from "@/lib/ui-i18n";
 import { cn } from "@/lib/utils";
@@ -12,15 +20,35 @@ type Tr = { ar: string; fr: string; en: string };
 
 const SIZES = ["M", "L", "XL", "2XL"] as const;
 const COLORS: { id: string; name: Tr; class: string }[] = [
-  { id: "white", name: { ar: "أبيض", fr: "Blanc", en: "White" }, class: "bg-white border-zinc-300 ring-zinc-800" },
-  { id: "black", name: { ar: "أسود", fr: "Noir", en: "Black" }, class: "bg-zinc-900 border-zinc-800 ring-zinc-800" },
-  { id: "gray", name: { ar: "رمادي", fr: "Gris", en: "Gray" }, class: "bg-zinc-300 border-zinc-400 ring-zinc-500" },
+  {
+    id: "white",
+    name: { ar: "أبيض", fr: "Blanc", en: "White" },
+    class: "bg-white border-zinc-300 ring-zinc-800",
+  },
+  {
+    id: "black",
+    name: { ar: "أسود", fr: "Noir", en: "Black" },
+    class: "bg-zinc-900 border-zinc-800 ring-zinc-800",
+  },
+  {
+    id: "gray",
+    name: { ar: "رمادي", fr: "Gris", en: "Gray" },
+    class: "bg-zinc-300 border-zinc-400 ring-zinc-500",
+  },
 ];
 
 // French leads the example because the public landing page opens in French.
 const COPY = {
-  badge: { ar: "تجربة زبائنك في المتجر", fr: "Expérience d'achat en boutique", en: "Customer checkout experience" },
-  title: { ar: "طلب مكتمل في أقل من 20 ثانية", fr: "Commandé en moins de 20 s", en: "Ordered in under 20s" },
+  badge: {
+    ar: "تجربة زبائنك في المتجر",
+    fr: "Expérience d'achat en boutique",
+    en: "Customer checkout experience",
+  },
+  title: {
+    ar: "طلب مكتمل في أقل من 20 ثانية",
+    fr: "Commandé en moins de 20 s",
+    en: "Ordered in under 20s",
+  },
   subtitle: {
     ar: "نموذج طلب الدفع عند الاستلام الأسرع والأكثر تحويلاً لزيادة مبيعاتك",
     fr: "Un parcours de commande COD rapide et conçu pour convertir davantage",
@@ -36,16 +64,28 @@ const COPY = {
     { ar: "تم استلام الطلب بنجاح", fr: "Commande confirmée", en: "Order confirmed" },
   ] as Tr[],
   replay: { ar: "إعادة العرض", fr: "Rejouer", en: "Replay" },
-  product: { ar: "تيشيرت أوفرسايز California 23", fr: "T-shirt oversize California 23", en: "California 23 Oversize T-Shirt" },
+  product: {
+    ar: "تيشيرت أوفرسايز California 23",
+    fr: "T-shirt oversize California 23",
+    en: "California 23 Oversize T-Shirt",
+  },
   bestSeller: { ar: "الأكثر طلباً", fr: "Meilleure vente", en: "Best Seller" },
   size: { ar: "القياس:", fr: "Taille :", en: "Size:" },
   color: { ar: "اللون:", fr: "Couleur :", en: "Color:" },
   wilaya: { ar: "الولاية والتوصيل:", fr: "Wilaya :", en: "Wilaya:" },
-  selectWilaya: { ar: "اختر الولاية لتحديد سعر التوصيل...", fr: "Choisir la wilaya pour le tarif de livraison...", en: "Select wilaya for delivery rate..." },
+  selectWilaya: {
+    ar: "اختر الولاية لتحديد سعر التوصيل...",
+    fr: "Choisir la wilaya pour le tarif de livraison...",
+    en: "Select wilaya for delivery rate...",
+  },
   wilayaValue: { ar: "16 - الجزائر العاصمة", fr: "16 - Alger", en: "16 - Algiers" },
   name: { ar: "الاسم الكامل", fr: "Nom complet", en: "Full name" },
   fakeName: { ar: "أمين بلقاسم", fr: "Amine Belkacem", en: "John Doe" },
-  confirm: { ar: "اضغط هنا لتأكيد الطلب الآن", fr: "Confirmer la commande", en: "Confirm order now" },
+  confirm: {
+    ar: "اضغط هنا لتأكيد الطلب الآن",
+    fr: "Confirmer la commande",
+    en: "Confirm order now",
+  },
   confirming: { ar: "جارٍ تأكيد الطلب...", fr: "Confirmation...", en: "Confirming..." },
   successTitle: { ar: "تم تسجيل طلبك بنجاح!", fr: "Commande confirmée !", en: "Order confirmed!" },
   successSub: {
@@ -58,14 +98,30 @@ const COPY = {
   specsLabel: { ar: "المواصفات:", fr: "Détails :", en: "Specs:" },
   specsValue: { ar: "قياس (L) - أبيض", fr: "Taille L - Blanc", en: "Size L - White" },
   destLabel: { ar: "الوجهة:", fr: "Destination :", en: "Destination:" },
-  destValue: { ar: "الجزائر العاصمة (توصيل سريع)", fr: "Alger (16) - livraison rapide", en: "Algiers (16) - express delivery" },
+  destValue: {
+    ar: "الجزائر العاصمة (توصيل سريع)",
+    fr: "Alger (16) - livraison rapide",
+    en: "Algiers (16) - express delivery",
+  },
   totalLabel: { ar: "المبلغ الإجمالي:", fr: "Total :", en: "Total amount:" },
-  cod: { ar: "الدفع بأمان عند استلام الطرد", fr: "Paiement à la livraison", en: "Cash on delivery" },
+  cod: {
+    ar: "الدفع بأمان عند استلام الطرد",
+    fr: "Paiement à la livraison",
+    en: "Cash on delivery",
+  },
 } as const;
 
 const money = (n: number) => `${n.toLocaleString("fr-DZ")} دج`;
 
-function SummaryRow({ label, value, num = false }: { label: string; value: string; num?: boolean }) {
+function SummaryRow({
+  label,
+  value,
+  num = false,
+}: {
+  label: string;
+  value: string;
+  num?: boolean;
+}) {
   return (
     <div className="flex items-start justify-between gap-2">
       <span className="shrink-0">{label}</span>
@@ -76,7 +132,7 @@ function SummaryRow({ label, value, num = false }: { label: string; value: strin
 
 export function StorefrontCheckoutShowcase() {
   const language = useUiLanguage();
-  const L = (v?: Tr) => (v ? v[language] ?? v.fr : "");
+  const L = (v?: Tr) => (v ? (v[language] ?? v.fr) : "");
   const [step, setStep] = useState<SimStep>(0);
   const { ref, inView } = useInView<HTMLElement>({ settleMs: 150 });
 
@@ -117,8 +173,12 @@ export function StorefrontCheckoutShowcase() {
           <Sparkles className="size-3" />
           {L(COPY.badge)}
         </span>
-        <h2 className="mt-2.5 text-xl font-bold tracking-tight text-foreground sm:text-2xl">{L(COPY.title)}</h2>
-        <p className="mx-auto mt-1.5 max-w-lg text-sm text-muted-foreground sm:text-base">{L(COPY.subtitle)}</p>
+        <h2 className="mt-2.5 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+          {L(COPY.title)}
+        </h2>
+        <p className="mx-auto mt-1.5 max-w-lg text-sm text-muted-foreground sm:text-base">
+          {L(COPY.subtitle)}
+        </p>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
@@ -182,11 +242,17 @@ export function StorefrontCheckoutShowcase() {
 
             <div className="flex flex-col space-y-3 sm:col-span-7">
               <div>
-                <h3 className="truncate text-base font-bold text-foreground sm:text-lg">{L(COPY.product)}</h3>
+                <h3 className="truncate text-base font-bold text-foreground sm:text-lg">
+                  {L(COPY.product)}
+                </h3>
                 <div className="mt-1 flex items-baseline gap-2">
                   <span className="text-lg font-bold text-foreground num">{money(3200)}</span>
-                  <span className="text-sm text-muted-foreground line-through num">{money(3900)}</span>
-                  <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-[#EA580C] sm:text-sm">-18%</span>
+                  <span className="text-sm text-muted-foreground line-through num">
+                    {money(3900)}
+                  </span>
+                  <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-[#EA580C] sm:text-sm">
+                    -18%
+                  </span>
                 </div>
               </div>
 
@@ -194,7 +260,9 @@ export function StorefrontCheckoutShowcase() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="font-medium text-foreground">{L(COPY.size)}</span>
-                  {selectedSize && <span className="font-bold text-[#EA580C]">({selectedSize})</span>}
+                  {selectedSize && (
+                    <span className="font-bold text-[#EA580C]">({selectedSize})</span>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {SIZES.map((size) => {
@@ -229,7 +297,9 @@ export function StorefrontCheckoutShowcase() {
                 <div className="flex justify-between text-sm">
                   <span className="font-medium text-foreground">{L(COPY.color)}</span>
                   {selectedColor && (
-                    <span className="text-muted-foreground">{L(COLORS.find((c) => c.id === selectedColor)?.name)}</span>
+                    <span className="text-muted-foreground">
+                      {L(COLORS.find((c) => c.id === selectedColor)?.name)}
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -248,7 +318,12 @@ export function StorefrontCheckoutShowcase() {
                         )}
                       >
                         {isSelected && (
-                          <Check className={cn("size-3", col.id === "white" ? "text-zinc-900" : "text-white")} />
+                          <Check
+                            className={cn(
+                              "size-3",
+                              col.id === "white" ? "text-zinc-900" : "text-white",
+                            )}
+                          />
                         )}
                       </button>
                     );
@@ -259,14 +334,25 @@ export function StorefrontCheckoutShowcase() {
               {/* Wilaya */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-secondary/15 px-3 py-2.5 text-sm">
-                  <button type="button" onClick={() => setStep(3)} className="flex min-w-0 items-center gap-1.5 text-start">
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    className="flex min-w-0 items-center gap-1.5 text-start"
+                  >
                     <Truck className="size-3.5 shrink-0 text-[#EA580C]" />
-                    <span className={cn("truncate", step >= 3 ? "font-bold text-foreground" : "text-muted-foreground")}>
+                    <span
+                      className={cn(
+                        "truncate",
+                        step >= 3 ? "font-bold text-foreground" : "text-muted-foreground",
+                      )}
+                    >
                       {selectedWilaya || L(COPY.selectWilaya)}
                     </span>
                   </button>
                   <span className="flex shrink-0 items-center gap-1">
-                    {step >= 3 && <span className="font-bold text-foreground num">+ {money(400)}</span>}
+                    {step >= 3 && (
+                      <span className="font-bold text-foreground num">+ {money(400)}</span>
+                    )}
                     <ChevronDown className="size-3.5 text-muted-foreground" />
                   </span>
                 </div>
@@ -275,10 +361,18 @@ export function StorefrontCheckoutShowcase() {
               {/* Customer details */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex h-10 items-center truncate rounded-lg border border-border bg-secondary/10 px-3 text-sm text-foreground">
-                  {step >= 4 ? L(COPY.fakeName) : <span className="text-muted-foreground/50">{L(COPY.name)}</span>}
+                  {step >= 4 ? (
+                    L(COPY.fakeName)
+                  ) : (
+                    <span className="text-muted-foreground/50">{L(COPY.name)}</span>
+                  )}
                 </div>
                 <div className="flex h-10 items-center truncate rounded-lg border border-border bg-secondary/10 px-3 text-sm text-foreground num">
-                  {step >= 4 ? "0550 12 34 56" : <span className="text-muted-foreground/50">05XX XX XX XX</span>}
+                  {step >= 4 ? (
+                    "0550 12 34 56"
+                  ) : (
+                    <span className="text-muted-foreground/50">05XX XX XX XX</span>
+                  )}
                 </div>
               </div>
 
@@ -304,7 +398,9 @@ export function StorefrontCheckoutShowcase() {
                     </>
                   )}
                 </span>
-                <span className="num rounded-md bg-white/10 px-2 py-0.5 font-bold">{money(totalPrice)}</span>
+                <span className="num rounded-md bg-white/10 px-2 py-0.5 font-bold">
+                  {money(totalPrice)}
+                </span>
               </button>
             </div>
           </div>

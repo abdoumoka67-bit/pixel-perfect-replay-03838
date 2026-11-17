@@ -33,23 +33,39 @@ function ResetPassword() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) { toast.error("Your password must be at least 8 characters long."); return; }
+    if (password.length < 8) {
+      toast.error("Your password must be at least 8 characters long.");
+      return;
+    }
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
-    if (error) { toast.error("This link has expired. Please request a new one."); return; }
+    if (error) {
+      toast.error("This link has expired. Please request a new one.");
+      return;
+    }
     toast.success("Your password has been updated.");
     navigate({ to: "/dashboard", replace: true });
   }
 
   return (
     <div className="theme-forest flex min-h-screen items-center justify-center bg-background px-6">
-      <form onSubmit={submit} className="w-full max-w-sm space-y-5 rounded-2xl bg-card p-8 shadow-card">
+      <form
+        onSubmit={submit}
+        className="w-full max-w-sm space-y-5 rounded-2xl bg-card p-8 shadow-card"
+      >
         <Logo />
         <h1 className="text-2xl font-medium">New password</h1>
         <div className="space-y-1.5">
           <Label htmlFor="pw">New password</Label>
-          <Input id="pw" type="password" dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
+          <Input
+            id="pw"
+            type="password"
+            dir="ltr"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="h-11"
+          />
         </div>
         <Button type="submit" variant="brand" className="w-full" size="lg" disabled={busy}>
           Save

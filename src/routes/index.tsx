@@ -8,7 +8,11 @@ import { getPublicPlans } from "@/lib/storefront.functions";
 import { PlanCards } from "@/components/PlanCards";
 import { cn } from "@/lib/utils";
 import { translate, type TranslationKey } from "@/lib/i18n";
-import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
+import {
+  LanguageMenu,
+  useDocumentLanguage,
+  usePublicLanguage,
+} from "@/components/LanguageSwitcher";
 import { tr, UiLanguageProvider, useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { useInView } from "@/hooks/use-in-view";
 import { DeliveryLogosMarquee } from "@/components/DeliveryLogosMarquee";
@@ -56,7 +60,9 @@ function FaqAccordion() {
             key={i}
             className={cn(
               "rounded-2xl border transition-colors",
-              isOpen ? "border-border/80 bg-card shadow-xs" : "border-border/40 bg-secondary/30 hover:bg-secondary/60",
+              isOpen
+                ? "border-border/80 bg-card shadow-xs"
+                : "border-border/40 bg-secondary/30 hover:bg-secondary/60",
             )}
           >
             <button
@@ -76,7 +82,9 @@ function FaqAccordion() {
             </button>
             {isOpen && (
               <div className="px-4 pb-4 pt-1 sm:px-5 sm:pb-5">
-                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">{tf(faq.a)}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  {tf(faq.a)}
+                </p>
               </div>
             )}
           </div>
@@ -110,7 +118,8 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:description",
-        content: "Create your store, add your product, and share the link. Orders land straight in your dashboard.",
+        content:
+          "Create your store, add your product, and share the link. Orders land straight in your dashboard.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -144,7 +153,9 @@ function FeaturesAccordion() {
               key={f.title}
               className={cn(
                 "rounded-2xl border transition-colors duration-300",
-                isOpen ? "border-border/80 bg-card shadow-xs" : "border-transparent bg-secondary/80 hover:bg-secondary",
+                isOpen
+                  ? "border-border/80 bg-card shadow-xs"
+                  : "border-transparent bg-secondary/80 hover:bg-secondary",
               )}
             >
               <button
@@ -154,10 +165,19 @@ function FeaturesAccordion() {
                 onClick={() => setOpen(isOpen ? null : i)}
                 className="flex w-full items-center gap-4 px-4 py-2 text-start sm:px-5 sm:py-2.5"
               >
-                <span className="w-6 shrink-0 text-xs text-muted-foreground num">{String(i + 1).padStart(2, "0")}</span>
-                <span className="min-w-0 flex-1 text-base font-medium sm:text-lg">{t(f.title)}</span>
+                <span className="w-6 shrink-0 text-xs text-muted-foreground num">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1 text-base font-medium sm:text-lg">
+                  {t(f.title)}
+                </span>
                 <span className="flex size-7.5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                  <ChevronDown className={cn("size-3.5 transition-transform duration-300", isOpen && "rotate-180")} />
+                  <ChevronDown
+                    className={cn(
+                      "size-3.5 transition-transform duration-300",
+                      isOpen && "rotate-180",
+                    )}
+                  />
                 </span>
               </button>
               <div
@@ -168,7 +188,9 @@ function FeaturesAccordion() {
                 )}
               >
                 <div className="overflow-hidden">
-                  <p className="px-4 pb-4 ps-12 text-sm leading-relaxed text-muted-foreground sm:px-5 sm:ps-14">{t(f.text)}</p>
+                  <p className="px-4 pb-4 ps-12 text-sm leading-relaxed text-muted-foreground sm:px-5 sm:ps-14">
+                    {t(f.text)}
+                  </p>
                 </div>
               </div>
             </li>
@@ -236,7 +258,8 @@ function Home() {
   const { language, setLanguage } = usePublicLanguage("fr");
   const isRtl = language === "ar";
   useDocumentLanguage(language);
-  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) =>
+    translate(language, key, vars);
   const [heroLine1 = "", heroLine2] = t("landing.hero.title").split("\n");
   const [email, setEmail] = useState("");
   const [pricingMonths, setPricingMonths] = useState(1);
@@ -298,8 +321,7 @@ function Home() {
 
     return (
       <span className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 lg:flex-nowrap lg:whitespace-nowrap">
-        <span>{part1}</span>{" "}
-        {part2 && <span>{part2}</span>}
+        <span>{part1}</span> {part2 && <span>{part2}</span>}
       </span>
     );
   }
@@ -313,7 +335,10 @@ function Home() {
 
   return (
     <UiLanguageProvider language={language}>
-      <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-card" dir={isRtl ? "rtl" : "ltr"}>
+      <div
+        className="min-h-screen w-full max-w-full overflow-x-hidden bg-card"
+        dir={isRtl ? "rtl" : "ltr"}
+      >
         <header className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-5">
           <Logo className="min-w-0 shrink" />
           <div className="flex shrink-0 items-center gap-1.5">
@@ -354,7 +379,12 @@ function Home() {
               </TextSelectionHighlight>
             )}
           </h1>
-          <p className={cn("text-base text-[#6B6B6B] sm:text-lg max-w-2xl mx-auto", isRtl ? "mt-4 mb-8" : "mt-4 mb-8")}>
+          <p
+            className={cn(
+              "text-base text-[#6B6B6B] sm:text-lg max-w-2xl mx-auto",
+              isRtl ? "mt-4 mb-8" : "mt-4 mb-8",
+            )}
+          >
             {t("landing.hero.sub")}
           </p>
           <form
@@ -407,8 +437,12 @@ function Home() {
               <span className="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground">
                 {tr(language, "الأسئلة الأكثر شيوعاً")}
               </span>
-              <h2 className="mt-4 text-2xl font-medium sm:text-3xl">{tr(language, "كل ما تحتاج معرفته عن oranix")}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">{tr(language, "إجابات واضحة ومباشرة لأهم الأسئلة التي يطرحها التجار")}</p>
+              <h2 className="mt-4 text-2xl font-medium sm:text-3xl">
+                {tr(language, "كل ما تحتاج معرفته عن oranix")}
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {tr(language, "إجابات واضحة ومباشرة لأهم الأسئلة التي يطرحها التجار")}
+              </p>
             </div>
             <FaqAccordion />
           </div>
@@ -426,8 +460,19 @@ function Home() {
                   months={pricingMonths}
                   onMonthsChange={setPricingMonths}
                   action={(p) => (
-                    <Button asChild size="lg" variant={p.tier === "pro" ? "outline" : "default"} className={p.tier === "pro" ? "w-full rounded-[12px] border-transparent text-foreground" : "w-full rounded-[12px]"}>
-                      <Link to="/auth" search={{ mode: "signup" }}>{t("landing.cta")}</Link>
+                    <Button
+                      asChild
+                      size="lg"
+                      variant={p.tier === "pro" ? "outline" : "default"}
+                      className={
+                        p.tier === "pro"
+                          ? "w-full rounded-[12px] border-transparent text-foreground"
+                          : "w-full rounded-[12px]"
+                      }
+                    >
+                      <Link to="/auth" search={{ mode: "signup" }}>
+                        {t("landing.cta")}
+                      </Link>
                     </Button>
                   )}
                 />

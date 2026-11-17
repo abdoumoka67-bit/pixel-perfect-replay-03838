@@ -37,7 +37,9 @@ function parseArgs(argv) {
 
 const opts = parseArgs(process.argv.slice(2));
 if (opts.help || !opts.url) {
-  console.log(`usage: bun scripts/load-test.mjs --url <url> [--concurrency 10] [--seconds 10] [--timeout 15000] [--header "k: v"]`);
+  console.log(
+    `usage: bun scripts/load-test.mjs --url <url> [--concurrency 10] [--seconds 10] [--timeout 15000] [--header "k: v"]`,
+  );
   process.exit(opts.url ? 0 : 1);
 }
 
@@ -82,7 +84,9 @@ function percentile(sorted, p) {
 }
 
 console.log(`target      ${opts.url}`);
-console.log(`concurrency ${opts.concurrency}   duration ${opts.seconds}s   timeout ${opts.timeoutMs}ms`);
+console.log(
+  `concurrency ${opts.concurrency}   duration ${opts.seconds}s   timeout ${opts.timeoutMs}ms`,
+);
 const wallStart = performance.now();
 await Promise.all(Array.from({ length: opts.concurrency }, () => worker()));
 const elapsed = (performance.now() - wallStart) / 1000;
@@ -90,12 +94,17 @@ const elapsed = (performance.now() - wallStart) / 1000;
 const sorted = [...durations].sort((a, b) => a - b);
 const failed = [...errors.values()].reduce((a, b) => a + b, 0);
 const ok = durations.length - failed;
-const statusText = [...statuses.entries()].sort((a, b) => a[0] - b[0]).map(([s, n]) => `${s}:${n}`).join(" ");
+const statusText = [...statuses.entries()]
+  .sort((a, b) => a[0] - b[0])
+  .map(([s, n]) => `${s}:${n}`)
+  .join(" ");
 const errorText = [...errors.entries()].map(([s, n]) => `${s}:${n}`).join(" ") || "-";
 
 console.log("");
 console.log(`requests    ${durations.length} in ${elapsed.toFixed(2)}s`);
-console.log(`throughput  ${(durations.length / elapsed).toFixed(1)} req/s   ok=${ok}  failed=${failed}`);
+console.log(
+  `throughput  ${(durations.length / elapsed).toFixed(1)} req/s   ok=${ok}  failed=${failed}`,
+);
 console.log(`status      ${statusText || "-"}`);
 console.log(`errors      ${errorText}`);
 console.log(

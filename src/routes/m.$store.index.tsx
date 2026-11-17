@@ -32,7 +32,9 @@ export const Route = createFileRoute("/m/$store/")({
   },
   head: ({ loaderData }) => {
     if (!loaderData?.store) {
-      return { meta: [{ title: tr("en", "المتجر غير موجود") }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [{ title: tr("en", "المتجر غير موجود") }, { name: "robots", content: "noindex" }],
+      };
     }
     const lang = loaderData.store.storefront_config?.language ?? "en";
     const title = `${loaderData.store.name} — ${tr(lang, "تسوق والدفع عند الاستلام")}`;
@@ -50,7 +52,12 @@ export const Route = createFileRoute("/m/$store/")({
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
-        ...(image ? [{ property: "og:image", content: image }, { name: "twitter:image", content: image }] : []),
+        ...(image
+          ? [
+              { property: "og:image", content: image },
+              { name: "twitter:image", content: image },
+            ]
+          : []),
       ],
     };
   },
@@ -142,7 +149,9 @@ function Storefront() {
   const socialFacebook = normalizeUrl(config.sections.social.facebook);
   const socialTiktok = normalizeUrl(config.sections.social.tiktok);
 
-  const hasSocialLinks = Boolean(socialWhatsapp || socialInstagram || socialFacebook || socialTiktok);
+  const hasSocialLinks = Boolean(
+    socialWhatsapp || socialInstagram || socialFacebook || socialTiktok,
+  );
 
   return (
     <StoreChrome store={store}>
@@ -173,21 +182,27 @@ function Storefront() {
         <div className="relative z-10">
           <h1
             style={
-              (config.title_offset_x || config.title_offset_y)
-                ? { transform: `translate(${config.title_offset_x ?? 0}px, ${config.title_offset_y ?? 0}px)` }
+              config.title_offset_x || config.title_offset_y
+                ? {
+                    transform: `translate(${config.title_offset_x ?? 0}px, ${config.title_offset_y ?? 0}px)`,
+                  }
                 : undefined
             }
             className={`font-normal leading-tight ${titleSizeClass[config.title_size]}`}
           >
             {config.hero_title}
           </h1>
-          <p className={`mt-5 max-w-md text-lg font-light leading-9 opacity-90 sm:text-xl ${config.text_align === "center" ? "mx-auto" : config.text_align === "start" ? "me-auto" : "ms-auto"}`}>
+          <p
+            className={`mt-5 max-w-md text-lg font-light leading-9 opacity-90 sm:text-xl ${config.text_align === "center" ? "mx-auto" : config.text_align === "start" ? "me-auto" : "ms-auto"}`}
+          >
             {config.hero_subtitle}
           </p>
           <div
             style={
-              (config.button_offset_x || config.button_offset_y)
-                ? { transform: `translate(${config.button_offset_x ?? 0}px, ${config.button_offset_y ?? 0}px)` }
+              config.button_offset_x || config.button_offset_y
+                ? {
+                    transform: `translate(${config.button_offset_x ?? 0}px, ${config.button_offset_y ?? 0}px)`,
+                  }
                 : undefined
             }
             className={`mt-8 flex ${buttonAlignClass[config.button_align]}`}
@@ -213,7 +228,8 @@ function Storefront() {
         <h2 className="mb-6 px-1 text-2xl font-bold sm:text-3xl">{t("منتجاتنا")}</h2>
         {products.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground">
-            <Package className="mx-auto mb-3 size-10" strokeWidth={1.4} /> {t("لا توجد منتجات حالياً.")}
+            <Package className="mx-auto mb-3 size-10" strokeWidth={1.4} />{" "}
+            {t("لا توجد منتجات حالياً.")}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
@@ -267,7 +283,9 @@ function Storefront() {
                     <div className="flex size-12 items-center justify-center rounded-full bg-brand-soft text-brand">
                       <Icon className="size-6" strokeWidth={1.5} />
                     </div>
-                    <span className="text-sm font-medium leading-relaxed">{trustBadgeLabel(badgeKey, language)}</span>
+                    <span className="text-sm font-medium leading-relaxed">
+                      {trustBadgeLabel(badgeKey, language)}
+                    </span>
                   </div>
                 );
               })}
@@ -324,11 +342,16 @@ function Storefront() {
         <section className="border-t py-12 text-center">
           <div className="mx-auto max-w-xl px-4">
             <h2 className="mb-2 text-xl font-bold">{t("تابعنا على وسائل التواصل")}</h2>
-            <p className="mb-6 text-sm text-muted-foreground">{t("تواصل معنا وتابع آخر العروض والتحديثات")}</p>
+            <p className="mb-6 text-sm text-muted-foreground">
+              {t("تواصل معنا وتابع آخر العروض والتحديثات")}
+            </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               {socialWhatsapp && (
                 <a
-                  href={whatsappLink(socialWhatsapp, t("السلام عليكم، عندي استفسار عن متجر {store}", { store: store.name }))}
+                  href={whatsappLink(
+                    socialWhatsapp,
+                    t("السلام عليكم، عندي استفسار عن متجر {store}", { store: store.name }),
+                  )}
                   target="_blank"
                   rel="noreferrer"
                   className="flex size-12 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary hover:bg-secondary"

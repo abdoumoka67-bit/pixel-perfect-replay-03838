@@ -5,7 +5,15 @@ import { useMyStore } from "@/hooks/use-my-store";
 import { useTr } from "@/lib/ui-i18n";
 
 /** Shown in place of a Pro-only page when the store is on Start. */
-export function ProLock({ title, description, points }: { title: string; description: string; points: string[] }) {
+export function ProLock({
+  title,
+  description,
+  points,
+}: {
+  title: string;
+  description: string;
+  points: string[];
+}) {
   const { isOwner } = useMyStore();
   const t = useTr();
   return (
@@ -13,7 +21,9 @@ export function ProLock({ title, description, points }: { title: string; descrip
       <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand">
         <Lock className="size-6" strokeWidth={1.6} />
       </span>
-      <span className="mt-5 inline-flex rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">Pro</span>
+      <span className="mt-5 inline-flex rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+        Pro
+      </span>
       <h2 className="mt-3 text-2xl font-medium">{title}</h2>
       <p className="mt-2 leading-7 text-muted-foreground">{description}</p>
       <ul className="mx-auto mt-6 max-w-sm space-y-2.5 text-start text-sm">
@@ -29,7 +39,9 @@ export function ProLock({ title, description, points }: { title: string; descrip
           <Link to="/dashboard/billing">{t("الترقية إلى Pro")}</Link>
         </Button>
       ) : (
-        <p className="mt-7 rounded-full bg-secondary px-4 py-3 text-sm text-muted-foreground">{t("اطلب من صاحب المتجر الترقية إلى Pro.")}</p>
+        <p className="mt-7 rounded-full bg-secondary px-4 py-3 text-sm text-muted-foreground">
+          {t("اطلب من صاحب المتجر الترقية إلى Pro.")}
+        </p>
       )}
     </div>
   );
@@ -38,7 +50,9 @@ export function ProLock({ title, description, points }: { title: string; descrip
 /** Small "Pro" pill for labels and menu items. */
 export function ProPill({ className = "" }: { className?: string }) {
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground ${className}`}
+    >
       <Lock className="size-2.5" /> Pro
     </span>
   );

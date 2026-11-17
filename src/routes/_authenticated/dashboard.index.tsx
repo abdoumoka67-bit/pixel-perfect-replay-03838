@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowUpRight, CheckCircle2, Clock, PackageCheck, Plus, Truck, XCircle, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  CheckCircle2,
+  Clock,
+  PackageCheck,
+  Plus,
+  Truck,
+  XCircle,
+  Sparkles,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
@@ -17,7 +27,12 @@ const CARDS: { status: OrderStatus; label: string; icon: typeof Clock; tone: str
   { status: "new", label: "طلبات جديدة", icon: Sparkles, tone: "bg-info-soft text-info" },
   { status: "confirmed", label: "مؤكدة", icon: CheckCircle2, tone: "bg-warning-soft text-warning" },
   { status: "shipping", label: "قيد التوصيل", icon: Truck, tone: "bg-brand-soft text-brand" },
-  { status: "delivered", label: "تم التوصيل", icon: PackageCheck, tone: "bg-success-soft text-success" },
+  {
+    status: "delivered",
+    label: "تم التوصيل",
+    icon: PackageCheck,
+    tone: "bg-success-soft text-success",
+  },
   { status: "cancelled", label: "ملغاة", icon: XCircle, tone: "bg-danger-soft text-danger" },
 ];
 
@@ -88,7 +103,9 @@ function Overview() {
               className="flex min-w-[125px] shrink-0 snap-start flex-col justify-between rounded-2xl bg-card p-3 shadow-card transition-all hover:shadow-md sm:min-w-0 sm:flex-1"
             >
               <div className="flex items-center justify-between gap-1.5">
-                <p className="min-w-0 truncate text-xs font-medium text-muted-foreground">{t(c.label)}</p>
+                <p className="min-w-0 truncate text-xs font-medium text-muted-foreground">
+                  {t(c.label)}
+                </p>
                 <div
                   className={`inline-flex size-6 shrink-0 items-center justify-center rounded-lg sm:size-7 ${c.tone}`}
                 >
@@ -113,7 +130,10 @@ function Overview() {
         <div className="rounded-2xl bg-card p-5 shadow-card lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-medium">{t("آخر الطلبات")}</h2>
-            <Link to="/dashboard/orders" className="inline-flex items-center gap-1 text-sm text-brand hover:underline">
+            <Link
+              to="/dashboard/orders"
+              className="inline-flex items-center gap-1 text-sm text-brand hover:underline"
+            >
               {t("عرض الكل")} <ArrowLeft className="size-4" />
             </Link>
           </div>
@@ -150,11 +170,15 @@ function Overview() {
             {totalOrders > 0 && (
               <span
                 className={`inline-flex items-center gap-0.5 text-xs font-medium num ${
-                  Number(delivered?.orders_count ?? 0) / totalOrders >= 0.5 ? "text-emerald-400" : "text-amber-400"
+                  Number(delivered?.orders_count ?? 0) / totalOrders >= 0.5
+                    ? "text-emerald-400"
+                    : "text-amber-400"
                 }`}
                 dir="ltr"
               >
-                <span>{Math.round((Number(delivered?.orders_count ?? 0) / totalOrders) * 100)}%</span>
+                <span>
+                  {Math.round((Number(delivered?.orders_count ?? 0) / totalOrders) * 100)}%
+                </span>
                 <ArrowUpRight className="size-3.5 shrink-0" />
               </span>
             )}

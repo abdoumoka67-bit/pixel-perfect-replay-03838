@@ -31,7 +31,11 @@ function YalidinePage() {
     queryKey: ["yalidine", store?.id],
     enabled: !!store,
     queryFn: async () => {
-      const { data, error } = await supabase.from("yalidine_credentials").select("*").eq("store_id", store!.id).maybeSingle();
+      const { data, error } = await supabase
+        .from("yalidine_credentials")
+        .select("*")
+        .eq("store_id", store!.id)
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -50,7 +54,8 @@ function YalidinePage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      if (apiId.trim().length < 3 || apiToken.trim().length < 3) throw new Error(t("أدخل API ID و API Token"));
+      if (apiId.trim().length < 3 || apiToken.trim().length < 3)
+        throw new Error(t("أدخل API ID و API Token"));
       const { error } = await supabase
         .from("yalidine_credentials")
         .upsert({ store_id: store!.id, api_id: apiId.trim(), api_token: apiToken.trim() });
@@ -65,7 +70,10 @@ function YalidinePage() {
 
   const remove = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("yalidine_credentials").delete().eq("store_id", store!.id);
+      const { error } = await supabase
+        .from("yalidine_credentials")
+        .delete()
+        .eq("store_id", store!.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -109,21 +117,46 @@ function YalidinePage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="apiid">API ID</Label>
-            <Input id="apiid" dir="ltr" value={apiId} onChange={(e) => setApiId(e.target.value)} autoComplete="off" />
+            <Input
+              id="apiid"
+              dir="ltr"
+              value={apiId}
+              onChange={(e) => setApiId(e.target.value)}
+              autoComplete="off"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="apitoken">API Token</Label>
-            <Input id="apitoken" type="password" dir="ltr" value={apiToken} onChange={(e) => setApiToken(e.target.value)} autoComplete="off" />
+            <Input
+              id="apitoken"
+              type="password"
+              dir="ltr"
+              value={apiToken}
+              onChange={(e) => setApiToken(e.target.value)}
+              autoComplete="off"
+            />
           </div>
           <div className="flex flex-wrap gap-2">
             <Button type="submit" variant="brand" disabled={save.isPending}>
               {save.isPending ? <Loader2 className="animate-spin" /> : <Save />} {t("حفظ")}
             </Button>
-            <Button type="button" variant="outline" disabled={test.isPending} onClick={() => test.mutate()}>
-              {test.isPending ? <Loader2 className="animate-spin" /> : <PlugZap />} {t("اختبار الاتصال")}
+            <Button
+              type="button"
+              variant="outline"
+              disabled={test.isPending}
+              onClick={() => test.mutate()}
+            >
+              {test.isPending ? <Loader2 className="animate-spin" /> : <PlugZap />}{" "}
+              {t("اختبار الاتصال")}
             </Button>
             {creds.data && (
-              <Button type="button" variant="ghost" className="text-danger" disabled={remove.isPending} onClick={() => remove.mutate()}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-danger"
+                disabled={remove.isPending}
+                onClick={() => remove.mutate()}
+              >
                 <Trash2 /> {t("فصل الحساب")}
               </Button>
             )}
@@ -138,7 +171,9 @@ function YalidinePage() {
             <li>{t("اضغط «اختبار الاتصال» للتأكد.")}</li>
           </ol>
           <p className="mt-5 text-xs text-sidebar-muted">
-            {t("ولاية الإرسال تُحدَّد من «إعدادات المتجر». مفاتيحك مرئية لك فقط ولا يطّلع عليها أي تاجر آخر.")}
+            {t(
+              "ولاية الإرسال تُحدَّد من «إعدادات المتجر». مفاتيحك مرئية لك فقط ولا يطّلع عليها أي تاجر آخر.",
+            )}
           </p>
         </div>
       </div>

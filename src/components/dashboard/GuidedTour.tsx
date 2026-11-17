@@ -4,11 +4,31 @@ import { useMyStore } from "@/hooks/use-my-store";
 import { useTr } from "@/lib/ui-i18n";
 
 const steps = [
-  { id: "tour-products", title: "المنتجات", body: "من هنا تضيف منتجاتك، صورها، وأسعارها وتحصل على روابط مخصصة لنشرها في إعلاناتك." },
-  { id: "tour-orders", title: "الطلبات وسجل المكالمات", body: "كل زبون يطلب يظهر هنا فوراً. يمكنك الاتصال به بنقرة واحدة وتسجيل نتائج التأكيد." },
-  { id: "tour-delivery", title: "شركات التوصيل وYalidine", body: "اربط شركة التوصيل الخاصة بك لإرسال الطلبات المؤكدة والحصول على أرقام التتبع تلقائياً." },
-  { id: "tour-analytics", title: "الميزات المتقدمة", body: "مظهر متجرك المخصص، بيكسل Meta (فيسبوك وإنستغرام)، والإحصائيات المتقدمة كلها مفعلة مجاناً في تجربتك." },
-  { id: "tour-preview", title: "معاينة متجرك", body: "اضغط هنا في أي وقت لترى متجرك كما يراه زبائنك تماماً وتجربة الطلب بنفسك." },
+  {
+    id: "tour-products",
+    title: "المنتجات",
+    body: "من هنا تضيف منتجاتك، صورها، وأسعارها وتحصل على روابط مخصصة لنشرها في إعلاناتك.",
+  },
+  {
+    id: "tour-orders",
+    title: "الطلبات وسجل المكالمات",
+    body: "كل زبون يطلب يظهر هنا فوراً. يمكنك الاتصال به بنقرة واحدة وتسجيل نتائج التأكيد.",
+  },
+  {
+    id: "tour-delivery",
+    title: "شركات التوصيل وYalidine",
+    body: "اربط شركة التوصيل الخاصة بك لإرسال الطلبات المؤكدة والحصول على أرقام التتبع تلقائياً.",
+  },
+  {
+    id: "tour-analytics",
+    title: "الميزات المتقدمة",
+    body: "مظهر متجرك المخصص، بيكسل Meta (فيسبوك وإنستغرام)، والإحصائيات المتقدمة كلها مفعلة مجاناً في تجربتك.",
+  },
+  {
+    id: "tour-preview",
+    title: "معاينة متجرك",
+    body: "اضغط هنا في أي وقت لترى متجرك كما يراه زبائنك تماماً وتجربة الطلب بنفسك.",
+  },
 ] as const;
 
 export function RestartTourButton({ className }: { className?: string }) {
@@ -37,7 +57,12 @@ export function GuidedTour() {
   const t = useTr();
   const [stepIndex, setStepIndex] = useState(0);
   const [open, setOpen] = useState(false);
-  const [highlight, setHighlight] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+  const [highlight, setHighlight] = useState<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!store) return;
@@ -63,10 +88,12 @@ export function GuidedTour() {
     const id = steps[stepIndex]?.id ?? "";
     // The same target can exist in the desktop sidebar and the phone bottom bar; use the one actually on screen.
     const findVisible = () =>
-      Array.from(document.querySelectorAll<HTMLElement>(`#${id}, [data-tour="${id}"]`)).find((el) => {
-        const r = el.getBoundingClientRect();
-        return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
-      });
+      Array.from(document.querySelectorAll<HTMLElement>(`#${id}, [data-tour="${id}"]`)).find(
+        (el) => {
+          const r = el.getBoundingClientRect();
+          return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
+        },
+      );
     const updateHighlight = () => {
       const currentTarget = findVisible();
       if (!currentTarget) {
@@ -91,7 +118,10 @@ export function GuidedTour() {
       return { left: "50%", top: "50%", transform: "translate(-50%, -50%)" };
     }
     const width = Math.min(360, window.innerWidth - 32);
-    const x = Math.max(16, Math.min(window.innerWidth - width - 16, highlight.left + highlight.width / 2 - width / 2));
+    const x = Math.max(
+      16,
+      Math.min(window.innerWidth - width - 16, highlight.left + highlight.width / 2 - width / 2),
+    );
     // Lower half of the screen: open above the target; upper half: open below it.
     if (highlight.top > window.innerHeight / 2) {
       return { left: `${x}px`, bottom: `${window.innerHeight - highlight.top + 16}px` };
@@ -133,24 +163,47 @@ export function GuidedTour() {
           }}
         />
       )}
-      <div className="absolute z-20 w-[min(360px,calc(100vw-32px))] rounded-2xl border border-border bg-white p-4 shadow-float" style={tooltipStyle}>
+      <div
+        className="absolute z-20 w-[min(360px,calc(100vw-32px))] rounded-2xl border border-border bg-white p-4 shadow-float"
+        style={tooltipStyle}
+      >
         <div className="mb-3 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-2 py-1 text-[11px] font-medium text-brand">
             <Sparkles className="size-3.5" /> {t("{n} من 5", { n: stepIndex + 1 })}
           </span>
-          <button type="button" onClick={closeTour} className="rounded-full p-1.5 text-muted-foreground hover:bg-background" aria-label={t("إغلاق")}>
+          <button
+            type="button"
+            onClick={closeTour}
+            className="rounded-full p-1.5 text-muted-foreground hover:bg-background"
+            aria-label={t("إغلاق")}
+          >
             <X className="size-4" />
           </button>
         </div>
         <h3 className="text-xl font-medium text-primary">{t(step.title)}</h3>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{t(step.body)}</p>
         <div className="mt-5 flex items-center justify-between gap-2">
-          <button type="button" onClick={goPrev} disabled={stepIndex === 0} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-2 text-sm text-muted-foreground disabled:opacity-40">
+          <button
+            type="button"
+            onClick={goPrev}
+            disabled={stepIndex === 0}
+            className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-2 text-sm text-muted-foreground disabled:opacity-40"
+          >
             <ChevronLeft className="size-4" /> {t("السابق")}
           </button>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={closeTour} className="rounded-full px-3 py-2 text-sm text-muted-foreground">{t("تخطي")}</button>
-            <button type="button" onClick={goNext} className="inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm text-white">
+            <button
+              type="button"
+              onClick={closeTour}
+              className="rounded-full px-3 py-2 text-sm text-muted-foreground"
+            >
+              {t("تخطي")}
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              className="inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm text-white"
+            >
               {isLast ? t("تم") : t("التالي")} <ArrowRight className="size-4" />
             </button>
           </div>

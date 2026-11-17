@@ -194,7 +194,9 @@ function DashboardLayout() {
             ) : (
               <>
                 <VolumeX className="size-3.5 text-muted-foreground" />
-                <span className="hidden text-muted-foreground sm:inline">{t("تنبيه الطلبات مكتوم")}</span>
+                <span className="hidden text-muted-foreground sm:inline">
+                  {t("تنبيه الطلبات مكتوم")}
+                </span>
               </>
             )}
           </button>
@@ -205,7 +207,9 @@ function DashboardLayout() {
             <ShieldOff className="size-6" strokeWidth={1.6} />
           </span>
           <h1 className="mt-4 text-xl font-medium">{t("هذه الصفحة غير متاحة لك")}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{t("صاحب المتجر هو من يحدد صلاحيات كل عضو في الفريق.")}</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {t("صاحب المتجر هو من يحدد صلاحيات كل عضو في الفريق.")}
+          </p>
           <Button asChild className="mt-6">
             <Link to="/dashboard/orders">{t("الذهاب إلى الطلبات")}</Link>
           </Button>

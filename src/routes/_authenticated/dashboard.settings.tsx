@@ -4,7 +4,17 @@ import { useServerFn } from "@tanstack/react-start";
 import { verifyCustomDomain } from "@/lib/domain.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Copy, ExternalLink, Globe, ImagePlus, Loader2, Palette, Save, Target, X } from "lucide-react";
+import {
+  Copy,
+  ExternalLink,
+  Globe,
+  ImagePlus,
+  Loader2,
+  Palette,
+  Save,
+  Target,
+  X,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { ProLock, ProPill } from "@/components/dashboard/ProLock";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +22,13 @@ import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { WILAYAS } from "@/data/wilayas";
 import { useMyStore } from "@/hooks/use-my-store";
 import { useSignedUrls } from "@/hooks/use-signed-urls";
@@ -86,7 +102,9 @@ function SettingsPage() {
     const instantUrl = URL.createObjectURL(f);
     setLocalLogoPreview(instantUrl);
     const path = `${user.id}/logo-${crypto.randomUUID()}.${fileExt(f)}`;
-    const { error } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, f, { contentType: f.type });
+    const { error } = await supabase.storage
+      .from(PRODUCT_BUCKET)
+      .upload(path, f, { contentType: f.type });
     if (error) {
       toast.error(t("تعذر رفع الشعار"));
       setLocalLogoPreview(null);
@@ -118,7 +136,8 @@ function SettingsPage() {
     onError: (e: Error) => toast.error(t(friendlyError(e.message, t("تعذر الحفظ")))),
   });
 
-  const storeUrl = typeof window !== "undefined" && store ? `${window.location.origin}/m/${store.slug}` : "";
+  const storeUrl =
+    typeof window !== "undefined" && store ? `${window.location.origin}/m/${store.slug}` : "";
 
   return (
     <div className="space-y-10">
@@ -167,8 +186,12 @@ function SettingsPage() {
             </div>
             <div>
               <p className="font-medium">{t("شعار المتجر")}</p>
-              <p className="text-xs text-muted-foreground">{t("يظهر في صفحات الهبوط. مربع، حتى 5MB.")}</p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground/80">{t("ينصح بوضع الشعار بدون خلفية")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("يظهر في صفحات الهبوط. مربع، حتى 5MB.")}
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground/80">
+                {t("ينصح بوضع الشعار بدون خلفية")}
+              </p>
               {(logo || localLogoPreview) && (
                 <button
                   type="button"
@@ -182,7 +205,13 @@ function SettingsPage() {
                 </button>
               )}
             </div>
-            <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => uploadLogo(e.target.files?.[0])} />
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => uploadLogo(e.target.files?.[0])}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="sname">{t("اسم المتجر")}</Label>
@@ -190,17 +219,36 @@ function SettingsPage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="sslug">{t("رابط المتجر")}</Label>
-            <Input id="sslug" dir="ltr" value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} />
-            <p className="text-xs text-muted-foreground">{t("تغيير الرابط يوقف الروابط القديمة المنشورة في إعلاناتك.")}</p>
+            <Input
+              id="sslug"
+              dir="ltr"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t("تغيير الرابط يوقف الروابط القديمة المنشورة في إعلاناتك.")}
+            </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="sphone">{t("رقم الهاتف")}</Label>
-              <Input id="sphone" dir="ltr" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              <Input
+                id="sphone"
+                dir="ltr"
+                inputMode="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="swa">{t("رقم واتساب")}</Label>
-              <Input id="swa" dir="ltr" inputMode="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+              <Input
+                id="swa"
+                dir="ltr"
+                inputMode="tel"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+              />
             </div>
           </div>
           <div className="space-y-1.5">
@@ -225,9 +273,13 @@ function SettingsPage() {
         <div className="space-y-6">
           <div className="h-fit rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-card">
             <h2 className="font-medium">{t("رابط متجرك")}</h2>
-            <p className="mt-1 text-sm text-sidebar-muted">{t("شاركه في البايو على إنستغرام وتيك توك.")}</p>
+            <p className="mt-1 text-sm text-sidebar-muted">
+              {t("شاركه في البايو على إنستغرام وتيك توك.")}
+            </p>
             <div className="mt-4 flex min-w-0 items-center gap-2 rounded-xl bg-sidebar-accent px-4 py-3">
-              <span className="min-w-0 flex-1 truncate text-sm" dir="ltr">{storeUrl}</span>
+              <span className="min-w-0 flex-1 truncate text-sm" dir="ltr">
+                {storeUrl}
+              </span>
               <button
                 type="button"
                 className="rounded-lg p-1.5 text-sidebar-muted hover:text-sidebar-foreground"
@@ -261,7 +313,9 @@ function SettingsPage() {
             </span>
             <div>
               <h2 className="font-medium">{t("مظهر وتصميم المتجر")}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{t("خصص واجهة متجرك وأقسامه من محرر التصميم.")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("خصص واجهة متجرك وأقسامه من محرر التصميم.")}
+              </p>
             </div>
           </div>
           <Button asChild variant="outline" className="shrink-0">
@@ -271,9 +325,7 @@ function SettingsPage() {
       </div>
 
       <div className="border-t border-border pt-8">
-      {store ? (
-        <CustomDomainSection store={store} readOnly={readOnly} isPro={isPro} />
-      ) : null}
+        {store ? <CustomDomainSection store={store} readOnly={readOnly} isPro={isPro} /> : null}
       </div>
     </div>
   );
@@ -324,18 +376,30 @@ function PixelCard(props: {
         </Button>
       ) : (
         <>
-          <Button type="button" className="w-full" disabled={props.saving || props.disabled} onClick={props.onSave}>
+          <Button
+            type="button"
+            className="w-full"
+            disabled={props.saving || props.disabled}
+            onClick={props.onSave}
+          >
             {props.saving ? <Loader2 className="animate-spin" /> : <Save />} {t("حفظ البيكسل")}
           </Button>
           <div className="space-y-1.5 border-t border-border pt-3">
-            <Button asChild variant="ghost" size="sm" className="w-full justify-start gap-2 px-2 text-xs">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 px-2 text-xs"
+            >
               <a href={`${props.storeUrl}?pixel_debug=1`} target="_blank" rel="noreferrer">
                 <ExternalLink className="size-3.5" />
                 {t("افتح المتجر في وضع فحص البيكسل")}
               </a>
             </Button>
             <p className="px-2 text-[11px] leading-5 text-muted-foreground">
-              {t("سجّل في Meta Events Manager ← Test Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.")}
+              {t(
+                "سجّل في Meta Events Manager ← Test Events، ثم افتح الرابط أعلاه لتشاهد كل حدث لحظة إرساله.",
+              )}
             </p>
           </div>
         </>
@@ -371,9 +435,11 @@ function CustomDomainSection({
 
   const saveDomain = useMutation({
     mutationFn: async () => {
-      const base = (store.storefront_config && typeof store.storefront_config === "object"
-        ? (store.storefront_config as Record<string, unknown>)
-        : {}) as Record<string, unknown>;
+      const base = (
+        store.storefront_config && typeof store.storefront_config === "object"
+          ? (store.storefront_config as Record<string, unknown>)
+          : {}
+      ) as Record<string, unknown>;
       const next = { domain: domainClean, status: "pending" as const };
       const { error } = await supabase
         .from("stores")
@@ -405,7 +471,9 @@ function CustomDomainSection({
         <h2 className="mb-4 font-medium">{t("الدومين المخصص (Custom Domain)")}</h2>
         <ProLock
           title={t("الدومين المخصص حصري لباقة Pro")}
-          description={t("اربط متجرك بدومينك الخاص مثل storename.com مباشرة بدل الرابط الفرعي — متاح لمشتركي باقة Pro.")}
+          description={t(
+            "اربط متجرك بدومينك الخاص مثل storename.com مباشرة بدل الرابط الفرعي — متاح لمشتركي باقة Pro.",
+          )}
           points={[
             t("دومينك الخاص بالكامل: storename.com"),
             t("شهادة SSL تلقائية عند التحقق"),
@@ -434,7 +502,12 @@ function CustomDomainSection({
               {saved.status === "active" ? t("نشط (Active)") : t("قيد التحقق (Pending)")}
             </Badge>
             {saved.status !== "active" && (
-              <Button size="sm" variant="outline" disabled={verify.isPending} onClick={() => verify.mutate()}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={verify.isPending}
+                onClick={() => verify.mutate()}
+              >
                 {verify.isPending ? <Loader2 className="animate-spin" /> : null} {t("تحقق الآن")}
               </Button>
             )}
@@ -453,7 +526,9 @@ function CustomDomainSection({
           aria-invalid={Boolean(domain) && !domainValid}
         />
         {domain && !domainValid && (
-          <p className="text-xs text-destructive">{t("دومين غير صالح: مثال صحيح storename.com (بدون https أو مسارات).")}</p>
+          <p className="text-xs text-destructive">
+            {t("دومين غير صالح: مثال صحيح storename.com (بدون https أو مسارات).")}
+          </p>
         )}
       </div>
 
@@ -462,9 +537,13 @@ function CustomDomainSection({
         <p>{t("1. افتح لوحة مزوّد الدومين لديك (مثال: Namecheap أو OVH).")}</p>
         <p>
           {t("2. أضف سجل")} <b>CNAME</b> {t("بالقيم التالية:")}
-          <span dir="ltr" className="num">Type: CNAME · Host: @ / www · Value: {CUSTOM_DOMAIN_CNAME_TARGET}</span>
+          <span dir="ltr" className="num">
+            Type: CNAME · Host: @ / www · Value: {CUSTOM_DOMAIN_CNAME_TARGET}
+          </span>
         </p>
-        <p>{t("3. انتظر انتشار سجل DNS (من دقائق إلى 24 ساعة) ثم تتحول الحالة إلى نشط (Active).")}</p>
+        <p>
+          {t("3. انتظر انتشار سجل DNS (من دقائق إلى 24 ساعة) ثم تتحول الحالة إلى نشط (Active).")}
+        </p>
       </div>
 
       <Button

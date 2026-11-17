@@ -7,7 +7,13 @@ const DZD_NUMBER = new Intl.NumberFormat("fr-DZ");
 /** Prices are always printed as "1 700 دج" regardless of the UI language. */
 const formatPrice = (value: number) => `${DZD_NUMBER.format(value)} دج`;
 
-export type PlanCardData = { id: string; name: string; price: number; months: number; tier: string };
+export type PlanCardData = {
+  id: string;
+  name: string;
+  price: number;
+  months: number;
+  tier: string;
+};
 
 const START_FEATURES: Record<LanguageCode, string[]> = {
   ar: [
@@ -168,7 +174,9 @@ export function PlanCards({
             {/* Price section with dynamic duration calculations */}
             <div className="mt-4">
               <div className="flex flex-wrap items-baseline gap-1.5">
-                <span className="text-4xl font-medium text-foreground num">{formatPrice(totalPrice)}</span>
+                <span className="text-4xl font-medium text-foreground num">
+                  {formatPrice(totalPrice)}
+                </span>
                 {cardMonths > 1 && (
                   <span className="text-xs text-muted-foreground num">
                     ({formatPrice(Math.round(totalPrice / cardMonths))} / {labels.perMonth})
@@ -180,7 +188,9 @@ export function PlanCards({
                   </span>
                 )}
               </div>
-              {cardMonths === 1 && <span className="text-xs text-muted-foreground">/ {labels.perMonth}</span>}
+              {cardMonths === 1 && (
+                <span className="text-xs text-muted-foreground">/ {labels.perMonth}</span>
+              )}
             </div>
 
             {/* Duration Selector Dropdown with Arrow */}
@@ -199,12 +209,25 @@ export function PlanCards({
                     className="w-full appearance-none rounded-xl border border-border bg-background px-3.5 py-2 text-sm font-medium text-foreground shadow-xs transition-all hover:border-foreground/30 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand pe-9"
                     dir={language === "ar" ? "rtl" : "ltr"}
                   >
-                    <option value={1}>{labels.oneMonth} ({formatPrice(monthlyRate)})</option>
-                    <option value={2}>{labels.monthsCount(2)} ({formatPrice(monthlyRate * 2)})</option>
-                    <option value={3}>{labels.monthsCount(3)} ({formatPrice(monthlyRate * 3)})</option>
-                    <option value={4}>{labels.monthsCount(4)} ({formatPrice(monthlyRate * 4)})</option>
-                    <option value={5}>{labels.monthsCount(5)} ({formatPrice(monthlyRate * 5)})</option>
-                    <option value={6}>{labels.monthsCount(6)} — {labels.freeMonthBadge} ({formatPrice(monthlyRate * 5)})</option>
+                    <option value={1}>
+                      {labels.oneMonth} ({formatPrice(monthlyRate)})
+                    </option>
+                    <option value={2}>
+                      {labels.monthsCount(2)} ({formatPrice(monthlyRate * 2)})
+                    </option>
+                    <option value={3}>
+                      {labels.monthsCount(3)} ({formatPrice(monthlyRate * 3)})
+                    </option>
+                    <option value={4}>
+                      {labels.monthsCount(4)} ({formatPrice(monthlyRate * 4)})
+                    </option>
+                    <option value={5}>
+                      {labels.monthsCount(5)} ({formatPrice(monthlyRate * 5)})
+                    </option>
+                    <option value={6}>
+                      {labels.monthsCount(6)} — {labels.freeMonthBadge} (
+                      {formatPrice(monthlyRate * 5)})
+                    </option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground">
                     <ChevronDown className="size-4" />
@@ -232,7 +255,9 @@ export function PlanCards({
         );
         const cardClass = cn(
           "relative flex h-full flex-col rounded-[16px] border border-border bg-card p-8 text-start shadow-card transition-all",
-          selected ? "border-brand/50 ring-2 ring-brand ring-offset-2 ring-offset-background" : "hover:border-foreground/20",
+          selected
+            ? "border-brand/50 ring-2 ring-brand ring-offset-2 ring-offset-background"
+            : "hover:border-foreground/20",
         );
         if (onSelect) {
           return (

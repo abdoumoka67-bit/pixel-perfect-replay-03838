@@ -9,7 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
-import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
+import {
+  LanguageMenu,
+  useDocumentLanguage,
+  usePublicLanguage,
+} from "@/components/LanguageSwitcher";
 import { translate, type TranslationKey } from "@/lib/i18n";
 import { useAccountTheme } from "@/hooks/use-account-theme";
 
@@ -24,7 +28,11 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — oranix" },
-      { name: "description", content: "Sign in to your oranix store dashboard or create a new account with a 7-day free trial." },
+      {
+        name: "description",
+        content:
+          "Sign in to your oranix store dashboard or create a new account with a 7-day free trial.",
+      },
       { property: "og:title", content: "Sign in — oranix" },
       { property: "og:description", content: "Sign in to your oranix store dashboard." },
       { property: "og:type", content: "website" },
@@ -56,8 +64,11 @@ function AuthPage() {
   const isRtl = language === "ar";
   useDocumentLanguage(language);
   useAccountTheme();
-  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate(language, key, vars);
-  const [mode, setMode] = useState<"signin" | "signup">(initialMode === "signup" ? "signup" : "signin");
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) =>
+    translate(language, key, vars);
+  const [mode, setMode] = useState<"signin" | "signup">(
+    initialMode === "signup" ? "signup" : "signin",
+  );
   const [email, setEmail] = useState(initialEmail ?? "");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -171,7 +182,10 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
     if (error) {
       if (/email not confirmed/i.test(error.message)) {
-        const { error: resendError } = await supabase.auth.resend({ type: "signup", email: normalizedEmail });
+        const { error: resendError } = await supabase.auth.resend({
+          type: "signup",
+          email: normalizedEmail,
+        });
         if (resendError) throw resendError;
         toast.info(t("auth.ok.unconfirmed"));
         openCodeStep();
@@ -286,7 +300,10 @@ function AuthPage() {
   }
 
   return (
-    <div className="theme-forest flex min-h-screen flex-col bg-background px-6 py-8 sm:px-12" dir={isRtl ? "rtl" : "ltr"}>
+    <div
+      className="theme-forest flex min-h-screen flex-col bg-background px-6 py-8 sm:px-12"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <Link
@@ -310,7 +327,11 @@ function AuthPage() {
             </div>
             <h1 className="mt-5 text-2xl font-medium">{t("auth.code.titleConfirm")}</h1>
             <p className="mt-2 text-muted-foreground">
-              {t("auth.code.sentEmail")} <span dir="ltr" className="font-medium text-foreground">{email}</span>. {t("auth.code.spam")}
+              {t("auth.code.sentEmail")}{" "}
+              <span dir="ltr" className="font-medium text-foreground">
+                {email}
+              </span>
+              . {t("auth.code.spam")}
             </p>
 
             <form onSubmit={verify} className="mt-8 space-y-4">
@@ -336,7 +357,14 @@ function AuthPage() {
             </form>
 
             <div className="mt-6 flex items-center justify-between text-sm">
-              <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => { setStep(null); setMode("signin"); }}>
+              <button
+                type="button"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  setStep(null);
+                  setMode("signin");
+                }}
+              >
                 {t("auth.backToSignin")}
               </button>
               <button
@@ -360,17 +388,36 @@ function AuthPage() {
 
             {googleEnabled && (
               <>
-                <Button type="button" variant="outline" size="lg" className="mt-8 w-full" onClick={google}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="mt-8 w-full"
+                  onClick={google}
+                >
                   <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
-                    <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.6c2-1.9 3.2-4.7 3.2-8z" />
-                    <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8C3.9 20.6 7.7 23 12 23z" />
-                    <path fill="#FBBC05" d="M5.8 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.7-2.8z" />
-                    <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2C17.5 2.1 15 1 12 1 7.7 1 3.9 3.4 2.1 7l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z" />
+                    <path
+                      fill="#4285F4"
+                      d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.6c2-1.9 3.2-4.7 3.2-8z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8C3.9 20.6 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.8 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.7-2.8z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2C17.5 2.1 15 1 12 1 7.7 1 3.9 3.4 2.1 7l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z"
+                    />
                   </svg>
                   {t("auth.google")}
                 </Button>
                 <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-                  <span className="h-px flex-1 bg-border" /> {t("auth.or")} <span className="h-px flex-1 bg-border" />
+                  <span className="h-px flex-1 bg-border" /> {t("auth.or")}{" "}
+                  <span className="h-px flex-1 bg-border" />
                 </div>
               </>
             )}
@@ -378,11 +425,29 @@ function AuthPage() {
             <form onSubmit={submit} className={googleEnabled ? "mt-6 space-y-4" : "mt-8 space-y-4"}>
               <div className="space-y-1.5">
                 <Label htmlFor="email">{t("auth.email")}</Label>
-                <Input id="email" type="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
+                <Input
+                  id="email"
+                  type="email"
+                  dir="ltr"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-11"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="password">{t("auth.password")}</Label>
-                <Input id="password" type="password" dir="ltr" required minLength={mode === "signup" ? 8 : 1} autoFocus={Boolean(initialEmail)} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
+                <Input
+                  id="password"
+                  type="password"
+                  dir="ltr"
+                  required
+                  minLength={mode === "signup" ? 8 : 1}
+                  autoFocus={Boolean(initialEmail)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-11"
+                />
               </div>
               <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
                 {busy && <Loader2 className="animate-spin" />}
@@ -392,9 +457,25 @@ function AuthPage() {
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
               {mode === "signin" ? (
-                <>{t("auth.noAccount")} <button className="font-medium text-brand hover:underline" onClick={() => setMode("signup")}>{t("auth.createFree")}</button></>
+                <>
+                  {t("auth.noAccount")}{" "}
+                  <button
+                    className="font-medium text-brand hover:underline"
+                    onClick={() => setMode("signup")}
+                  >
+                    {t("auth.createFree")}
+                  </button>
+                </>
               ) : (
-                <>{t("auth.haveAccount")} <button className="font-medium text-brand hover:underline" onClick={() => setMode("signin")}>{t("auth.signinLink")}</button></>
+                <>
+                  {t("auth.haveAccount")}{" "}
+                  <button
+                    className="font-medium text-brand hover:underline"
+                    onClick={() => setMode("signin")}
+                  >
+                    {t("auth.signinLink")}
+                  </button>
+                </>
               )}
             </p>
           </>

@@ -107,7 +107,13 @@ function PlanBadge({ plan }: { plan: "Start" | "Pro" }) {
   );
 }
 
-function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | undefined; tone?: Tone }) {
+function NavLinks({
+  onNavigate,
+  tone = "dark",
+}: {
+  onNavigate?: (() => void) | undefined;
+  tone?: Tone;
+}) {
   const styles = TONES[tone];
   const t = useTr();
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -124,7 +130,8 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
     },
   });
   const newOrders = Number(stats.data?.find((r) => r.status === "new")?.orders_count ?? 0);
-  const isActive = (to: string) => (to === "/dashboard" ? path === "/dashboard" || path === "/dashboard/" : path.startsWith(to));
+  const isActive = (to: string) =>
+    to === "/dashboard" ? path === "/dashboard" || path === "/dashboard/" : path.startsWith(to);
 
   const renderItem = (item: NavItem) => {
     const active = isActive(item.to);
@@ -169,18 +176,24 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
   return (
     <nav className={styles.group}>
       <div>
-        <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", styles.label)}>{t("لوحة التحكم")}</p>
+        <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", styles.label)}>
+          {t("لوحة التحكم")}
+        </p>
         <div className="space-y-1">{visible(MAIN_NAV).map(renderItem)}</div>
       </div>
       {visible(SETTINGS_NAV).length > 0 && (
         <div className={styles.divider}>
-          <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", styles.label)}>{t("الإعدادات والاشتراك")}</p>
+          <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", styles.label)}>
+            {t("الإعدادات والاشتراك")}
+          </p>
           <div className="space-y-1">{visible(SETTINGS_NAV).map(renderItem)}</div>
         </div>
       )}
       {isAdmin && (
         <div className={styles.divider}>
-          <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", styles.label)}>{t("المنصة")}</p>
+          <p className={cn("mb-2 px-3 text-[11px] font-medium tracking-wider", styles.label)}>
+            {t("المنصة")}
+          </p>
           <Link
             to="/admin"
             onClick={onNavigate}
@@ -193,7 +206,8 @@ function NavLinks({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | u
             onClick={onNavigate}
             className={cn("flex items-center gap-3", styles.item, styles.idle)}
           >
-            <ShieldCheck className="size-[19px]" strokeWidth={1.6} /> {t("مراجعة مراحل إنشاء المتجر")}
+            <ShieldCheck className="size-[19px]" strokeWidth={1.6} />{" "}
+            {t("مراجعة مراحل إنشاء المتجر")}
           </Link>
         </div>
       )}
@@ -227,7 +241,9 @@ function MerchantCard({ tone = "dark" }: { tone?: Tone }) {
         <div className="min-w-0 flex-1">
           <p className={cn("truncate text-sm font-medium", styles.name)}>{store?.name}</p>
           {access === "owner" ? (
-            <p className={cn("truncate text-xs", styles.sub)} dir="ltr">{store?.owner_email}</p>
+            <p className={cn("truncate text-xs", styles.sub)} dir="ltr">
+              {store?.owner_email}
+            </p>
           ) : (
             <p className={cn("truncate text-xs", styles.sub)}>{t(MEMBER_ROLE_LABELS[access])}</p>
           )}
@@ -245,7 +261,13 @@ function MerchantCard({ tone = "dark" }: { tone?: Tone }) {
   );
 }
 
-function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) | undefined; tone?: Tone }) {
+function SidebarBody({
+  onNavigate,
+  tone = "dark",
+}: {
+  onNavigate?: (() => void) | undefined;
+  tone?: Tone;
+}) {
   const { store } = useMyStore();
   const language = useUiLanguage();
   const { setLanguage } = useDashboardLanguage(language);
@@ -257,7 +279,11 @@ function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) 
         <LanguageMenu
           value={language}
           onChange={setLanguage}
-          className={tone === "dark" ? "border-sidebar-border bg-sidebar-accent/70 text-sidebar-foreground hover:bg-sidebar-accent" : undefined}
+          className={
+            tone === "dark"
+              ? "border-sidebar-border bg-sidebar-accent/70 text-sidebar-foreground hover:bg-sidebar-accent"
+              : undefined
+          }
         />
       </div>
       {store && (
@@ -266,9 +292,14 @@ function SidebarBody({ onNavigate, tone = "dark" }: { onNavigate?: (() => void) 
           href={`/m/${store.slug}`}
           target="_blank"
           rel="noreferrer"
-          className={cn("mx-1 flex items-center justify-between rounded-xl border px-3 py-2 text-xs", styles.link)}
+          className={cn(
+            "mx-1 flex items-center justify-between rounded-xl border px-3 py-2 text-xs",
+            styles.link,
+          )}
         >
-          <span className="truncate" dir="ltr">/m/{store.slug}</span>
+          <span className="truncate" dir="ltr">
+            /m/{store.slug}
+          </span>
           <ExternalLink className="size-3.5 shrink-0" />
         </a>
       )}
@@ -294,9 +325,15 @@ function BottomNav() {
   const BOTTOM_NAV = MAIN_NAV.filter((i) => canOpen(access, i.area)).slice(0, 4);
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 pb-safe backdrop-blur lg:hidden">
-      <div className="grid" style={{ gridTemplateColumns: `repeat(${BOTTOM_NAV.length}, minmax(0, 1fr))` }}>
+      <div
+        className="grid"
+        style={{ gridTemplateColumns: `repeat(${BOTTOM_NAV.length}, minmax(0, 1fr))` }}
+      >
         {BOTTOM_NAV.map((item) => {
-          const active = item.to === "/dashboard" ? path === "/dashboard" || path === "/dashboard/" : path.startsWith(item.to);
+          const active =
+            item.to === "/dashboard"
+              ? path === "/dashboard" || path === "/dashboard/"
+              : path.startsWith(item.to);
           return (
             <Link
               key={item.to}
@@ -325,7 +362,9 @@ function SubscriptionBanner() {
     return (
       <div className="flex flex-wrap items-center gap-3 border-b border-destructive/20 bg-danger-soft px-4 py-3 text-sm text-danger md:px-8">
         <Lock className="size-4 shrink-0" />
-        <span className="flex-1">{t("متجرك مقفل مؤقتاً. اختر باقة لتفعيله وحماية بياناتك قبل الحذف النهائي.")}</span>
+        <span className="flex-1">
+          {t("متجرك مقفل مؤقتاً. اختر باقة لتفعيله وحماية بياناتك قبل الحذف النهائي.")}
+        </span>
         <Button asChild size="sm" variant="destructive">
           <Link to="/dashboard/billing">{t("تفعيل الاشتراك")}</Link>
         </Button>
@@ -337,7 +376,9 @@ function SubscriptionBanner() {
       <div className="flex flex-wrap items-center gap-3 border-b border-destructive/20 bg-danger-soft px-4 py-3 text-sm text-danger md:px-8">
         <Lock className="size-4 shrink-0" />
         <span className="flex-1">
-          {t("انتهت فترة اشتراكك. حسابك الآن في وضع القراءة فقط وصفحاتك متوقفة عن استقبال الطلبات.")}
+          {t(
+            "انتهت فترة اشتراكك. حسابك الآن في وضع القراءة فقط وصفحاتك متوقفة عن استقبال الطلبات.",
+          )}
         </span>
         <Button asChild size="sm" variant="destructive">
           <Link to="/dashboard/billing">{t("جدّد الاشتراك")}</Link>
@@ -379,11 +420,13 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   useDocumentLanguage(language);
   useAccountTheme();
   const t = (text: string, vars?: Record<string, string | number>) => tr(language, text, vars);
-  const trialLink = useMemo(() =>
-    sub && sub.isTrial && sub.daysLeft > 0
-      ? t("تجربة Pro مجانية · بقي {n} أيام", { n: sub.daysLeft })
-      : t("تجربة Pro مجانية"),
-  [sub, language]);
+  const trialLink = useMemo(
+    () =>
+      sub && sub.isTrial && sub.daysLeft > 0
+        ? t("تجربة Pro مجانية · بقي {n} أيام", { n: sub.daysLeft })
+        : t("تجربة Pro مجانية"),
+    [sub, language],
+  );
 
   useEffect(() => {
     if (lastPath.current === path) return;
@@ -407,72 +450,85 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
   return (
     <UiLanguageProvider language={language}>
-    <div className="theme-forest min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
-      <GuidedTour />
-      <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 lg:block">
-        <SidebarBody />
-      </aside>
+      <div className="theme-forest min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
+        <GuidedTour />
+        <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 lg:block">
+          <SidebarBody />
+        </aside>
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side={isRtl ? "right" : "left"} className="w-[82vw] max-w-sm border-0 bg-sidebar p-0 text-sidebar-foreground">
-          <SheetTitle className="sr-only">{t("القائمة")}</SheetTitle>
-          <SidebarBody tone="dark" onNavigate={() => setOpen(false)} />
-        </SheetContent>
-      </Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent
+            side={isRtl ? "right" : "left"}
+            className="w-[82vw] max-w-sm border-0 bg-sidebar p-0 text-sidebar-foreground"
+          >
+            <SheetTitle className="sr-only">{t("القائمة")}</SheetTitle>
+            <SidebarBody tone="dark" onNavigate={() => setOpen(false)} />
+          </SheetContent>
+        </Sheet>
 
-      <div className="overflow-x-clip lg:ps-64">
-        <header className="sticky top-0 z-30 border-b bg-card/90 pt-safe backdrop-blur lg:hidden">
-          <div className="flex h-14 items-center justify-between px-4">
-            <button onClick={() => setOpen(true)} className="rounded-lg p-2 hover:bg-secondary" aria-label={t("فتح القائمة")}>
-              <Menu className="size-5" />
-            </button>
-            <StoreLogo path={store?.logo_url} name={store?.name} className="max-h-8 max-w-28" />
-            <LanguageMenu value={language} onChange={setLanguage} />
-          </div>
-        </header>
-
-        {store && sub && sub.isTrial && sub.daysLeft <= 2 && (
-          <div className="border-b border-brand/20 bg-brand-soft px-4 py-3 text-sm text-brand md:px-8">
-            <div className="mx-auto flex max-w-[1400px] items-center gap-2">
-              <span className="inline-flex size-2 rounded-full bg-brand" />
-              <span>
-                {t("تنبيه: تنتهي تجربتك المجانية بعد {period}. اختر باقتك الآن للاستمرار.", {
-                  period: sub.daysLeft === 1 ? t("يوم واحد") : t("{n} أيام", { n: sub.daysLeft }),
-                })}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {sub?.isTrial && (
-          <div className="border-b bg-card/95 px-4 py-2 md:px-8">
-            <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-end gap-2 sm:gap-3">
-              <Link
-                to="/dashboard/billing"
-                className="inline-flex max-w-full items-center rounded-full border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm"
+        <div className="overflow-x-clip lg:ps-64">
+          <header className="sticky top-0 z-30 border-b bg-card/90 pt-safe backdrop-blur lg:hidden">
+            <div className="flex h-14 items-center justify-between px-4">
+              <button
+                onClick={() => setOpen(true)}
+                className="rounded-lg p-2 hover:bg-secondary"
+                aria-label={t("فتح القائمة")}
               >
-                <span className="inline-flex min-w-0 items-center gap-2">
-                  <span className="inline-flex size-2 shrink-0 rounded-full bg-brand" />
-                  <span className="truncate">{trialLink}</span>
-                </span>
-              </Link>
+                <Menu className="size-5" />
+              </button>
+              <StoreLogo path={store?.logo_url} name={store?.name} className="max-h-8 max-w-28" />
+              <LanguageMenu value={language} onChange={setLanguage} />
             </div>
-          </div>
-        )}
+          </header>
 
-        <SubscriptionBanner />
-        <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pt-8 lg:pb-12">
-          <div className="mb-4">
-            <Button type="button" variant="ghost" size="sm" onClick={goBack} aria-label={t("السابق")}>
-              <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
-            </Button>
-          </div>
-          {children}
-        </main>
+          {store && sub && sub.isTrial && sub.daysLeft <= 2 && (
+            <div className="border-b border-brand/20 bg-brand-soft px-4 py-3 text-sm text-brand md:px-8">
+              <div className="mx-auto flex max-w-[1400px] items-center gap-2">
+                <span className="inline-flex size-2 rounded-full bg-brand" />
+                <span>
+                  {t("تنبيه: تنتهي تجربتك المجانية بعد {period}. اختر باقتك الآن للاستمرار.", {
+                    period: sub.daysLeft === 1 ? t("يوم واحد") : t("{n} أيام", { n: sub.daysLeft }),
+                  })}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {sub?.isTrial && (
+            <div className="border-b bg-card/95 px-4 py-2 md:px-8">
+              <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-end gap-2 sm:gap-3">
+                <Link
+                  to="/dashboard/billing"
+                  className="inline-flex max-w-full items-center rounded-full border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm"
+                >
+                  <span className="inline-flex min-w-0 items-center gap-2">
+                    <span className="inline-flex size-2 shrink-0 rounded-full bg-brand" />
+                    <span className="truncate">{trialLink}</span>
+                  </span>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          <SubscriptionBanner />
+          <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-6 md:px-8 md:pt-8 lg:pb-12">
+            <div className="mb-4">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={goBack}
+                aria-label={t("السابق")}
+              >
+                <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+              </Button>
+            </div>
+            {children}
+          </main>
+        </div>
+        <BottomNav />
+        <InstallPwaPrompt />
       </div>
-      <BottomNav />
-      <InstallPwaPrompt />
-    </div>
     </UiLanguageProvider>
   );
 }

@@ -2,9 +2,18 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Menu, MessageCircle, X, Home } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { whatsappLink } from "@/lib/commerce";
-import { LanguageMenu, useDocumentLanguage, useStorefrontLanguage } from "@/components/LanguageSwitcher";
+import {
+  LanguageMenu,
+  useDocumentLanguage,
+  useStorefrontLanguage,
+} from "@/components/LanguageSwitcher";
 import type { PublicStore } from "@/lib/storefront.functions";
 import { initPixels } from "@/lib/pixels";
 import { captureAttribution } from "@/lib/attribution";
@@ -19,7 +28,8 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
   const [bar, setBar] = useState(true);
   const [open, setOpen] = useState(false);
   // The store language is the default; visitors can switch it and their choice is remembered.
-  const storeLanguage = store.storefront_config?.language ?? parseStorefrontConfig({}, store.name).language;
+  const storeLanguage =
+    store.storefront_config?.language ?? parseStorefrontConfig({}, store.name).language;
   const { language, setLanguage } = useStorefrontLanguage(storeLanguage);
   const config = store.storefront_config ?? parseStorefrontConfig({}, store.name);
   const isRtl = language === "ar";
@@ -37,11 +47,22 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
 
   return (
     <UiLanguageProvider language={language}>
-      <div className="min-h-screen bg-card" dir={isRtl ? "rtl" : "ltr"} style={{ fontFamily: config.font_family }}>
+      <div
+        className="min-h-screen bg-card"
+        dir={isRtl ? "rtl" : "ltr"}
+        style={{ fontFamily: config.font_family }}
+      >
         {bar && barEnabled && (
-          <div className="relative px-10 py-2.5 text-center text-sm" style={{ backgroundColor: config.bar_bg_color, color: config.bar_text_color }}>
+          <div
+            className="relative px-10 py-2.5 text-center text-sm"
+            style={{ backgroundColor: config.bar_bg_color, color: config.bar_text_color }}
+          >
             {barText}
-            <button onClick={() => setBar(false)} className="absolute end-3 top-1/2 -translate-y-1/2 p-1 opacity-80" aria-label={t("إغلاق")}>
+            <button
+              onClick={() => setBar(false)}
+              className="absolute end-3 top-1/2 -translate-y-1/2 p-1 opacity-80"
+              aria-label={t("إغلاق")}
+            >
               <X className="size-4" />
             </button>
           </div>
@@ -51,7 +72,10 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
             <div className="flex items-center gap-1">
               {store.whatsapp && (
                 <a
-                  href={whatsappLink(store.whatsapp, t("السلام عليكم، عندي سؤال عن منتجات {store}", { store: store.name }))}
+                  href={whatsappLink(
+                    store.whatsapp,
+                    t("السلام عليكم، عندي سؤال عن منتجات {store}", { store: store.name }),
+                  )}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-full p-2 hover:bg-secondary"
@@ -69,7 +93,11 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
             </Link>
             <div className="flex items-center justify-end gap-1">
               <LanguageMenu value={language} onChange={setLanguage} />
-              <button onClick={() => setOpen(true)} className="rounded-full p-2 hover:bg-secondary" aria-label={t("القائمة")}>
+              <button
+                onClick={() => setOpen(true)}
+                className="rounded-full p-2 hover:bg-secondary"
+                aria-label={t("القائمة")}
+              >
                 <Menu className="size-6" strokeWidth={1.6} />
               </button>
             </div>
@@ -90,12 +118,16 @@ export function StoreChrome({ store, children }: { store: PublicStore; children:
               </Link>
               {store.whatsapp && (
                 <a
-                  href={whatsappLink(store.whatsapp, t("السلام عليكم، عندي سؤال عن منتجات {store}", { store: store.name }))}
+                  href={whatsappLink(
+                    store.whatsapp,
+                    t("السلام عليكم، عندي سؤال عن منتجات {store}", { store: store.name }),
+                  )}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-foreground/80"
                 >
-                  <MessageCircle className="size-5" strokeWidth={1.6} /> {t("تواصل معنا عبر واتساب")}
+                  <MessageCircle className="size-5" strokeWidth={1.6} />{" "}
+                  {t("تواصل معنا عبر واتساب")}
                 </a>
               )}
             </nav>
@@ -126,8 +158,12 @@ export function StoreFaq({ config }: { config?: { enabled: boolean; items: FaqIt
       <Accordion type="single" collapsible defaultValue="0">
         {faq.items.map((f, i) => (
           <AccordionItem key={`${f.q}-${i}`} value={String(i)}>
-            <AccordionTrigger className="py-5 text-start text-lg font-normal hover:no-underline">{f.q}</AccordionTrigger>
-            <AccordionContent className="text-base leading-8 text-muted-foreground">{f.a}</AccordionContent>
+            <AccordionTrigger className="py-5 text-start text-lg font-normal hover:no-underline">
+              {f.q}
+            </AccordionTrigger>
+            <AccordionContent className="text-base leading-8 text-muted-foreground">
+              {f.a}
+            </AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>

@@ -15,12 +15,14 @@ export const Route = createFileRoute("/privacy")({
       { title: "Privacy Policy — Oranix" },
       {
         name: "description",
-        content: "How Oranix collects, uses and protects personal data, and how to exercise your rights.",
+        content:
+          "How Oranix collects, uses and protects personal data, and how to exercise your rights.",
       },
       { property: "og:title", content: "Privacy Policy — Oranix" },
       {
         property: "og:description",
-        content: "How Oranix collects, uses and protects personal data, and how to exercise your rights.",
+        content:
+          "How Oranix collects, uses and protects personal data, and how to exercise your rights.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -30,5 +32,7 @@ export const Route = createFileRoute("/privacy")({
 });
 
 function PrivacyPage() {
-  return <LegalPage titleKey="legal.privacy.title" introKey="legal.privacy.intro" sections={SECTIONS} />;
+  return (
+    <LegalPage titleKey="legal.privacy.title" introKey="legal.privacy.intro" sections={SECTIONS} />
+  );
 }

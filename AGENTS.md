@@ -1,4 +1,5 @@
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -7,9 +8,11 @@
 >
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
+
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+
 - Merchant data is isolated by RLS via `owns_store()`; writes on products/orders/rates/call logs also require `store_is_active()` so expired accounts become read-only at the database level, not just in the UI.
 - Public COD orders go only through the `place_order` SQL function (validates phone, recomputes prices, blocks inactive stores); never grant direct INSERT on `orders`.
 - Subscription dates (`trial_ends_at`, `paid_until`) are not client-updatable; they change only through the trigger on store creation and the admin `approve_receipt` function.

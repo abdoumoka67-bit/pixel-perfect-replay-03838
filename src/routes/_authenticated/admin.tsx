@@ -17,7 +17,11 @@ import { useSignedUrls } from "@/hooks/use-signed-urls";
 import { RECEIPT_BUCKET } from "@/lib/images";
 import { formatDZD, subscriptionState, type LanguageCode } from "@/lib/commerce";
 import { parseStorefrontConfig } from "@/lib/storefront-theme";
-import { LanguageMenu, useDashboardLanguage, useDocumentLanguage } from "@/components/LanguageSwitcher";
+import {
+  LanguageMenu,
+  useDashboardLanguage,
+  useDocumentLanguage,
+} from "@/components/LanguageSwitcher";
 import { tr, UiLanguageProvider, useTr, useUiLanguage } from "@/lib/ui-i18n";
 import { useAccountTheme } from "@/hooks/use-account-theme";
 
@@ -25,9 +29,15 @@ export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Admin — oranix" },
-      { name: "description", content: "Review payment receipts and manage merchant subscriptions." },
+      {
+        name: "description",
+        content: "Review payment receipts and manage merchant subscriptions.",
+      },
       { property: "og:title", content: "Admin — oranix" },
-      { property: "og:description", content: "Review payment receipts and manage merchant subscriptions." },
+      {
+        property: "og:description",
+        content: "Review payment receipts and manage merchant subscriptions.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
@@ -87,7 +97,10 @@ function AdminContent({ setLanguage }: { setLanguage: (lang: LanguageCode) => vo
               onChange={setLanguage}
               className="border-sidebar-border bg-sidebar-accent/70 text-sidebar-foreground hover:bg-sidebar-accent"
             />
-            <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-sidebar-muted hover:text-sidebar-foreground">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-1 text-sm text-sidebar-muted hover:text-sidebar-foreground"
+            >
               <ArrowRight className="size-4 rtl:rotate-180" /> {t("لوحة التاجر")}
             </Link>
           </div>
@@ -139,7 +152,10 @@ function Receipts() {
       return data;
     },
   });
-  const urls = useSignedUrls((receipts.data ?? []).map((r) => r.receipt_path), RECEIPT_BUCKET);
+  const urls = useSignedUrls(
+    (receipts.data ?? []).map((r) => r.receipt_path),
+    RECEIPT_BUCKET,
+  );
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["admin-receipts"] });
@@ -153,14 +169,19 @@ function Receipts() {
       return data;
     },
     onSuccess: (until) => {
-      toast.success(t("تم التفعيل حتى {date}", { date: new Date(until as string).toLocaleDateString(locale) }));
+      toast.success(
+        t("تم التفعيل حتى {date}", { date: new Date(until as string).toLocaleDateString(locale) }),
+      );
       refresh();
     },
     onError: () => toast.error(t("تعذر قبول الإيصال")),
   });
   const reject = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc("reject_receipt", { _receipt_id: rejecting!, _reason: reason });
+      const { error } = await supabase.rpc("reject_receipt", {
+        _receipt_id: rejecting!,
+        _reason: reason,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -177,10 +198,18 @@ function Receipts() {
   return (
     <>
       <div className="mb-4 flex gap-2">
-        <Button size="sm" variant={filter === "pending" ? "default" : "outline"} onClick={() => setFilter("pending")}>
+        <Button
+          size="sm"
+          variant={filter === "pending" ? "default" : "outline"}
+          onClick={() => setFilter("pending")}
+        >
           {t("قيد المراجعة")}
         </Button>
-        <Button size="sm" variant={filter === "all" ? "default" : "outline"} onClick={() => setFilter("all")}>
+        <Button
+          size="sm"
+          variant={filter === "all" ? "default" : "outline"}
+          onClick={() => setFilter("all")}
+        >
           {t("الكل")}
         </Button>
       </div>
@@ -212,30 +241,50 @@ function Receipts() {
                     <Badge variant="danger">{t("مرفوض")}</Badge>
                   )}
                 </div>
-                <p className="truncate text-xs text-muted-foreground" dir="ltr">{s?.owner_email}</p>
+                <p className="truncate text-xs text-muted-foreground" dir="ltr">
+                  {s?.owner_email}
+                </p>
                 <p>
-                  {(r.plans as { name: string } | null)?.name} · <b className="num">{formatDZD(r.amount, language)}</b>
+                  {(r.plans as { name: string } | null)?.name} ·{" "}
+                  <b className="num">{formatDZD(r.amount, language)}</b>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {t("رقم المعاملة:")} <span className="num">{r.transaction_ref}</span> · {new Date(r.created_at).toLocaleDateString(locale)}
+                  {t("رقم المعاملة:")} <span className="num">{r.transaction_ref}</span> ·{" "}
+                  {new Date(r.created_at).toLocaleDateString(locale)}
                 </p>
                 {r.status === "pending" && (
                   <div className="flex gap-2 pt-2">
-                    <Button size="sm" variant="success" disabled={approve.isPending} onClick={() => approve.mutate(r.id)}>
+                    <Button
+                      size="sm"
+                      variant="success"
+                      disabled={approve.isPending}
+                      onClick={() => approve.mutate(r.id)}
+                    >
                       <Check /> {t("قبول وتفعيل")}
                     </Button>
-                    <Button size="sm" variant="outline" className="text-danger" onClick={() => setRejecting(r.id)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-danger"
+                      onClick={() => setRejecting(r.id)}
+                    >
                       <X /> {t("رفض")}
                     </Button>
                   </div>
                 )}
-                {r.reject_reason && <p className="text-xs text-danger">{t("السبب: {reason}", { reason: r.reject_reason })}</p>}
+                {r.reject_reason && (
+                  <p className="text-xs text-danger">
+                    {t("السبب: {reason}", { reason: r.reject_reason })}
+                  </p>
+                )}
               </div>
             </div>
           );
         })}
       </div>
-      {receipts.data?.length === 0 && <p className="text-sm text-muted-foreground">{t("لا توجد إيصالات.")}</p>}
+      {receipts.data?.length === 0 && (
+        <p className="text-sm text-muted-foreground">{t("لا توجد إيصالات.")}</p>
+      )}
 
       <Dialog open={!!rejecting} onOpenChange={(o) => !o && setRejecting(null)}>
         <DialogContent dir={locale === "ar-DZ" ? "rtl" : "ltr"}>
@@ -259,7 +308,13 @@ function Receipts() {
           <DialogHeader>
             <DialogTitle>{t("وصل الدفع")}</DialogTitle>
           </DialogHeader>
-          {preview && <img src={preview} alt={t("وصل الدفع")} className="max-h-[75vh] w-full rounded-xl object-contain" />}
+          {preview && (
+            <img
+              src={preview}
+              alt={t("وصل الدفع")}
+              className="max-h-[75vh] w-full rounded-xl object-contain"
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>
@@ -273,7 +328,11 @@ function Merchants() {
   const stores = useQuery({
     queryKey: ["admin-stores"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("stores").select("*").order("created_at", { ascending: false }).limit(500);
+      const { data, error } = await supabase
+        .from("stores")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500);
       if (error) throw error;
       return data;
     },
@@ -284,7 +343,10 @@ function Merchants() {
         {stores.data?.map((s) => {
           const st = subscriptionState(s);
           return (
-            <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
+            <li
+              key={s.id}
+              className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm"
+            >
               <div className="min-w-0">
                 <p className="font-medium">{s.name}</p>
                 <p className="text-xs text-muted-foreground" dir="ltr">
@@ -320,10 +382,17 @@ function PlatformSettings() {
   });
   const settings = useQuery({
     queryKey: ["platform-settings"],
-    queryFn: async () => (await supabase.from("platform_settings").select("*").eq("id", 1).maybeSingle()).data,
+    queryFn: async () =>
+      (await supabase.from("platform_settings").select("*").eq("id", 1).maybeSingle()).data,
   });
   const [prices, setPrices] = useState<Record<string, string>>({});
-  const [form, setForm] = useState({ ccp_number: "", ccp_key: "", ccp_holder: "", rip: "", support_phone: "" });
+  const [form, setForm] = useState({
+    ccp_number: "",
+    ccp_key: "",
+    ccp_holder: "",
+    rip: "",
+    support_phone: "",
+  });
 
   useEffect(() => {
     if (plans.data) setPrices(Object.fromEntries(plans.data.map((p) => [p.id, String(p.price)])));
@@ -370,7 +439,12 @@ function PlatformSettings() {
         {plans.data?.map((p) => (
           <div key={p.id} className="flex items-center gap-3">
             <Label className="w-28 shrink-0">{p.name}</Label>
-            <Input type="number" dir="ltr" value={prices[p.id] ?? ""} onChange={(e) => setPrices({ ...prices, [p.id]: e.target.value })} />
+            <Input
+              type="number"
+              dir="ltr"
+              value={prices[p.id] ?? ""}
+              onChange={(e) => setPrices({ ...prices, [p.id]: e.target.value })}
+            />
           </div>
         ))}
       </div>
@@ -379,11 +453,20 @@ function PlatformSettings() {
         {fields.map((f) => (
           <div key={f.key} className="space-y-1.5">
             <Label>{f.label}</Label>
-            <Input dir="ltr" value={form[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} />
+            <Input
+              dir="ltr"
+              value={form[f.key]}
+              onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+            />
           </div>
         ))}
       </div>
-      <Button variant="brand" className="lg:col-span-2 lg:w-fit" disabled={save.isPending} onClick={() => save.mutate()}>
+      <Button
+        variant="brand"
+        className="lg:col-span-2 lg:w-fit"
+        disabled={save.isPending}
+        onClick={() => save.mutate()}
+      >
         {save.isPending && <Loader2 className="animate-spin" />} {t("حفظ التغييرات")}
       </Button>
     </div>

@@ -23,14 +23,7 @@ function Tile({
     <g transform={`translate(${x} 14)`}>
       <title>{label}</title>
       <g className="pixel-tile" style={{ animationDelay: `${delay}s` }}>
-        <rect
-          width="56"
-          height="56"
-          rx="16"
-          fill="#FFFFFF"
-          stroke="#E4E4E7"
-          strokeWidth="1"
-        />
+        <rect width="56" height="56" rx="16" fill="#FFFFFF" stroke="#E4E4E7" strokeWidth="1" />
         {children}
       </g>
     </g>
@@ -75,7 +68,14 @@ export function PixelAttribution() {
             className="relative mx-auto mt-8 block h-auto w-full max-w-[520px]"
           >
             <defs>
-              <linearGradient id="pixel-meta-gradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+              <linearGradient
+                id="pixel-meta-gradient"
+                x1="0"
+                y1="0"
+                x2="24"
+                y2="24"
+                gradientUnits="userSpaceOnUse"
+              >
                 <stop stopColor="#0064E0" />
                 <stop offset="1" stopColor="#0082FB" />
               </linearGradient>
@@ -93,7 +93,14 @@ export function PixelAttribution() {
 
             {/* Meta node: both apps report into it. */}
             <g transform="translate(164 90)">
-              <rect width="72" height="30" rx="15" fill="#FFFFFF" stroke="#E4E4E7" strokeWidth="1" />
+              <rect
+                width="72"
+                height="30"
+                rx="15"
+                fill="#FFFFFF"
+                stroke="#E4E4E7"
+                strokeWidth="1"
+              />
               <text
                 x="36"
                 y="19.8"
@@ -131,15 +138,23 @@ export function PixelAttribution() {
                   #00001042
                 </p>
                 <p className="mt-0.5 truncate text-sm font-medium">{t("landing.pixels.product")}</p>
-                <p className="mt-2 text-lg font-bold tracking-tight">{t("landing.pixels.amount")}</p>
+                <p className="mt-2 text-lg font-bold tracking-tight">
+                  {t("landing.pixels.amount")}
+                </p>
               </div>
               <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
-                <Shirt className="size-6 text-neutral-500 dark:text-neutral-300" strokeWidth={1.6} aria-hidden />
+                <Shirt
+                  className="size-6 text-neutral-500 dark:text-neutral-300"
+                  strokeWidth={1.6}
+                  aria-hidden
+                />
               </div>
             </div>
 
             <div className="flex items-start justify-between gap-3 border-t px-4 py-3">
-              <span className="mt-0.5 shrink-0 text-xs text-muted-foreground">{t("landing.pixels.sourcesLabel")}</span>
+              <span className="mt-0.5 shrink-0 text-xs text-muted-foreground">
+                {t("landing.pixels.sourcesLabel")}
+              </span>
               <ul className="flex min-w-0 flex-col items-end gap-1.5 text-sm font-medium">
                 <li className="flex max-w-full items-center gap-1.5">
                   <img src="/logos/instagram.webp" className="size-4 shrink-0" alt="" />
@@ -153,7 +168,9 @@ export function PixelAttribution() {
             </div>
 
             <div className="flex items-center justify-between gap-3 border-t px-4 py-3">
-              <span className="text-xs text-muted-foreground">{t("landing.pixels.pixelsLabel")}</span>
+              <span className="text-xs text-muted-foreground">
+                {t("landing.pixels.pixelsLabel")}
+              </span>
               <span className="inline-flex items-center gap-1.5 text-sm font-medium">
                 <svg viewBox="0 0 24 24" className="size-3.5 shrink-0" aria-hidden>
                   <path d={META_PATH} fill="url(#pixel-meta-gradient)" />

@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Download, PlusSquare, Share, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { clearInstallPrompt, onInstallPrompt, type BeforeInstallPromptEvent } from "@/lib/pwa-install";
+import {
+  clearInstallPrompt,
+  onInstallPrompt,
+  type BeforeInstallPromptEvent,
+} from "@/lib/pwa-install";
 import { useTr } from "@/lib/ui-i18n";
 
 const DISMISS_KEY = "oranix:pwa-dismissed";

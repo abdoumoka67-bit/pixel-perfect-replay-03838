@@ -299,22 +299,22 @@ html[lang="en"] {
   --radius: 0.875rem;
 
   /* Shopify Polaris Canvas & Surfaces */
-  --background: #F7F7F8;
-  --sand: #F7F7F8;
-  --card: #FFFFFF;
+  --background: #f7f7f8;
+  --sand: #f7f7f8;
+  --card: #ffffff;
   --card-foreground: #202223;
-  --popover: #FFFFFF;
+  --popover: #ffffff;
   --popover-foreground: #202223;
 
   /* Shopify Polaris Typography */
-  --foreground: #1D1D1F;
-  --muted: #F1F2F4;
-  --muted-foreground: #6D7175;
+  --foreground: #1d1d1f;
+  --muted: #f1f2f4;
+  --muted-foreground: #6d7175;
 
   /* Primary Action (Solid Crisp Dark) */
   --primary: #232326;
-  --primary-foreground: #FFFFFF;
-  --primary-hover: #3A3A3D;
+  --primary-foreground: #ffffff;
+  --primary-hover: #3a3a3d;
 
   /* Solid neutral button (public scope) */
   --solid: #171717;
@@ -322,64 +322,64 @@ html[lang="en"] {
   --solid-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 
   /* Secondary & Surfaces */
-  --secondary: #F1F2F4;
+  --secondary: #f1f2f4;
   --secondary-foreground: #202223;
-  --accent: #F1F2F4;
+  --accent: #f1f2f4;
   --accent-foreground: #202223;
 
   /* Table Header & Borders */
-  --table-header: #F7F7F8;
-  --border: #E1E3E5;
-  --input: #E1E3E5;
+  --table-header: #f7f7f8;
+  --border: #e1e3e5;
+  --input: #e1e3e5;
   --ring: rgba(35, 35, 38, 0.15);
 
   /* Shopify Subdued Status Badges */
   /* Success / Delivered / Paid */
-  --success: #0E5C2F;
-  --success-soft: #E4F8EB;
+  --success: #0e5c2f;
+  --success-soft: #e4f8eb;
 
   /* Warning / Confirmed / Pending */
-  --warning: #8A6116;
-  --warning-soft: #FCF1CD;
+  --warning: #8a6116;
+  --warning-soft: #fcf1cd;
 
   /* Danger / Cancelled / Refused */
-  --destructive: #8F1D1D;
-  --destructive-foreground: #FFFFFF;
-  --danger-soft: #FEEBEE;
+  --destructive: #8f1d1d;
+  --destructive-foreground: #ffffff;
+  --danger-soft: #feebee;
 
   /* Info / In-Transit */
-  --info: #1A428A;
-  --info-soft: #EBF2FF;
+  --info: #1a428a;
+  --info-soft: #ebf2ff;
 
   /* Shopify Official Signature Brand Accent */
   --brand: #008060;
-  --brand-strong: #004C3F;
-  --brand-foreground: #FFFFFF;
-  --brand-soft: #E3F1EC;
+  --brand-strong: #004c3f;
+  --brand-foreground: #ffffff;
+  --brand-soft: #e3f1ec;
 
-  --notify: #EF4444;
+  --notify: #ef4444;
 
   /* Accent — soft orange for icon circles and small badges */
-  --accent-orange: #EA580C;
-  --accent-orange-soft: #FDF0E7;
+  --accent-orange: #ea580c;
+  --accent-orange-soft: #fdf0e7;
 
   /* Charts — remapped to the Polaris palette */
-  --chart-1: #EA580C;
+  --chart-1: #ea580c;
   --chart-2: #202223;
-  --chart-3: #0E5C2F;
-  --chart-4: #8A6116;
-  --chart-5: #6D7175;
+  --chart-3: #0e5c2f;
+  --chart-4: #8a6116;
+  --chart-5: #6d7175;
 
   /* Sidebar dark graphite theme matching screenshot */
   --sidebar: #141414;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-muted: #8A8A8A;
-  --sidebar-primary: #EA580C;
-  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-foreground: #ffffff;
+  --sidebar-muted: #8a8a8a;
+  --sidebar-primary: #ea580c;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #242424;
-  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #222222;
-  --sidebar-ring: #EA580C;
+  --sidebar-ring: #ea580c;
 
   /* Shadows (Subtle, crisp Shopify-style elevation) */
   --shadow-card: 0 0 0 1px var(--border), 0 1px 3px 0 rgba(0, 0, 0, 0.04);
@@ -387,69 +387,74 @@ html[lang="en"] {
   --shadow-brand: none;
   --gradient-brand: linear-gradient(135deg, var(--brand), var(--brand-strong));
   --gradient-hero: linear-gradient(var(--card), var(--card));
-  --gradient-dark: linear-gradient(135deg, oklch(0.178 0 0) 0%, oklch(0.3 0 0) 60%, oklch(0.4 0 0) 100%);
+  --gradient-dark: linear-gradient(
+    135deg,
+    oklch(0.178 0 0) 0%,
+    oklch(0.3 0 0) 60%,
+    oklch(0.4 0 0) 100%
+  );
 }
 
 .dark {
-  --background: #0B0C0D;
-  --sand: #0B0C0D;
+  --background: #0b0c0d;
+  --sand: #0b0c0d;
   --card: #141517;
-  --card-foreground: #E3E5E8;
+  --card-foreground: #e3e5e8;
   --popover: #141517;
-  --popover-foreground: #E3E5E8;
-  --foreground: #E3E5E8;
-  --muted: #1A1C1E;
-  --muted-foreground: #8C9196;
-  --primary: #FFFFFF;
-  --primary-foreground: #0B0C0D;
-  --primary-hover: #E3E5E8;
-  --solid: #FFFFFF;
-  --solid-hover: #E3E5E8;
+  --popover-foreground: #e3e5e8;
+  --foreground: #e3e5e8;
+  --muted: #1a1c1e;
+  --muted-foreground: #8c9196;
+  --primary: #ffffff;
+  --primary-foreground: #0b0c0d;
+  --primary-hover: #e3e5e8;
+  --solid: #ffffff;
+  --solid-hover: #e3e5e8;
   --solid-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --secondary: #1A1C1E;
-  --secondary-foreground: #E3E5E8;
-  --accent: #1A1C1E;
-  --accent-foreground: #E3E5E8;
+  --secondary: #1a1c1e;
+  --secondary-foreground: #e3e5e8;
+  --accent: #1a1c1e;
+  --accent-foreground: #e3e5e8;
   --table-header: #141517;
-  --border: #2E3033;
-  --input: #2E3033;
+  --border: #2e3033;
+  --input: #2e3033;
   --ring: rgba(255, 255, 255, 0.2);
-  --success: #22C55E;
+  --success: #22c55e;
   --success-soft: rgba(34, 197, 94, 0.12);
-  --warning: #EAB308;
+  --warning: #eab308;
   --warning-soft: rgba(234, 179, 8, 0.12);
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
   --danger-soft: rgba(239, 68, 68, 0.12);
-  --info: #3B82F6;
+  --info: #3b82f6;
   --info-soft: rgba(59, 130, 246, 0.12);
-  --brand: #10B981;
+  --brand: #10b981;
   --brand-strong: #059669;
-  --brand-foreground: #0B0C0D;
+  --brand-foreground: #0b0c0d;
   --brand-soft: rgba(16, 185, 129, 0.14);
-  --notify: #EF4444;
-  --accent-orange: #FB923C;
+  --notify: #ef4444;
+  --accent-orange: #fb923c;
   --accent-orange-soft: rgba(251, 146, 60, 0.16);
-  --chart-1: #10B981;
-  --chart-2: #E3E5E8;
-  --chart-3: #22C55E;
-  --chart-4: #EAB308;
-  --chart-5: #8C9196;
-  --sidebar: #0B0C0D;
-  --sidebar-foreground: #E3E5E8;
-  --sidebar-muted: #8C9196;
-  --sidebar-primary: #10B981;
-  --sidebar-primary-foreground: #0B0C0D;
-  --sidebar-accent: #1A1C1E;
-  --sidebar-accent-foreground: #E3E5E8;
-  --sidebar-border: #2E3033;
-  --sidebar-ring: #10B981;
+  --chart-1: #10b981;
+  --chart-2: #e3e5e8;
+  --chart-3: #22c55e;
+  --chart-4: #eab308;
+  --chart-5: #8c9196;
+  --sidebar: #0b0c0d;
+  --sidebar-foreground: #e3e5e8;
+  --sidebar-muted: #8c9196;
+  --sidebar-primary: #10b981;
+  --sidebar-primary-foreground: #0b0c0d;
+  --sidebar-accent: #1a1c1e;
+  --sidebar-accent-foreground: #e3e5e8;
+  --sidebar-border: #2e3033;
+  --sidebar-ring: #10b981;
   --shadow-card: 0 0 0 1px var(--border), 0 2px 6px rgba(0, 0, 0, 0.3);
   --shadow-float: 0 0 0 1px var(--border), 0 12px 32px -8px rgba(0, 0, 0, 0.5);
   --shadow-brand: none;
   --gradient-brand: linear-gradient(135deg, var(--brand), var(--brand-strong));
   --gradient-hero: linear-gradient(var(--card), var(--card));
-  --gradient-dark: linear-gradient(135deg, #0B0C0D 0%, #141517 60%, #1A1C1E 100%);
+  --gradient-dark: linear-gradient(135deg, #0b0c0d 0%, #141517 60%, #1a1c1e 100%);
 }
 
 /*
@@ -461,53 +466,53 @@ html[lang="en"] {
  * white cards with #EEEEEE borders, focus ring 25% forest.
  */
 .theme-forest {
-  --background: #F5F5F5;
-  --sand: #F5F5F5;
-  --card: #FFFFFF;
-  --border: #EEEEEE;
-  --input: #EEEEEE;
+  --background: #f5f5f5;
+  --sand: #f5f5f5;
+  --card: #ffffff;
+  --border: #eeeeee;
+  --input: #eeeeee;
 
-  --primary: #04342C;
-  --primary-foreground: #FFFFFF;
-  --primary-hover: #0A4F42;
+  --primary: #04342c;
+  --primary-foreground: #ffffff;
+  --primary-hover: #0a4f42;
 
-  --solid: #04342C;
-  --solid-hover: #0A4F42;
+  --solid: #04342c;
+  --solid-hover: #0a4f42;
   --solid-shadow: 0 1px 2px rgba(4, 52, 44, 0.18), 0 4px 12px -4px rgba(4, 52, 44, 0.45);
 
   --ring: rgba(4, 52, 44, 0.25);
 
-  --brand: #04342C;
-  --brand-strong: #02231D;
-  --brand-foreground: #FFFFFF;
-  --brand-soft: #E6F0ED;
+  --brand: #04342c;
+  --brand-strong: #02231d;
+  --brand-foreground: #ffffff;
+  --brand-soft: #e6f0ed;
 
-  --accent-orange: #EA580C;
-  --accent-orange-soft: #FDF0E7;
+  --accent-orange: #ea580c;
+  --accent-orange-soft: #fdf0e7;
 }
 
 .dark.theme-forest,
 .dark .theme-forest {
-  --background: #0B0C0D;
+  --background: #0b0c0d;
   --card: #141517;
   --border: #262626;
 
-  --primary: #34D399;
-  --primary-foreground: #04342C;
-  --primary-hover: #6EE7B7;
+  --primary: #34d399;
+  --primary-foreground: #04342c;
+  --primary-hover: #6ee7b7;
 
-  --solid: #34D399;
-  --solid-hover: #6EE7B7;
+  --solid: #34d399;
+  --solid-hover: #6ee7b7;
   --solid-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 
   --ring: rgba(52, 211, 153, 0.35);
 
-  --brand: #6EE7B7;
-  --brand-strong: #34D399;
-  --brand-foreground: #04342C;
+  --brand: #6ee7b7;
+  --brand-strong: #34d399;
+  --brand-foreground: #04342c;
   --brand-soft: rgba(52, 211, 153, 0.14);
 
-  --accent-orange: #FB923C;
+  --accent-orange: #fb923c;
   --accent-orange-soft: rgba(251, 146, 60, 0.16);
 }
 
@@ -535,7 +540,9 @@ html[lang="en"] {
     font-feature-settings: "kern";
     -webkit-font-smoothing: antialiased;
     max-width: 100%;
-    transition: background-color 180ms ease, color 180ms ease;
+    transition:
+      background-color 180ms ease,
+      color 180ms ease;
   }
 
   img,

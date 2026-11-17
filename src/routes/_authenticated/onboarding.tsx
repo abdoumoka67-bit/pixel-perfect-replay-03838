@@ -32,9 +32,15 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
     meta: [
       { title: "Create your store — oranix" },
-      { name: "description", content: "Choose your store name and link and start your 10-day free trial." },
+      {
+        name: "description",
+        content: "Choose your store name and link and start your 10-day free trial.",
+      },
       { property: "og:title", content: "Create your store — oranix" },
-      { property: "og:description", content: "Choose your store name and link and start your free trial." },
+      {
+        property: "og:description",
+        content: "Choose your store name and link and start your free trial.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -44,7 +50,11 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
 
 const stepCount = 4;
 
-function storeCreationErrorMessage(error: { code?: string; message: string; details?: string | null }) {
+function storeCreationErrorMessage(error: {
+  code?: string;
+  message: string;
+  details?: string | null;
+}) {
   const diagnostic = `${error.message} ${error.details ?? ""}`.toLowerCase();
 
   if (diagnostic.includes("invalid_name")) return "The store name must be at least 2 characters.";
@@ -73,7 +83,11 @@ function storeCreationErrorMessage(error: { code?: string; message: string; deta
   if (error.code === "23503") {
     return "Could not link the store to your account: invalid session. Sign out and sign in again.";
   }
-  if (error.code === "42501" || diagnostic.includes("row-level security") || diagnostic.includes("permission denied")) {
+  if (
+    error.code === "42501" ||
+    diagnostic.includes("row-level security") ||
+    diagnostic.includes("permission denied")
+  ) {
     return "The database refused to create the store for this account. Refresh the page and sign in again; if the problem persists, check the RLS policy in Supabase.";
   }
 
@@ -88,7 +102,8 @@ function Onboarding() {
   // Store setup happens before the store exists, so it stays English-only.
   useDocumentLanguage("en");
   useAccountTheme();
-  const t = (key: TranslationKey, vars?: Record<string, string | number>) => translate("en", key, vars);
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) =>
+    translate("en", key, vars);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
@@ -100,15 +115,13 @@ function Onboarding() {
   const generatedSlug = suggestedStoreSlug(name, user.email ?? null, user.id);
   const effectiveSlug = slugTouched ? slug : generatedSlug;
   const normalizedPhone = normalizeDzPhone(phone);
-  const phoneError =
-    phone.trim() && !isValidDzPhone(phone)
-      ? t("onb.phoneError")
-      : null;
+  const phoneError = phone.trim() && !isValidDzPhone(phone) ? t("onb.phoneError") : null;
   const phoneOk = isValidDzPhone(phone);
 
   const canContinueFromStep = () => {
     if (step === 0) return Boolean(user?.email || user?.phone);
-    if (step === 1) return Boolean(fullName.trim() && name.trim() && isValidStoreSlug(effectiveSlug));
+    if (step === 1)
+      return Boolean(fullName.trim() && name.trim() && isValidStoreSlug(effectiveSlug));
     if (step === 2) return isValidDzPhone(phone);
     return Boolean(industry);
   };
@@ -191,11 +204,7 @@ function Onboarding() {
       await navigate({ to: "/dashboard", replace: true });
     } catch (error) {
       console.error("Store creation flow failed", error);
-      toast.error(
-        storeCreated
-          ? t("onb.openFail")
-          : t("onb.netFail"),
-      );
+      toast.error(storeCreated ? t("onb.openFail") : t("onb.netFail"));
     } finally {
       setBusy(false);
     }
@@ -207,12 +216,15 @@ function Onboarding() {
         <div className="space-y-6">
           <div className="space-y-1.5">
             <Label htmlFor="account-contact">{user.email ? t("onb.email") : t("onb.phone")}</Label>
-            <Input id="account-contact" value={user.email ?? user.phone ?? ""} readOnly className="h-11 bg-muted" />
+            <Input
+              id="account-contact"
+              value={user.email ?? user.phone ?? ""}
+              readOnly
+              className="h-11 bg-muted"
+            />
           </div>
           <div className="rounded-2xl border border-success/20 bg-success-soft p-4 text-sm text-muted-foreground">
-            {user.email
-              ? t("onb.confirmedEmail")
-              : t("onb.confirmedOther")}
+            {user.email ? t("onb.confirmedEmail") : t("onb.confirmedOther")}
           </div>
           <div className="flex gap-3 rounded-2xl border border-warning/30 bg-warning-soft p-4 text-sm leading-6 text-foreground">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" strokeWidth={1.8} />
@@ -227,16 +239,33 @@ function Onboarding() {
         <div className="space-y-6">
           <div className="space-y-1.5">
             <Label htmlFor="full-name">{t("onb.fullName")}</Label>
-            <Input id="full-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder={t("onb.fullNamePh")} className="h-11" />
+            <Input
+              id="full-name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder={t("onb.fullNamePh")}
+              className="h-11"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="store-name">{t("onb.storeName")}</Label>
-            <Input id="store-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("onb.storeNamePh")} className="h-11" />
+            <Input
+              id="store-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t("onb.storeNamePh")}
+              className="h-11"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="slug">{t("onb.slug")}</Label>
-            <div className="flex h-11 items-center overflow-hidden rounded-xl border border-input bg-card focus-within:ring-2 focus-within:ring-ring/50" dir="ltr">
-              <span className="border-e bg-muted px-3 py-2.5 text-sm text-muted-foreground">oranix.co/m/</span>
+            <div
+              className="flex h-11 items-center overflow-hidden rounded-xl border border-input bg-card focus-within:ring-2 focus-within:ring-ring/50"
+              dir="ltr"
+            >
+              <span className="border-e bg-muted px-3 py-2.5 text-sm text-muted-foreground">
+                oranix.co/m/
+              </span>
               <input
                 id="slug"
                 className="h-full flex-1 bg-transparent px-3 text-sm outline-none"
@@ -248,9 +277,7 @@ function Onboarding() {
                 placeholder="lina-store"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t("onb.slugHint")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("onb.slugHint")}</p>
             <div className="rounded-2xl border border-dashed border-border bg-white p-4 text-sm text-muted-foreground">
               {t("onb.domainHint")}
             </div>
@@ -264,7 +291,18 @@ function Onboarding() {
         <div className="space-y-6">
           <div className="space-y-1.5">
             <Label htmlFor="phone">{t("onb.whatsapp")}</Label>
-            <Input id="phone" type="tel" dir="ltr" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0550 00 00 00" className="h-11" aria-invalid={Boolean(phoneError)} />
+            <Input
+              id="phone"
+              type="tel"
+              dir="ltr"
+              inputMode="tel"
+              autoComplete="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="0550 00 00 00"
+              className="h-11"
+              aria-invalid={Boolean(phoneError)}
+            />
             {phoneError ? (
               <p className="text-xs text-destructive">{phoneError}</p>
             ) : (
@@ -293,7 +331,9 @@ function Onboarding() {
                 onClick={() => setIndustry(item)}
                 className={[
                   "rounded-2xl border px-3 py-2.5 text-right transition-all",
-                  industry === item ? "border-primary bg-primary text-primary-foreground" : "border-border bg-white text-foreground",
+                  industry === item
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-white text-foreground",
                 ].join(" ")}
               >
                 {idx < 5 ? t(`onb.ind.${idx}` as TranslationKey) : item}
@@ -337,7 +377,9 @@ function Onboarding() {
               />
             ))}
           </nav>
-          <p className="text-center text-xs text-muted-foreground num">{t("onb.step", { n: step + 1, total: stepCount })}</p>
+          <p className="text-center text-xs text-muted-foreground num">
+            {t("onb.step", { n: step + 1, total: stepCount })}
+          </p>
         </div>
 
         <div className="mt-8 text-center">
@@ -362,11 +404,22 @@ function Onboarding() {
           </button>
 
           {isLast ? (
-            <Button onClick={submit} disabled={busy || !canContinueFromStep()} variant="brand" className="h-10 shrink-0 rounded-full px-5 text-sm">
-              {busy ? <Loader2 className="animate-spin" /> : <ShieldCheck className="size-4" />} {t("onb.finish")}
+            <Button
+              onClick={submit}
+              disabled={busy || !canContinueFromStep()}
+              variant="brand"
+              className="h-10 shrink-0 rounded-full px-5 text-sm"
+            >
+              {busy ? <Loader2 className="animate-spin" /> : <ShieldCheck className="size-4" />}{" "}
+              {t("onb.finish")}
             </Button>
           ) : (
-            <Button onClick={nextStep} disabled={!canContinueFromStep()} variant="brand" className="h-10 shrink-0 rounded-full px-5 text-sm">
+            <Button
+              onClick={nextStep}
+              disabled={!canContinueFromStep()}
+              variant="brand"
+              className="h-10 shrink-0 rounded-full px-5 text-sm"
+            >
               {t(`onb.next.${step}` as TranslationKey)}
               <ArrowRight className="size-4" />
             </Button>

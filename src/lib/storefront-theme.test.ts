@@ -55,7 +55,7 @@ describe("storefront theme config", () => {
     expect(config.hero_title).toBe("Welcome to our store");
   });
 
-  it("invalid preset -> \"noir\"", () => {
+  it('invalid preset -> "noir"', () => {
     const config1 = parseStorefrontConfig({ preset: "unknown_color" }, "متجري");
     expect(config1.preset).toBe("noir");
 

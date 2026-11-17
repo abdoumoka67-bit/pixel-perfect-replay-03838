@@ -54,7 +54,10 @@ export function useLanguagePreference(
   const readStored = useCallback(() => window.localStorage.getItem(storageKey), [storageKey]);
   const stored = useSyncExternalStore(subscribe, readStored, serverStoredLanguage);
   const language = stored ? normalizeLanguage(stored) : fallback;
-  const setLanguage = useCallback((lang: LanguageCode) => setStoredLanguage(lang, storageKey), [storageKey]);
+  const setLanguage = useCallback(
+    (lang: LanguageCode) => setStoredLanguage(lang, storageKey),
+    [storageKey],
+  );
   return { language, setLanguage };
 }
 
@@ -130,7 +133,9 @@ export function LanguageSwitcher({
           className={cn(
             "rounded-full transition-colors",
             compact ? "px-2 py-1 text-xs" : "px-3 py-1.5 text-sm",
-            option.value === value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+            option.value === value
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           {option.label}

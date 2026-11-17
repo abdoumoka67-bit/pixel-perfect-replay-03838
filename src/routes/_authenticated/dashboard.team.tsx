@@ -9,9 +9,20 @@ import { ProLock } from "@/components/dashboard/ProLock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useMyStore } from "@/hooks/use-my-store";
-import { MAX_TEAM_MEMBERS, MAX_TEAM_USERS, MEMBER_ROLE_LABELS, friendlyError } from "@/lib/commerce";
+import {
+  MAX_TEAM_MEMBERS,
+  MAX_TEAM_USERS,
+  MEMBER_ROLE_LABELS,
+  friendlyError,
+} from "@/lib/commerce";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/team")({
@@ -31,7 +42,9 @@ function TeamPage() {
         <PageHeader title={t("فريق العمل")} description={t("أضف من يساعدك في تأكيد الطلبات.")} />
         <ProLock
           title={t("فريق العمل في Pro")}
-          description={t("اعمل مع فريقك على نفس المتجر: حتى {n} مستخدمين معك.", { n: MAX_TEAM_USERS })}
+          description={t("اعمل مع فريقك على نفس المتجر: حتى {n} مستخدمين معك.", {
+            n: MAX_TEAM_USERS,
+          })}
           points={[
             t("مدير: يرى كل الطلبات والمنتجات والإحصائيات"),
             t("عون تأكيد: يرى فقط الطلبات المسندة إليه"),
@@ -75,7 +88,9 @@ function TeamPro() {
     mutationFn: async () => {
       const clean = email.trim().toLowerCase();
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) throw new Error("INVALID_EMAIL");
-      const { error } = await supabase.from("store_members").insert({ store_id: store!.id, email: clean, role });
+      const { error } = await supabase
+        .from("store_members")
+        .insert({ store_id: store!.id, email: clean, role });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -114,7 +129,11 @@ function TeamPro() {
     <>
       <PageHeader
         title={t("فريق العمل")}
-        description={t("{used} من {max} مستخدمين (أنت + {count})", { used: count + 1, max: MAX_TEAM_USERS, count })}
+        description={t("{used} من {max} مستخدمين (أنت + {count})", {
+          used: count + 1,
+          max: MAX_TEAM_USERS,
+          count,
+        })}
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <form
@@ -127,7 +146,14 @@ function TeamPro() {
           <h2 className="font-medium">{t("إضافة عضو")}</h2>
           <div className="space-y-1.5">
             <Label htmlFor="memail">{t("البريد الإلكتروني للعضو")}</Label>
-            <Input id="memail" type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@gmail.com" />
+            <Input
+              id="memail"
+              type="email"
+              dir="ltr"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@gmail.com"
+            />
           </div>
           <div className="space-y-1.5">
             <Label>{t("الدور")}</Label>
@@ -136,8 +162,12 @@ function TeamPro() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="manager">{t(MEMBER_ROLE_LABELS.manager)} — {t("كل الطلبات والمنتجات")}</SelectItem>
-                <SelectItem value="agent">{t(MEMBER_ROLE_LABELS.agent)} — {t("الطلبات المسندة إليه فقط")}</SelectItem>
+                <SelectItem value="manager">
+                  {t(MEMBER_ROLE_LABELS.manager)} — {t("كل الطلبات والمنتجات")}
+                </SelectItem>
+                <SelectItem value="agent">
+                  {t(MEMBER_ROLE_LABELS.agent)} — {t("الطلبات المسندة إليه فقط")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -150,7 +180,9 @@ function TeamPro() {
             </p>
           )}
           <p className="rounded-xl bg-secondary px-4 py-3 text-xs leading-6 text-muted-foreground">
-            {t("يسجّل العضو في oranix بنفس هذا البريد ويؤكده، ثم يدخل مباشرة إلى متجرك بالصلاحيات التي اخترتها.")}
+            {t(
+              "يسجّل العضو في oranix بنفس هذا البريد ويؤكده، ثم يدخل مباشرة إلى متجرك بالصلاحيات التي اخترتها.",
+            )}
           </p>
         </form>
 
@@ -161,7 +193,9 @@ function TeamPro() {
                 {(store?.name ?? "؟").slice(0, 1)}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium" dir="ltr">{store?.owner_email}</p>
+                <p className="truncate font-medium" dir="ltr">
+                  {store?.owner_email}
+                </p>
                 <p className="text-xs text-muted-foreground">{t("صاحب المتجر")}</p>
               </div>
             </li>
@@ -171,9 +205,13 @@ function TeamPro() {
                   <Users className="size-4" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium" dir="ltr">{m.email}</p>
+                  <p className="truncate font-medium" dir="ltr">
+                    {m.email}
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    {t("أضيف في {date}", { date: new Date(m.created_at).toLocaleDateString(locale) })}
+                    {t("أضيف في {date}", {
+                      date: new Date(m.created_at).toLocaleDateString(locale),
+                    })}
                   </p>
                 </div>
                 <Select
@@ -190,14 +228,22 @@ function TeamPro() {
                     <SelectItem value="agent">{t(MEMBER_ROLE_LABELS.agent)}</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="ghost" size="icon" className="text-danger" aria-label={t("إزالة")} onClick={() => remove.mutate(m.id)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-danger"
+                  aria-label={t("إزالة")}
+                  onClick={() => remove.mutate(m.id)}
+                >
                   <Trash2 />
                 </Button>
               </li>
             ))}
           </ul>
           {count === 0 && !members.isLoading && (
-            <p className="p-6 text-center text-sm text-muted-foreground">{t("لم تضف أي عضو بعد.")}</p>
+            <p className="p-6 text-center text-sm text-muted-foreground">
+              {t("لم تضف أي عضو بعد.")}
+            </p>
           )}
         </div>
       </div>

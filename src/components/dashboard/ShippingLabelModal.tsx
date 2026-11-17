@@ -48,14 +48,21 @@ export function ShippingLabelModal({
         </DialogContent>
       </Dialog>
 
-      {open && createPortal(
-        <div className="a6-print-root">
-          {orders.map((o, i) => (
-            <A6Label key={o.id} order={o} storeName={storeName} storePhone={storePhone} last={i === orders.length - 1} />
-          ))}
-        </div>,
-        document.body,
-      )}
+      {open &&
+        createPortal(
+          <div className="a6-print-root">
+            {orders.map((o, i) => (
+              <A6Label
+                key={o.id}
+                order={o}
+                storeName={storeName}
+                storePhone={storePhone}
+                last={i === orders.length - 1}
+              />
+            ))}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
@@ -91,7 +98,10 @@ function A6Label({
             <p className="text-[15px] font-bold">{storeName || t("متجر oranix")}</p>
             <p className="mt-0.5 text-[9px]">{t("شحن الدفع عند الاستلام (COD)")}</p>
           </div>
-          <span className="rounded border-2 border-[#000000] px-1.5 py-0.5 text-[11px] font-bold num" dir="ltr">
+          <span
+            className="rounded border-2 border-[#000000] px-1.5 py-0.5 text-[11px] font-bold num"
+            dir="ltr"
+          >
             #{order.order_number}
           </span>
         </div>
@@ -106,7 +116,9 @@ function A6Label({
                 "repeating-linear-gradient(90deg, #000000 0 2px, transparent 2px 4px, #000000 4px 7px, transparent 7px 9px, #000000 9px 10px, transparent 10px 14px)",
             }}
           />
-          <span className="pb-0.5 text-[9px] num" dir="ltr">ORX-{order.order_number}</span>
+          <span className="pb-0.5 text-[9px] num" dir="ltr">
+            ORX-{order.order_number}
+          </span>
         </div>
 
         {/* Recipient */}
@@ -124,11 +136,15 @@ function A6Label({
         <div className="mt-2 grid grid-cols-2 gap-0 border-2 border-[#000000]">
           <div className="border-s-2 border-[#000000] p-1.5">
             <p className="text-[9px]">{t("هاتف 1")}</p>
-            <p className="text-[12px] font-bold num" dir="ltr">{order.phone}</p>
+            <p className="text-[12px] font-bold num" dir="ltr">
+              {order.phone}
+            </p>
           </div>
           <div className="p-1.5">
             <p className="text-[9px]">{t("هاتف 2")}</p>
-            <p className="text-[12px] font-bold num" dir="ltr">{storePhone || "—"}</p>
+            <p className="text-[12px] font-bold num" dir="ltr">
+              {storePhone || "—"}
+            </p>
           </div>
         </div>
 
@@ -141,9 +157,14 @@ function A6Label({
         {/* Carrier + notes */}
         <div className="mt-auto border-t border-dashed border-[#000000] pt-1.5">
           <p className="text-[11px] font-bold">
-            {t("شركة التوصيل:")} {order.delivery_type === "home" ? t("توصيل للمنزل") : t("Stopdesk — المكتب")}
+            {t("شركة التوصيل:")}{" "}
+            {order.delivery_type === "home" ? t("توصيل للمنزل") : t("Stopdesk — المكتب")}
           </p>
-          {order.notes && <p className="mt-0.5 line-clamp-2 text-[9px] leading-snug">{t("ملاحظات:")} {order.notes}</p>}
+          {order.notes && (
+            <p className="mt-0.5 line-clamp-2 text-[9px] leading-snug">
+              {t("ملاحظات:")} {order.notes}
+            </p>
+          )}
         </div>
       </div>
     </div>

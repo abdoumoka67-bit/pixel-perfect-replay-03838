@@ -48,18 +48,18 @@ const KNOWN_KEYS: Array<keyof OrderAttribution> = [
   "landing",
 ];
 
+// Matches C0 control characters and DEL so nothing odd reaches the DB payload.
+// eslint-disable-next-line no-control-regex -- intentional: stripping control chars is the point
+const CONTROL_CHARS = /[\u0000-\u001f\u007f]/g;
+
 function clean(value: string | null | undefined, max = MAX_LENGTH): string {
   if (!value) return "";
   // Strip control characters so nothing odd reaches the database payload.
-  return value.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, max);
+  return value.replace(CONTROL_CHARS, "").trim().slice(0, max);
 }
 
 /** Reads UTMs + click ids out of a query string. Pure, used by tests too. */
-export function parseAttribution(
-  search: string,
-  referrer = "",
-  path = "",
-): OrderAttribution {
+export function parseAttribution(search: string, referrer = "", path = ""): OrderAttribution {
   const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
   const out: OrderAttribution = {};
   for (const [param, key] of QUERY_FIELDS) {
@@ -124,10 +124,7 @@ export function captureAttribution(): void {
   if (!hasAttribution(current)) return;
 
   try {
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ ts: Date.now(), data: current }),
-    );
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ts: Date.now(), data: current }));
   } catch {
     // Storage disabled (private mode): the order simply goes un-attributed.
   }

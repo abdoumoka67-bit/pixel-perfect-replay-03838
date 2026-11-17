@@ -1,7 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
-import { LanguageMenu, useDocumentLanguage, usePublicLanguage } from "@/components/LanguageSwitcher";
+import {
+  LanguageMenu,
+  useDocumentLanguage,
+  usePublicLanguage,
+} from "@/components/LanguageSwitcher";
 import { translate, type TranslationKey } from "@/lib/i18n";
 
 export type LegalSection = {
@@ -29,7 +33,10 @@ export function LegalPage({
   const t = (key: TranslationKey) => translate(language, key);
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-card" dir={isRtl ? "rtl" : "ltr"}>
+    <div
+      className="min-h-screen w-full max-w-full overflow-x-hidden bg-card"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       <header className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-5">
         <Link to="/" aria-label="oranix" className="min-w-0 shrink">
           <Logo />

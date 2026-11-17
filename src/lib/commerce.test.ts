@@ -30,11 +30,23 @@ describe("language preference", () => {
     expect(normalizeLanguage("EN")).toBe("ar");
   });
   it("Arabic is RTL with the Tajawal font", () => {
-    expect(languageDocumentAttributes("ar")).toEqual({ lang: "ar", dir: "rtl", fontClass: "font-tajawal" });
+    expect(languageDocumentAttributes("ar")).toEqual({
+      lang: "ar",
+      dir: "rtl",
+      fontClass: "font-tajawal",
+    });
   });
   it("French and English are LTR with the SF Pro font stack", () => {
-    expect(languageDocumentAttributes("fr")).toEqual({ lang: "fr", dir: "ltr", fontClass: "font-sans" });
-    expect(languageDocumentAttributes("en")).toEqual({ lang: "en", dir: "ltr", fontClass: "font-sans" });
+    expect(languageDocumentAttributes("fr")).toEqual({
+      lang: "fr",
+      dir: "ltr",
+      fontClass: "font-sans",
+    });
+    expect(languageDocumentAttributes("en")).toEqual({
+      lang: "en",
+      dir: "ltr",
+      fontClass: "font-sans",
+    });
   });
 });
 
@@ -87,10 +99,7 @@ describe("customer trust radar (Spam Link Shredder)", () => {
   });
 
   it("spam: rapid duplicate orders within 15 minutes", () => {
-    const tiers = [
-      order("0555112233", "new", 10),
-      order("0555112233", "new", 5),
-    ];
+    const tiers = [order("0555112233", "new", 10), order("0555112233", "new", 5)];
     const t = evaluateCustomerTrust(tiers, "0555112233");
     expect(t.tier).toBe("spam");
     expect(t.rapidDuplicates).toBe(true);
@@ -108,10 +117,7 @@ describe("customer trust radar (Spam Link Shredder)", () => {
   });
 
   it("orders from other phones and malformed phones are ignored", () => {
-    const tiers = [
-      order("0559110033", "cancelled", 30),
-      order("", "delivered", 40),
-    ];
+    const tiers = [order("0559110033", "cancelled", 30), order("", "delivered", 40)];
     const t = evaluateCustomerTrust(tiers, "0550112233");
     expect(t.tier).toBe("neutral");
     expect(t.totalOrders).toBe(0);
@@ -152,25 +158,42 @@ describe("10-day trial, grace period and read-only mode", () => {
   const trialEnd = new Date(created.getTime() + 10 * 864e5).toISOString();
 
   it("keeps full Pro access during the 10-day free trial", () => {
-    const s = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-03T00:00:00Z"));
+    const s = subscriptionState(
+      { trial_ends_at: trialEnd, paid_until: null },
+      new Date("2026-01-03T00:00:00Z"),
+    );
     expect(s.isActive).toBe(true);
     expect(s.isTrial).toBe(true);
     expect(s.showWarning).toBe(false);
-    expect(effectiveTier({ trial_ends_at: trialEnd, paid_until: null, plan_tier: "start" }, new Date("2026-01-03T00:00:00Z"))).toBe("pro");
+    expect(
+      effectiveTier(
+        { trial_ends_at: trialEnd, paid_until: null, plan_tier: "start" },
+        new Date("2026-01-03T00:00:00Z"),
+      ),
+    ).toBe("pro");
   });
 
   it("warns on the last two days of the trial", () => {
-    const s = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-09T00:00:00Z"));
+    const s = subscriptionState(
+      { trial_ends_at: trialEnd, paid_until: null },
+      new Date("2026-01-09T00:00:00Z"),
+    );
     expect(s.showWarning).toBe(true);
     expect(s.daysLeft).toBe(2);
 
-    const lastDay = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-10T00:00:00Z"));
+    const lastDay = subscriptionState(
+      { trial_ends_at: trialEnd, paid_until: null },
+      new Date("2026-01-10T00:00:00Z"),
+    );
     expect(lastDay.showWarning).toBe(true);
     expect(lastDay.daysLeft).toBe(1);
   });
 
   it("enters a 7-day grace period after the trial expires without payment", () => {
-    const s = subscriptionState({ trial_ends_at: trialEnd, paid_until: null }, new Date("2026-01-15T00:00:00Z"));
+    const s = subscriptionState(
+      { trial_ends_at: trialEnd, paid_until: null },
+      new Date("2026-01-15T00:00:00Z"),
+    );
     expect(s.isGracePeriod).toBe(true);
     expect(s.isActive).toBe(false);
     expect(s.daysLeft).toBeGreaterThan(0);
@@ -242,7 +265,11 @@ describe("Start and Pro plans", () => {
     expect(effectiveTier(store, new Date("2026-01-03T00:00:00Z"))).toBe("pro");
   });
   it("after paying for Start, the store is on Start", () => {
-    const store = { trial_ends_at: "2026-01-12T00:00:00Z", paid_until: "2026-02-12T00:00:00Z", plan_tier: "start" };
+    const store = {
+      trial_ends_at: "2026-01-12T00:00:00Z",
+      paid_until: "2026-02-12T00:00:00Z",
+      plan_tier: "start",
+    };
     expect(effectiveTier(store, new Date("2026-01-20T00:00:00Z"))).toBe("start");
   });
   it("analytics are for the owner and managers, not confirmation agents", () => {
@@ -296,16 +323,22 @@ describe("checkout error messages", () => {
     expect(friendlyError("INVALID_PHONE")).toBe(
       "رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام.",
     );
-    expect(friendlyError("duplicate key value violates unique constraint \"store_members_store_id_email_key\"")).toBe(
-      "هذا العضو مضاف مسبقاً.",
-    );
+    expect(
+      friendlyError(
+        'duplicate key value violates unique constraint "store_members_store_id_email_key"',
+      ),
+    ).toBe("هذا العضو مضاف مسبقاً.");
   });
   it("explains a technical checkout failure instead of showing a generic error", () => {
-    expect(friendlyError("function public.normalize_dz_phone(text) does not exist")).toBe(ORDER_TECHNICAL_ERROR);
-    expect(friendlyError("42883")).toBe(ORDER_TECHNICAL_ERROR);
-    expect(friendlyError("Could not find the function public.place_order in the schema cache (PGRST202)")).toBe(
+    expect(friendlyError("function public.normalize_dz_phone(text) does not exist")).toBe(
       ORDER_TECHNICAL_ERROR,
     );
+    expect(friendlyError("42883")).toBe(ORDER_TECHNICAL_ERROR);
+    expect(
+      friendlyError(
+        "Could not find the function public.place_order in the schema cache (PGRST202)",
+      ),
+    ).toBe(ORDER_TECHNICAL_ERROR);
     expect(
       friendlyError('duplicate key value violates unique constraint "orders_order_number_key"'),
     ).toBe(ORDER_TECHNICAL_ERROR);

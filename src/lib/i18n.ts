@@ -56,7 +56,8 @@ const ar = {
   "auth.side.title1": "استقبل طلبات",
   "auth.side.title2": "الدفع عند الاستلام",
   "auth.side.title3": "من 58 ولاية، بلا تعقيد.",
-  "auth.side.body": "صفحات هبوط سريعة لإعلانات تيك توك وإنستغرام، تأكيد هاتفي منظم، وإرسال مباشر إلى Yalidine.",
+  "auth.side.body":
+    "صفحات هبوط سريعة لإعلانات تيك توك وإنستغرام، تأكيد هاتفي منظم، وإرسال مباشر إلى Yalidine.",
   "auth.err.invalidLogin": "البريد أو كلمة المرور غير صحيحة.",
   "auth.err.registered": "هذا البريد مسجل مسبقاً. سجّل الدخول.",
   "auth.err.sms": "إرسال SMS غير مفعّل حالياً.",
@@ -92,18 +93,23 @@ const ar = {
   "onb.finish": "بدء التجربة",
   "onb.email": "البريد الإلكتروني",
   "onb.phone": "رقم الهاتف",
-  "onb.confirmedEmail": "تم تأكيد حسابك عبر البريد الإلكتروني. لا حاجة لإدخال كلمة المرور مرة أخرى.",
+  "onb.confirmedEmail":
+    "تم تأكيد حسابك عبر البريد الإلكتروني. لا حاجة لإدخال كلمة المرور مرة أخرى.",
   "onb.confirmedOther": "تم تسجيل الدخول إلى حسابك. لا حاجة لإدخال كلمة المرور مرة أخرى.",
-  "onb.security": "تنبيه أمني: لا تشارك كلمة السر الخاصة بك مع أي شخص، فريق oranix لن يطلبها منك أبداً.",
+  "onb.security":
+    "تنبيه أمني: لا تشارك كلمة السر الخاصة بك مع أي شخص، فريق oranix لن يطلبها منك أبداً.",
   "onb.fullName": "الاسم الكامل",
   "onb.fullNamePh": "مثال: أحمد بن علي",
   "onb.storeName": "اسم المتجر",
   "onb.storeNamePh": "مثال: Lina Store",
   "onb.slug": "اسم المتجر الفرعي",
-  "onb.slugHint": "رابط المتجر يجب أن يكون بحروف إنجليزية وأرقام وشرطات. إذا كان اسم المتجر بالعربية، سنقترح الرابط من بريدك ويمكنك تغييره.",
-  "onb.domainHint": "🌐 يمكنك شراء وربط دومين خاص بمتجرك لاحقاً من الإعدادات (خاص بمشتركي باقة Pro) مثل: storename.com مباشرة بدون الرابط الفرعي.",
+  "onb.slugHint":
+    "رابط المتجر يجب أن يكون بحروف إنجليزية وأرقام وشرطات. إذا كان اسم المتجر بالعربية، سنقترح الرابط من بريدك ويمكنك تغييره.",
+  "onb.domainHint":
+    "🌐 يمكنك شراء وربط دومين خاص بمتجرك لاحقاً من الإعدادات (خاص بمشتركي باقة Pro) مثل: storename.com مباشرة بدون الرابط الفرعي.",
   "onb.whatsapp": "رقم الواتساب الجزائري",
-  "onb.phoneError": "رقم غير صحيح: يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام (مثال: 0550 12 34 56).",
+  "onb.phoneError":
+    "رقم غير صحيح: يبدأ بـ 05 أو 06 أو 07 ويتكون من 10 أرقام (مثال: 0550 12 34 56).",
   "onb.phoneHint": "نقبل أرقام 05 و06 و07 فقط، ويمكنك الكتابة بمسافات: 0550 12 34 56.",
   "onb.phoneOk": "تم تأكيد الرقم وجاهز لاستقبال إشعارات الطلبات ورسائل الزبائن",
   "onb.industry": "مجال النشاط",
@@ -149,7 +155,8 @@ const ar = {
   "shell.subEnds": "تنبيه: ينتهي اشتراكك بعد {days}. اختر باقتك الآن للاستمرار.",
   "shell.locked": "متجرك مقفل مؤقتاً. اختر باقة لتفعيله وحماية بياناتك قبل الحذف النهائي.",
   "shell.activate": "تفعيل الاشتراك",
-  "shell.expired": "انتهت فترة اشتراكك. حسابك الآن في وضع القراءة فقط وصفحاتك متوقفة عن استقبال الطلبات.",
+  "shell.expired":
+    "انتهت فترة اشتراكك. حسابك الآن في وضع القراءة فقط وصفحاتك متوقفة عن استقبال الطلبات.",
   "shell.renew": "جدّد الاشتراك",
 
   // Landing page
@@ -166,22 +173,28 @@ const ar = {
   "landing.pricing.title": "الأسعار",
   "landing.pricing.sub": "ابدأ بـ 7 أيام مجاناً، ثم اختر المدة المناسبة لك.",
   "landing.f1.title": "صفحة لكل منتج",
-  "landing.f1.text": "أضف الاسم والسعر والصور، وتحصل على رابط سريع جاهز للنشر في إنستغرام وتيك توك.",
+  "landing.f1.text":
+    "أضف الاسم والسعر والصور، وتحصل على رابط سريع جاهز للنشر في إنستغرام وتيك توك.",
   "landing.f2.title": "58 ولاية",
   "landing.f2.text": "فورم طلب بالولاية والبلدية، ومصاريف توصيل مخصصة تحددها أنت لكل ولاية.",
   "landing.f3.title": "تأكيد بواتساب والاتصال الفوري",
-  "landing.f3.text": "اتصل بالزبون مباشرة بنقرة زر أو أرسل له رسالة واتساب جاهزة ومخصصة باسمه وبيانات طلبه بضغطة واحدة.",
+  "landing.f3.text":
+    "اتصل بالزبون مباشرة بنقرة زر أو أرسل له رسالة واتساب جاهزة ومخصصة باسمه وبيانات طلبه بضغطة واحدة.",
   "landing.f4.title": "كاشف الزبون وحظر المتلاعبين",
-  "landing.f4.text": "اعرف كم مرة اشترى الزبون سابقاً وحالات طلباته السابقة، مع زر فوري لحظر أي رقم مزعج يملأ طلبات وهمية.",
+  "landing.f4.text":
+    "اعرف كم مرة اشترى الزبون سابقاً وحالات طلباته السابقة، مع زر فوري لحظر أي رقم مزعج يملأ طلبات وهمية.",
   "landing.f5.title": "شركات التوصيل",
-  "landing.f5.text": "اربط حساباتك مع كبرى شركات الشحن والتوصيل في الجزائر لإرسال الطرود وإدارتها في مكان واحد.",
+  "landing.f5.text":
+    "اربط حساباتك مع كبرى شركات الشحن والتوصيل في الجزائر لإرسال الطرود وإدارتها في مكان واحد.",
   "landing.f6.title": "تصدير Excel",
   "landing.f6.text": "صدّر الطلبات المؤكدة بنقرة زر واحدة لطباعة البوالص وتحميلها للناقلين بسهولة.",
   "landing.f7.title": "بيكسل الإعلانات المتعدد",
-  "landing.f7.text": "اربط بيكسل Meta (فيسبوك وإنستغرام) وTikTok بمجرد وضع الـ ID، وتتبع مبيعاتك وأرباح حملاتك بدقة دون أي كود.",
+  "landing.f7.text":
+    "اربط بيكسل Meta (فيسبوك وإنستغرام) وTikTok بمجرد وضع الـ ID، وتتبع مبيعاتك وأرباح حملاتك بدقة دون أي كود.",
   "landing.pixels.badge": "بكسل الإعلانات",
   "landing.pixels.title": "كل طلبية تعرف إعلانها",
-  "landing.pixels.sub": "اربط بيكسل Meta (فيسبوك وإنستغرام) مرة واحدة، وكل طلبية تُحفظ معها حملتها ومصدرها.",
+  "landing.pixels.sub":
+    "اربط بيكسل Meta (فيسبوك وإنستغرام) مرة واحدة، وكل طلبية تُحفظ معها حملتها ومصدرها.",
   "landing.pixels.diagramLabel": "بكسل Meta (فيسبوك وإنستغرام) مرتبط بمتجرك",
   "landing.pixels.product": "فستان صيفي أبيض",
   "landing.pixels.amount": "5.500 دج",
@@ -241,8 +254,7 @@ const ar = {
   "legal.privacy.s5.body":
     "تُخزَّن البيانات بشكل آمن. يمكنك طلب الوصول إلى بياناتك أو تصحيحها أو حذفها بمراسلتنا على abdoumoka67@gmail.com.",
   "legal.terms.title": "شروط الخدمة",
-  "legal.terms.intro":
-    "تنظّم شروط الخدمة هذه استخدامك لمنصة Oranix والمتاجر المستضافة عليها.",
+  "legal.terms.intro": "تنظّم شروط الخدمة هذه استخدامك لمنصة Oranix والمتاجر المستضافة عليها.",
   "legal.terms.s1.title": "استخدام الحساب",
   "legal.terms.s1.body":
     "يجب تقديم معلومات صحيحة عند إنشاء الحساب والحفاظ على سرية بيانات الدخول. أنت مسؤول عن كل نشاط يتم من خلال حسابك.",
@@ -271,7 +283,8 @@ type Dictionary = Partial<Record<TranslationKey, string>>;
 
 const fr: Dictionary = {
   "lang.title": "Langue de l'interface",
-  "lang.description": "Choisissez la langue du tableau de bord et de votre boutique. Modifiable à tout moment.",
+  "lang.description":
+    "Choisissez la langue du tableau de bord et de votre boutique. Modifiable à tout moment.",
   "lang.saved": "Langue modifiée",
   "lang.group": "Choisir la langue",
   "common.back": "Précédent",
@@ -281,7 +294,8 @@ const fr: Dictionary = {
   "auth.title.signup": "Créez votre boutique en une minute",
   "auth.title.forgot": "Mot de passe oublié ?",
   "auth.sub.signin": "Accédez au tableau de bord de votre boutique.",
-  "auth.sub.signup": "10 jours d'essai gratuit avec toutes les fonctionnalités, sans carte bancaire.",
+  "auth.sub.signup":
+    "10 jours d'essai gratuit avec toutes les fonctionnalités, sans carte bancaire.",
   "auth.sub.forgot": "Saisissez votre e-mail et nous vous enverrons un code de réinitialisation.",
   "auth.byEmail": "Par e-mail",
   "auth.byPhone": "Par téléphone",
@@ -316,7 +330,8 @@ const fr: Dictionary = {
   "auth.side.title1": "Recevez des commandes",
   "auth.side.title2": "en paiement à la livraison",
   "auth.side.title3": "dans les 58 wilayas, sans complication.",
-  "auth.side.body": "Pages de vente rapides pour vos pubs TikTok et Instagram, confirmation téléphonique organisée et envoi direct à Yalidine.",
+  "auth.side.body":
+    "Pages de vente rapides pour vos pubs TikTok et Instagram, confirmation téléphonique organisée et envoi direct à Yalidine.",
   "auth.err.invalidLogin": "E-mail ou mot de passe incorrect.",
   "auth.err.registered": "Cet e-mail est déjà inscrit. Connectez-vous.",
   "auth.err.sms": "L'envoi de SMS n'est pas disponible pour le moment.",
@@ -350,18 +365,23 @@ const fr: Dictionary = {
   "onb.finish": "Démarrer l'essai",
   "onb.email": "E-mail",
   "onb.phone": "Numéro de téléphone",
-  "onb.confirmedEmail": "Votre compte est confirmé par e-mail. Inutile de ressaisir le mot de passe.",
+  "onb.confirmedEmail":
+    "Votre compte est confirmé par e-mail. Inutile de ressaisir le mot de passe.",
   "onb.confirmedOther": "Vous êtes connecté. Inutile de ressaisir le mot de passe.",
-  "onb.security": "Sécurité : ne partagez jamais votre mot de passe. L'équipe oranix ne vous le demandera jamais.",
+  "onb.security":
+    "Sécurité : ne partagez jamais votre mot de passe. L'équipe oranix ne vous le demandera jamais.",
   "onb.fullName": "Nom complet",
   "onb.fullNamePh": "Ex. : Ahmed Benali",
   "onb.storeName": "Nom de la boutique",
   "onb.storeNamePh": "Ex. : Lina Store",
   "onb.slug": "Lien de la boutique",
-  "onb.slugHint": "Le lien utilise des lettres latines minuscules, des chiffres et des tirets. Si le nom est en arabe, nous proposons un lien à partir de votre e-mail.",
-  "onb.domainHint": "🌐 Vous pourrez relier votre propre domaine plus tard depuis les paramètres (offre Pro), ex. : storename.com.",
+  "onb.slugHint":
+    "Le lien utilise des lettres latines minuscules, des chiffres et des tirets. Si le nom est en arabe, nous proposons un lien à partir de votre e-mail.",
+  "onb.domainHint":
+    "🌐 Vous pourrez relier votre propre domaine plus tard depuis les paramètres (offre Pro), ex. : storename.com.",
   "onb.whatsapp": "Numéro WhatsApp algérien",
-  "onb.phoneError": "Numéro invalide : il commence par 05, 06 ou 07 et contient 10 chiffres (ex. : 0550 12 34 56).",
+  "onb.phoneError":
+    "Numéro invalide : il commence par 05, 06 ou 07 et contient 10 chiffres (ex. : 0550 12 34 56).",
   "onb.phoneHint": "Numéros 05, 06 et 07 uniquement, espaces autorisés : 0550 12 34 56.",
   "onb.phoneOk": "Numéro validé, prêt à recevoir les alertes de commandes et les messages clients",
   "onb.industry": "Secteur d'activité",
@@ -371,7 +391,8 @@ const fr: Dictionary = {
   "onb.ind.3": "Meubles et décoration",
   "onb.ind.4": "Produits généraux / autres",
   "onb.err.name": "Le nom de la boutique doit contenir au moins 2 caractères.",
-  "onb.err.slug": "Le lien doit contenir au moins 3 caractères : lettres latines minuscules, chiffres et tirets.",
+  "onb.err.slug":
+    "Le lien doit contenir au moins 3 caractères : lettres latines minuscules, chiffres et tirets.",
   "onb.err.phone": "Numéro invalide : il commence par 05, 06 ou 07 et contient 10 chiffres.",
   "onb.review": "Mode révision admin : étapes terminées sans créer de boutique.",
   "onb.created": "Boutique créée ! Votre essai gratuit de 10 jours a commencé.",
@@ -399,11 +420,15 @@ const fr: Dictionary = {
   "nav.openMenu": "Ouvrir le menu",
   "nav.signOut": "Se déconnecter",
   "shell.trialPill": "Essai Pro gratuit · {days} restants",
-  "shell.trialEnds": "Attention : votre essai gratuit se termine dans {days}. Choisissez votre offre pour continuer.",
-  "shell.subEnds": "Attention : votre abonnement se termine dans {days}. Choisissez votre offre pour continuer.",
-  "shell.locked": "Votre boutique est temporairement verrouillée. Choisissez une offre pour la réactiver avant la suppression définitive.",
+  "shell.trialEnds":
+    "Attention : votre essai gratuit se termine dans {days}. Choisissez votre offre pour continuer.",
+  "shell.subEnds":
+    "Attention : votre abonnement se termine dans {days}. Choisissez votre offre pour continuer.",
+  "shell.locked":
+    "Votre boutique est temporairement verrouillée. Choisissez une offre pour la réactiver avant la suppression définitive.",
   "shell.activate": "Activer l'abonnement",
-  "shell.expired": "Votre abonnement a expiré. Votre compte est en lecture seule et vos pages ne reçoivent plus de commandes.",
+  "shell.expired":
+    "Votre abonnement a expiré. Votre compte est en lecture seule et vos pages ne reçoivent plus de commandes.",
   "shell.renew": "Renouveler",
 
   // Landing page
@@ -418,24 +443,33 @@ const fr: Dictionary = {
   "landing.delivery.badge": "Sociétés de livraison",
   "landing.delivery.title": "Nous intégrons les sociétés de livraison de confiance en Algérie",
   "landing.pricing.title": "Tarifs",
-  "landing.pricing.sub": "Commencez par 7 jours gratuits, puis choisissez la durée qui vous convient.",
+  "landing.pricing.sub":
+    "Commencez par 7 jours gratuits, puis choisissez la durée qui vous convient.",
   "landing.f1.title": "Une page par produit",
-  "landing.f1.text": "Ajoutez le nom, le prix et les photos, et obtenez un lien prêt à partager sur Instagram et TikTok.",
+  "landing.f1.text":
+    "Ajoutez le nom, le prix et les photos, et obtenez un lien prêt à partager sur Instagram et TikTok.",
   "landing.f2.title": "58 wilayas",
-  "landing.f2.text": "Un formulaire avec wilaya et commune, et des frais de livraison que vous fixez par wilaya.",
+  "landing.f2.text":
+    "Un formulaire avec wilaya et commune, et des frais de livraison que vous fixez par wilaya.",
   "landing.f3.title": "Confirmation WhatsApp & Appel direct",
-  "landing.f3.text": "Appelez le client en un clic ou envoyez un message WhatsApp pré-rempli avec son nom et les détails de sa commande.",
+  "landing.f3.text":
+    "Appelez le client en un clic ou envoyez un message WhatsApp pré-rempli avec son nom et les détails de sa commande.",
   "landing.f4.title": "Historique client & Blocage anti-fraude",
-  "landing.f4.text": "Voyez le nombre de commandes passées par chaque client et bloquez instantanément les numéros suspects en un clic.",
+  "landing.f4.text":
+    "Voyez le nombre de commandes passées par chaque client et bloquez instantanément les numéros suspects en un clic.",
   "landing.f5.title": "Sociétés de livraison",
-  "landing.f5.text": "Connectez vos comptes avec les plus grandes sociétés de livraison en Algérie pour expédier et gérer vos colis en un seul endroit.",
+  "landing.f5.text":
+    "Connectez vos comptes avec les plus grandes sociétés de livraison en Algérie pour expédier et gérer vos colis en un seul endroit.",
   "landing.f6.title": "Export Excel",
-  "landing.f6.text": "Exportez vos commandes confirmées en un clic pour imprimer les bordereaux facilement.",
+  "landing.f6.text":
+    "Exportez vos commandes confirmées en un clic pour imprimer les bordereaux facilement.",
   "landing.f7.title": "Multi-Pixels Publicitaires",
-  "landing.f7.text": "Connectez vos pixels Meta (Facebook et Instagram) et TikTok en collant votre ID, et suivez vos ventes sans toucher au code.",
+  "landing.f7.text":
+    "Connectez vos pixels Meta (Facebook et Instagram) et TikTok en collant votre ID, et suivez vos ventes sans toucher au code.",
   "landing.pixels.badge": "Pixels publicitaires",
   "landing.pixels.title": "Chaque commande connaît sa pub",
-  "landing.pixels.sub": "Connectez le pixel Meta (Facebook et Instagram) en une fois : chaque commande garde sa campagne et sa source.",
+  "landing.pixels.sub":
+    "Connectez le pixel Meta (Facebook et Instagram) en une fois : chaque commande garde sa campagne et sa source.",
   "landing.pixels.diagramLabel": "Pixel Meta (Facebook et Instagram) relié à votre boutique",
   "landing.pixels.product": "Robe d'été blanche",
   "landing.pixels.amount": "5 500 DA",
@@ -445,7 +479,8 @@ const fr: Dictionary = {
   "landing.pixels.pixelsLabel": "Pixels",
   "landing.pixels.shield": "Un seul événement d'achat par commande, sans doublon",
   "landing.dispatch.badge": "01 · Expédition & Colis",
-  "landing.dispatch.title": "Transformez vos commandes confirmées en colis prêts en quelques secondes",
+  "landing.dispatch.title":
+    "Transformez vos commandes confirmées en colis prêts en quelques secondes",
   "landing.dispatch.desc":
     "Fini le copier-coller. En un clic, transmettez vos commandes au transporteur avec bordereaux et numéros de suivi instantanés.",
   "landing.dashboard.badge": "02 · Expérience marchand",
@@ -522,7 +557,8 @@ const fr: Dictionary = {
 
 const en: Dictionary = {
   "lang.title": "Interface language",
-  "lang.description": "Choose the language of your dashboard and storefront. You can change it anytime.",
+  "lang.description":
+    "Choose the language of your dashboard and storefront. You can change it anytime.",
   "lang.saved": "Language changed",
   "lang.group": "Choose language",
   "common.back": "Back",
@@ -567,7 +603,8 @@ const en: Dictionary = {
   "auth.side.title1": "Get",
   "auth.side.title2": "cash-on-delivery orders",
   "auth.side.title3": "from all 58 wilayas, hassle-free.",
-  "auth.side.body": "Fast landing pages for TikTok and Instagram ads, organized phone confirmation, and direct shipping to Yalidine.",
+  "auth.side.body":
+    "Fast landing pages for TikTok and Instagram ads, organized phone confirmation, and direct shipping to Yalidine.",
   "auth.err.invalidLogin": "Wrong email or password.",
   "auth.err.registered": "This email is already registered. Sign in.",
   "auth.err.sms": "SMS sign-in isn't available right now.",
@@ -609,10 +646,13 @@ const en: Dictionary = {
   "onb.storeName": "Store name",
   "onb.storeNamePh": "e.g. Lina Store",
   "onb.slug": "Store link",
-  "onb.slugHint": "Use lowercase Latin letters, numbers and dashes. If your store name is in Arabic, we suggest a link from your email.",
-  "onb.domainHint": "🌐 You can connect your own domain later from settings (Pro plan), e.g. storename.com.",
+  "onb.slugHint":
+    "Use lowercase Latin letters, numbers and dashes. If your store name is in Arabic, we suggest a link from your email.",
+  "onb.domainHint":
+    "🌐 You can connect your own domain later from settings (Pro plan), e.g. storename.com.",
   "onb.whatsapp": "Algerian WhatsApp number",
-  "onb.phoneError": "Invalid number: it starts with 05, 06 or 07 and has 10 digits (e.g. 0550 12 34 56).",
+  "onb.phoneError":
+    "Invalid number: it starts with 05, 06 or 07 and has 10 digits (e.g. 0550 12 34 56).",
   "onb.phoneHint": "Only 05, 06 and 07 numbers; spaces are fine: 0550 12 34 56.",
   "onb.phoneOk": "Number confirmed and ready for order alerts and customer messages",
   "onb.industry": "Business category",
@@ -622,7 +662,8 @@ const en: Dictionary = {
   "onb.ind.3": "Furniture & home decor",
   "onb.ind.4": "General / other",
   "onb.err.name": "Store name must be at least 2 characters.",
-  "onb.err.slug": "The link needs at least 3 characters: lowercase Latin letters, numbers and dashes.",
+  "onb.err.slug":
+    "The link needs at least 3 characters: lowercase Latin letters, numbers and dashes.",
   "onb.err.phone": "Invalid number: it starts with 05, 06 or 07 and has 10 digits.",
   "onb.review": "Admin review mode: steps finished without creating a store.",
   "onb.created": "Your store is ready! Your 10-day free trial has started.",
@@ -652,9 +693,11 @@ const en: Dictionary = {
   "shell.trialPill": "Free Pro trial · {days} left",
   "shell.trialEnds": "Heads up: your free trial ends in {days}. Pick a plan to keep going.",
   "shell.subEnds": "Heads up: your plan ends in {days}. Pick a plan to keep going.",
-  "shell.locked": "Your store is temporarily locked. Pick a plan to reactivate it before permanent deletion.",
+  "shell.locked":
+    "Your store is temporarily locked. Pick a plan to reactivate it before permanent deletion.",
   "shell.activate": "Activate plan",
-  "shell.expired": "Your plan has expired. Your account is read-only and your pages no longer take orders.",
+  "shell.expired":
+    "Your plan has expired. Your account is read-only and your pages no longer take orders.",
   "shell.renew": "Renew plan",
 
   // Landing page
@@ -671,22 +714,30 @@ const en: Dictionary = {
   "landing.pricing.title": "Pricing",
   "landing.pricing.sub": "Start with 7 days free, then pick the duration that suits you.",
   "landing.f1.title": "A page per product",
-  "landing.f1.text": "Add the name, price and photos, and get a fast link ready to share on Instagram and TikTok.",
+  "landing.f1.text":
+    "Add the name, price and photos, and get a fast link ready to share on Instagram and TikTok.",
   "landing.f2.title": "58 wilayas",
-  "landing.f2.text": "An order form with wilaya and commune, plus custom delivery fees you set per wilaya.",
+  "landing.f2.text":
+    "An order form with wilaya and commune, plus custom delivery fees you set per wilaya.",
   "landing.f3.title": "WhatsApp confirmation & instant call",
-  "landing.f3.text": "Call the customer in one tap or send a pre-filled WhatsApp message with their name and order details.",
+  "landing.f3.text":
+    "Call the customer in one tap or send a pre-filled WhatsApp message with their name and order details.",
   "landing.f4.title": "Customer history & fraud blocking",
-  "landing.f4.text": "See how many times a customer ordered before and their past order statuses, with a one-tap block for spam numbers sending fake orders.",
+  "landing.f4.text":
+    "See how many times a customer ordered before and their past order statuses, with a one-tap block for spam numbers sending fake orders.",
   "landing.f5.title": "Delivery companies",
-  "landing.f5.text": "Connect your accounts with the biggest shipping and delivery companies in Algeria to send and manage parcels in one place.",
+  "landing.f5.text":
+    "Connect your accounts with the biggest shipping and delivery companies in Algeria to send and manage parcels in one place.",
   "landing.f6.title": "Excel export",
-  "landing.f6.text": "Export confirmed orders in one click to print labels and hand them to carriers easily.",
+  "landing.f6.text":
+    "Export confirmed orders in one click to print labels and hand them to carriers easily.",
   "landing.f7.title": "Multi ad pixels",
-  "landing.f7.text": "Connect your Meta (Facebook and Instagram) and TikTok pixels by pasting the ID, and track your sales with no code.",
+  "landing.f7.text":
+    "Connect your Meta (Facebook and Instagram) and TikTok pixels by pasting the ID, and track your sales with no code.",
   "landing.pixels.badge": "Ad pixels",
   "landing.pixels.title": "Every order knows its ad",
-  "landing.pixels.sub": "Connect your Meta pixel (Facebook and Instagram) once, and every order keeps its campaign and source.",
+  "landing.pixels.sub":
+    "Connect your Meta pixel (Facebook and Instagram) once, and every order keeps its campaign and source.",
   "landing.pixels.diagramLabel": "Meta (Facebook and Instagram) pixel connected to your store",
   "landing.pixels.product": "White summer dress",
   "landing.pixels.amount": "5,500 DZD",
@@ -781,7 +832,9 @@ export function translate(
 ): string {
   const template = DICTIONARIES[lang][key] ?? ar[key];
   if (!vars) return template;
-  return template.replace(/\{(\w+)\}/g, (m, name: string) => (name in vars ? String(vars[name]) : m));
+  return template.replace(/\{(\w+)\}/g, (m, name: string) =>
+    name in vars ? String(vars[name]) : m,
+  );
 }
 
 /** "3 أيام" / "3 jours" / "1 day" in the chosen language. */

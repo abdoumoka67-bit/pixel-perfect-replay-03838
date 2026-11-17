@@ -5,7 +5,11 @@ import { wilayaByCode } from "@/data/wilayas";
 
 const API = "https://api.yalidine.app/v1";
 
-async function yalidineFetch(path: string, creds: { api_id: string; api_token: string }, init?: RequestInit) {
+async function yalidineFetch(
+  path: string,
+  creds: { api_id: string; api_token: string },
+  init?: RequestInit,
+) {
   const res = await fetch(`${API}${path}`, {
     ...init,
     headers: {
@@ -28,7 +32,9 @@ async function yalidineFetch(path: string, creds: { api_id: string; api_token: s
 export const testYalidineConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ api_id: z.string().min(3).max(200), api_token: z.string().min(3).max(500) }).parse(d),
+    z
+      .object({ api_id: z.string().min(3).max(200), api_token: z.string().min(3).max(500) })
+      .parse(d),
   )
   .handler(async ({ data }) => {
     try {
@@ -48,13 +54,18 @@ export const sendOrderToYalidine = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ orderId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
-    const { data: order, error } = await sb.from("orders").select("*").eq("id", data.orderId).maybeSingle();
+    const { data: order, error } = await sb
+      .from("orders")
+      .select("*")
+      .eq("id", data.orderId)
+      .maybeSingle();
     if (error) {
       console.error("Could not load order for Yalidine", error);
       throw error;
     }
     if (!order) return { ok: false as const, message: "الطلب غير موجود." };
-    if (order.tracking_number) return { ok: true as const, tracking: order.tracking_number, message: "الطلب مرسل مسبقاً." };
+    if (order.tracking_number)
+      return { ok: true as const, tracking: order.tracking_number, message: "الطلب مرسل مسبقاً." };
 
     const { data: store, error: storeError } = await sb
       .from("stores")
@@ -74,7 +85,8 @@ export const sendOrderToYalidine = createServerFn({ method: "POST" })
       console.error("Could not load Yalidine credentials", credsError);
       throw credsError;
     }
-    if (!store || !creds) return { ok: false as const, message: "اربط حساب Yalidine أولاً من صفحة الربط." };
+    if (!store || !creds)
+      return { ok: false as const, message: "اربط حساب Yalidine أولاً من صفحة الربط." };
 
     const { data: storeIsActive, error: activeError } = await sb.rpc("store_is_active", {
       _store_id: order.store_id,
@@ -84,7 +96,10 @@ export const sendOrderToYalidine = createServerFn({ method: "POST" })
       throw activeError;
     }
     if (!storeIsActive) {
-      return { ok: false as const, message: "المتجر في وضع القراءة فقط. جدّد الاشتراك قبل إرسال الطلب." };
+      return {
+        ok: false as const,
+        message: "المتجر في وضع القراءة فقط. جدّد الاشتراك قبل إرسال الطلب.",
+      };
     }
 
     const toWilaya = wilayaByCode(order.wilaya_code);
@@ -96,8 +111,12 @@ export const sendOrderToYalidine = createServerFn({ method: "POST" })
     try {
       if (order.delivery_type === "desk") {
         const centers = await yalidineFetch(`/centers/?wilaya_id=${order.wilaya_code}`, creds);
-        const list = ((centers.body as { data?: Array<{ center_id: number; commune_name: string }> })?.data ?? []);
-        const match = list.find((c) => c.commune_name?.toLowerCase() === order.commune.toLowerCase()) ?? list[0];
+        const list =
+          (centers.body as { data?: Array<{ center_id: number; commune_name: string }> })?.data ??
+          [];
+        const match =
+          list.find((c) => c.commune_name?.toLowerCase() === order.commune.toLowerCase()) ??
+          list[0];
         if (!match) return { ok: false as const, message: "لا يوجد مكتب Yalidine في هذه الولاية." };
         stopdeskId = match.center_id;
       }
@@ -125,13 +144,19 @@ export const sendOrderToYalidine = createServerFn({ method: "POST" })
         has_exchange: false,
       };
 
-      const r = await yalidineFetch("/parcels/", creds, { method: "POST", body: JSON.stringify([parcel]) });
-      const result = (r.body as Record<string, { success?: boolean; tracking?: string; message?: string }>)?.[
-        parcel.order_id
-      ];
+      const r = await yalidineFetch("/parcels/", creds, {
+        method: "POST",
+        body: JSON.stringify([parcel]),
+      });
+      const result = (
+        r.body as Record<string, { success?: boolean; tracking?: string; message?: string }>
+      )?.[parcel.order_id];
       if (!r.ok || !result?.success || !result.tracking) {
         console.error("yalidine create parcel failed", r.status, r.body);
-        return { ok: false as const, message: result?.message || "رفضت Yalidine إنشاء الطرد. تحقق من بيانات الطلب." };
+        return {
+          ok: false as const,
+          message: result?.message || "رفضت Yalidine إنشاء الطرد. تحقق من بيانات الطلب.",
+        };
       }
 
       const { error: upErr } = await sb
@@ -234,7 +259,10 @@ export const syncYalidineStatuses = createServerFn({ method: "POST" })
       throw credsError;
     }
     const credsByStore = new Map(
-      (credentials ?? []).map((creds) => [creds.store_id, { api_id: creds.api_id, api_token: creds.api_token }]),
+      (credentials ?? []).map((creds) => [
+        creds.store_id,
+        { api_id: creds.api_id, api_token: creds.api_token },
+      ]),
     );
     if (credsByStore.size === 0) {
       return { ok: false as const, message: "اربط حساب Yalidine أولاً من صفحة الربط." };

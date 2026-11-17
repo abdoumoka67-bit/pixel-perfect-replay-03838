@@ -305,9 +305,7 @@ function DeliveryScreen({
               <Truck className="size-4 text-foreground" aria-hidden />
             </span>
             <div className="min-w-0">
-              <div className="truncate text-[11px] font-bold text-foreground">
-                {carrier.name}
-              </div>
+              <div className="truncate text-[11px] font-bold text-foreground">{carrier.name}</div>
               <div className="truncate text-[9px] text-muted-foreground">{carrier.detail}</div>
             </div>
           </div>

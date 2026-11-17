@@ -20,7 +20,12 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/dashboard/DashboardShell";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import { OrderDetailsSheet, confirmMessage, useOrderActions, type Order } from "@/components/dashboard/OrderDetailsSheet";
+import {
+  OrderDetailsSheet,
+  confirmMessage,
+  useOrderActions,
+  type Order,
+} from "@/components/dashboard/OrderDetailsSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -140,7 +145,10 @@ function OrdersPage() {
   const assign = useMutation({
     mutationFn: async ({ orderId, memberId }: { orderId: string; memberId: string | null }) => {
       // the SQL function accepts null to clear the assignment
-      const { error } = await supabase.rpc("assign_order", { _order_id: orderId, _member_id: (memberId as unknown as string) });
+      const { error } = await supabase.rpc("assign_order", {
+        _order_id: orderId,
+        _member_id: memberId as unknown as string,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -170,7 +178,9 @@ function OrdersPage() {
       const cleanDigits = safe.replace(/\D/g, "");
       const num = cleanDigits ? parseInt(cleanDigits, 10) : null;
       if (num && !isNaN(num)) {
-        query = query.or(`phone.ilike.%${safe}%,customer_name.ilike.%${safe}%,order_number.eq.${num}`);
+        query = query.or(
+          `phone.ilike.%${safe}%,customer_name.ilike.%${safe}%,order_number.eq.${num}`,
+        );
       } else {
         query = query.or(`phone.ilike.%${safe}%,customer_name.ilike.%${safe}%`);
       }
@@ -216,7 +226,11 @@ function OrdersPage() {
   const trustByPhone = useMemo(() => {
     const map = new Map<string, CustomerTrust>();
     if (!history.data) return map;
-    const inputs = history.data.map((o) => ({ customer_phone: o.phone, status: o.status, created_at: o.created_at }));
+    const inputs = history.data.map((o) => ({
+      customer_phone: o.phone,
+      status: o.status,
+      created_at: o.created_at,
+    }));
     for (const r of rows) {
       const key = normalizeDzPhone(r.phone);
       if (!key || map.has(key)) continue;
@@ -229,21 +243,39 @@ function OrdersPage() {
   async function exportCsv() {
     let list: Order[];
     if (selected.size) {
-      const { data, error } = await supabase.from("orders").select("*").in("id", Array.from(selected));
-      if (error) { toast.error(t("تعذر التصدير")); return; }
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .in("id", Array.from(selected));
+      if (error) {
+        toast.error(t("تعذر التصدير"));
+        return;
+      }
       list = data;
     } else {
       const { data, error } = await buildQuery("*").limit(5000);
-      if (error) { toast.error(t("تعذر التصدير")); return; }
+      if (error) {
+        toast.error(t("تعذر التصدير"));
+        return;
+      }
       list = (data ?? []) as unknown as Order[];
     }
-    downloadText(ordersToCsv(list, language), `oranix-orders-${new Date().toISOString().slice(0, 10)}.csv`);
+    downloadText(
+      ordersToCsv(list, language),
+      `oranix-orders-${new Date().toISOString().slice(0, 10)}.csv`,
+    );
     toast.success(t("تم تصدير {n} طلب", { n: list.length }));
   }
 
   async function printLabelsForSelected() {
-    const { data, error } = await supabase.from("orders").select("*").in("id", Array.from(selected));
-    if (error || !data?.length) { toast.error(t("تعذر تجهيز البوليصات")); return; }
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .in("id", Array.from(selected));
+    if (error || !data?.length) {
+      toast.error(t("تعذر تجهيز البوليصات"));
+      return;
+    }
     setLabelOrders(data as unknown as Order[]);
   }
 
@@ -275,7 +307,10 @@ function OrdersPage() {
         <DropdownMenuSub>
           <DropdownMenuSubTrigger disabled={readOnly}>{t("تعديل الحالة")}</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            <DropdownMenuRadioGroup value={o.status} onValueChange={(v) => updateStatus.mutate({ id: o.id, status: v as OrderStatus })}>
+            <DropdownMenuRadioGroup
+              value={o.status}
+              onValueChange={(v) => updateStatus.mutate({ id: o.id, status: v as OrderStatus })}
+            >
               {ORDER_STATUSES.map((s) => (
                 <DropdownMenuRadioItem key={s} value={s}>
                   {t(STATUS_LABELS[s])}
@@ -292,12 +327,16 @@ function OrdersPage() {
             <DropdownMenuSubContent>
               <DropdownMenuRadioGroup
                 value={o.assigned_member_id ?? "none"}
-                onValueChange={(v) => assign.mutate({ orderId: o.id, memberId: v === "none" ? null : v })}
+                onValueChange={(v) =>
+                  assign.mutate({ orderId: o.id, memberId: v === "none" ? null : v })
+                }
               >
                 <DropdownMenuRadioItem value="none">{t("بدون إسناد")}</DropdownMenuRadioItem>
                 {members.data?.map((m) => (
                   <DropdownMenuRadioItem key={m.id} value={m.id}>
-                    <span dir="ltr" className="truncate">{m.email}</span>
+                    <span dir="ltr" className="truncate">
+                      {m.email}
+                    </span>
                   </DropdownMenuRadioItem>
                 ))}
               </DropdownMenuRadioGroup>
@@ -310,7 +349,11 @@ function OrdersPage() {
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <a href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))} target="_blank" rel="noreferrer">
+          <a
+            href={whatsappLink(o.phone, confirmMessage(o, store?.name ?? ""))}
+            target="_blank"
+            rel="noreferrer"
+          >
             <MessageCircle /> {t("محادثة واتساب")}
           </a>
         </DropdownMenuItem>
@@ -318,14 +361,21 @@ function OrdersPage() {
           <Printer /> {t("طباعة بوليصة A6")}
         </DropdownMenuItem>
         {hasConnectedCarrier && (
-          <DropdownMenuItem disabled={readOnly || !!o.tracking_number} onClick={() => sendYalidine.mutate(o.id)}>
+          <DropdownMenuItem
+            disabled={readOnly || !!o.tracking_number}
+            onClick={() => sendYalidine.mutate(o.id)}
+          >
             <Send className="size-4" /> {t("إرسال إلى {name}", { name: activeCarrierName })}
           </DropdownMenuItem>
         )}
         {canManage && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled={readOnly} className="text-danger focus:text-danger" onClick={() => setToDelete(o)}>
+            <DropdownMenuItem
+              disabled={readOnly}
+              className="text-danger focus:text-danger"
+              onClick={() => setToDelete(o)}
+            >
               <Trash2 /> {t("حذف الطلب")}
             </DropdownMenuItem>
           </>
@@ -352,7 +402,8 @@ function OrdersPage() {
               {t("تحديث حالات الشحن")}
             </Button>
             <Button variant="outline" onClick={exportCsv}>
-              <Download /> {selected.size ? t("تصدير المحدد ({n})", { n: selected.size }) : t("تصدير Excel")}
+              <Download />{" "}
+              {selected.size ? t("تصدير المحدد ({n})", { n: selected.size }) : t("تصدير Excel")}
             </Button>
             {selected.size > 0 && (
               <Button variant="outline" onClick={() => printLabelsForSelected()}>
@@ -381,7 +432,10 @@ function OrdersPage() {
         <DropdownMenu dir="rtl">
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-11">
-              <Filter /> <span className="hidden sm:inline">{status === "all" ? t("تصفية") : t(STATUS_LABELS[status])}</span>
+              <Filter />{" "}
+              <span className="hidden sm:inline">
+                {status === "all" ? t("تصفية") : t(STATUS_LABELS[status])}
+              </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -409,10 +463,18 @@ function OrdersPage() {
         {rows.length > 0 && (
           <div className="flex items-center justify-between px-3 py-1 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Checkbox checked={allOnPage} onCheckedChange={toggleAll} aria-label={t("تحديد الكل")} />
-              <span>{t("تحديد الكل")} ({rows.length})</span>
+              <Checkbox
+                checked={allOnPage}
+                onCheckedChange={toggleAll}
+                aria-label={t("تحديد الكل")}
+              />
+              <span>
+                {t("تحديد الكل")} ({rows.length})
+              </span>
             </div>
-            <span>{total} {t("طلب")}</span>
+            <span>
+              {total} {t("طلب")}
+            </span>
           </div>
         )}
 
@@ -445,12 +507,12 @@ function OrdersPage() {
                   <TrustRadarBadge trust={trustOf(o)} />
                 </div>
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground num">{formatDZD(o.total, language)}</span>
+                  <span className="font-medium text-foreground num">
+                    {formatDZD(o.total, language)}
+                  </span>
                   {" · "}
                   <span>{o.product_name}</span>
-                  {o.quantity > 1 && (
-                    <span className="num"> (x{o.quantity})</span>
-                  )}
+                  {o.quantity > 1 && <span className="num"> (x{o.quantity})</span>}
                   {" · "}
                   <span className="num">{o.wilaya_code}</span> - {o.wilaya_name}
                   {o.commune && ` · ${o.commune}`}
@@ -498,7 +560,8 @@ function OrdersPage() {
           </span>
           {rows.length < total && (
             <span>
-              {t("تم عرض")} <span className="num font-medium text-foreground">{rows.length}</span> {t("طلب")}
+              {t("تم عرض")} <span className="num font-medium text-foreground">{rows.length}</span>{" "}
+              {t("طلب")}
             </span>
           )}
         </div>
@@ -523,7 +586,9 @@ function OrdersPage() {
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader className="text-start">
-            <AlertDialogTitle>{t("حذف الطلب ORX-{n}؟", { n: toDelete?.order_number ?? "" })}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("حذف الطلب ORX-{n}؟", { n: toDelete?.order_number ?? "" })}
+            </AlertDialogTitle>
             <AlertDialogDescription>{t("لا يمكن التراجع عن هذا الإجراء.")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
@@ -546,7 +611,9 @@ function EmptyState() {
   return (
     <div className="p-10 text-center">
       <p className="font-medium">{t("لا توجد طلبات")}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{t("ستظهر هنا طلبات الزبائن من صفحات الهبوط فور وصولها.")}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {t("ستظهر هنا طلبات الزبائن من صفحات الهبوط فور وصولها.")}
+      </p>
     </div>
   );
 }

@@ -43,10 +43,17 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-{/* Official Algérie Poste Emblem */}
+{
+  /* Official Algérie Poste Emblem */
+}
 function AlgeriePosteLogo({ className = "size-7" }: { className?: string }) {
   return (
-    <div className={cn("flex shrink-0 items-center justify-center rounded-xl bg-[#005BAA]/10 p-1.5", className)}>
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-xl bg-[#005BAA]/10 p-1.5",
+        className,
+      )}
+    >
       <svg viewBox="0 0 48 48" className="size-full" fill="none">
         <rect width="48" height="48" rx="10" fill="#005BAA" />
         <path
@@ -66,10 +73,17 @@ function AlgeriePosteLogo({ className = "size-7" }: { className?: string }) {
   );
 }
 
-{/* Official BaridiMob Emblem */}
+{
+  /* Official BaridiMob Emblem */
+}
 function BaridiMobLogo({ className = "size-7" }: { className?: string }) {
   return (
-    <div className={cn("flex shrink-0 items-center justify-center rounded-xl bg-[#00A3E0]/10 p-1.5", className)}>
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-xl bg-[#00A3E0]/10 p-1.5",
+        className,
+      )}
+    >
       <svg viewBox="0 0 48 48" className="size-full" fill="none">
         <rect width="48" height="48" rx="10" fill="#0082C8" />
         <path
@@ -112,7 +126,11 @@ function Billing() {
   const plans = useQuery({
     queryKey: ["plans"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("plans").select("*").eq("is_active", true).order("sort");
+      const { data, error } = await supabase
+        .from("plans")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort");
       if (error) throw error;
       return data;
     },
@@ -162,18 +180,18 @@ function Billing() {
       if (!file) throw new Error(t("ارفع صورة الوصل"));
       if (file.size > 5 * 1024 * 1024) throw new Error(t("الحجم الأقصى 5MB"));
       const path = `${user.id}/${crypto.randomUUID()}.${fileExt(file)}`;
-      const up = await supabase.storage.from(RECEIPT_BUCKET).upload(path, file, { contentType: file.type });
+      const up = await supabase.storage
+        .from(RECEIPT_BUCKET)
+        .upload(path, file, { contentType: file.type });
       if (up.error) throw new Error(t("تعذر رفع الصورة"));
-      const { error } = await supabase
-        .from("payment_receipts")
-        .insert({
-          store_id: store!.id,
-          plan_id: planId,
-          amount: amountDue,
-          months,
-          transaction_ref: ref.trim() || "غير محدد",
-          receipt_path: path,
-        });
+      const { error } = await supabase.from("payment_receipts").insert({
+        store_id: store!.id,
+        plan_id: planId,
+        amount: amountDue,
+        months,
+        transaction_ref: ref.trim() || "غير محدد",
+        receipt_path: path,
+      });
       if (error) throw new Error(t("تعذر إرسال الإيصال"));
     },
     onSuccess: () => {
@@ -186,7 +204,10 @@ function Billing() {
   });
 
   const pending = receipts.data?.some((r) => r.status === "pending");
-  const defaultPlan = plans.data?.find((p) => p.tier === (store?.paid_until && !sub?.isTrial ? store.plan_tier : "pro"))?.id ?? null;
+  const defaultPlan =
+    plans.data?.find(
+      (p) => p.tier === (store?.paid_until && !sub?.isTrial ? store.plan_tier : "pro"),
+    )?.id ?? null;
   const planId = picked ?? defaultPlan ?? "";
   const setPlanId = setPicked;
   const selectedPlan = plans.data?.find((p) => p.id === planId) ?? null;
@@ -220,7 +241,10 @@ function Billing() {
             sub && (
               <p className="text-sm text-muted-foreground">
                 {sub.isActive
-                  ? t("ينتهي في {date} · {days} أيام متبقية", { date: sub.endsAt.toLocaleDateString(locale), days: sub.daysLeft })
+                  ? t("ينتهي في {date} · {days} أيام متبقية", {
+                      date: sub.endsAt.toLocaleDateString(locale),
+                      days: sub.daysLeft,
+                    })
                   : t("انتهى في {date}", { date: sub.endsAt.toLocaleDateString(locale) })}
               </p>
             )
@@ -250,14 +274,18 @@ function Billing() {
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-card p-4 shadow-card">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">{selectedPlan?.name ?? "Start"}</span>
+          <span className="text-sm font-medium text-foreground">
+            {selectedPlan?.name ?? "Start"}
+          </span>
           <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-muted-foreground num">
             {months === 1 ? t("شهر") : `${months} ${t("أشهر")}`}
           </span>
         </div>
         <p className="flex items-baseline gap-2">
           <span className="text-sm text-muted-foreground">{t("المبلغ المطلوب تحويله:")}</span>
-          <span className="text-xl font-medium text-foreground num">{formatDZD(amountDue, language)}</span>
+          <span className="text-xl font-medium text-foreground num">
+            {formatDZD(amountDue, language)}
+          </span>
         </p>
       </div>
 
@@ -279,12 +307,17 @@ function Billing() {
               <AlgeriePosteLogo className="size-9" />
               <div>
                 <p className="font-bold text-foreground text-sm">{t("بريد الجزائر — CCP")}</p>
-                <p className="text-[11px] text-muted-foreground">{t("الدفع عبر مكاتب البريد أو الصك البريدي")}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {t("الدفع عبر مكاتب البريد أو الصك البريدي")}
+                </p>
               </div>
             </div>
 
             <div className="mt-3.5 space-y-2.5">
-              <CopyRow label={t("رقم الحساب البريدي (CCP)")} value={settings.data?.ccp_number ?? "…"} />
+              <CopyRow
+                label={t("رقم الحساب البريدي (CCP)")}
+                value={settings.data?.ccp_number ?? "…"}
+              />
               <div className="grid grid-cols-2 gap-2.5">
                 <CopyRow label={t("المفتاح (Clé)")} value={settings.data?.ccp_key ?? "…"} />
                 <CopyRow label={t("اسم صاحب الحساب")} value={settings.data?.ccp_holder ?? "…"} />
@@ -298,12 +331,17 @@ function Billing() {
               <BaridiMobLogo className="size-9" />
               <div>
                 <p className="font-bold text-foreground text-sm">BaridiMob — بريدي موب</p>
-                <p className="text-[11px] text-muted-foreground">{t("التحويل الفوري عبر تطبيق بريدي موب (RIP)")}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {t("التحويل الفوري عبر تطبيق بريدي موب (RIP)")}
+                </p>
               </div>
             </div>
 
             <div className="mt-3.5 space-y-2.5">
-              <CopyRow label={t("رقم الحساب البريدي الجاري (RIP)")} value={settings.data?.rip ?? "…"} />
+              <CopyRow
+                label={t("رقم الحساب البريدي الجاري (RIP)")}
+                value={settings.data?.rip ?? "…"}
+              />
             </div>
           </div>
         </div>
@@ -323,7 +361,13 @@ function Billing() {
           )}
           <div className="space-y-1.5">
             <Label htmlFor="ref">{t("رقم المعاملة أو الحوالة (اختياري)")}</Label>
-            <Input id="ref" dir="ltr" value={ref} onChange={(e) => setRef(e.target.value)} placeholder={t("مثال: 123456789 — اتركه فارغاً إن لم يتوفر")} />
+            <Input
+              id="ref"
+              dir="ltr"
+              value={ref}
+              onChange={(e) => setRef(e.target.value)}
+              placeholder={t("مثال: 123456789 — اتركه فارغاً إن لم يتوفر")}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>{t("صورة الوصل")}</Label>
@@ -348,7 +392,12 @@ function Billing() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileRef.current?.click()}
+                    >
                       {t("تغيير")}
                     </Button>
                     <Button
@@ -390,7 +439,13 @@ function Billing() {
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
           </div>
-          <Button type="submit" variant="brand" className="w-full" size="lg" disabled={submit.isPending}>
+          <Button
+            type="submit"
+            variant="brand"
+            className="w-full"
+            size="lg"
+            disabled={submit.isPending}
+          >
             {submit.isPending && <Loader2 className="animate-spin" />} {t("إرسال للمراجعة")}
           </Button>
         </form>
@@ -403,8 +458,12 @@ function Billing() {
             <MessageCircle className="size-5" />
           </span>
           <div>
-            <p className="text-sm font-medium text-foreground">{t("تحتاج مساعدة في الدفع أو تفعيل الحساب؟")}</p>
-            <p className="text-xs text-muted-foreground">{t("فريق الدعم متاح عبر واتساب للمساعدة وتأكيد وصول الإيصالات فورياً.")}</p>
+            <p className="text-sm font-medium text-foreground">
+              {t("تحتاج مساعدة في الدفع أو تفعيل الحساب؟")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("فريق الدعم متاح عبر واتساب للمساعدة وتأكيد وصول الإيصالات فورياً.")}
+            </p>
           </div>
         </div>
         <Button
@@ -432,16 +491,23 @@ function Billing() {
         {receipts.data?.length ? (
           <ul className="divide-y">
             {receipts.data.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+              <li
+                key={r.id}
+                className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm"
+              >
                 <div>
                   <p className="font-medium">
-                    {(r.plans as { name: string } | null)?.name} · <span className="num">{formatDZD(r.amount, language)}</span>
+                    {(r.plans as { name: string } | null)?.name} ·{" "}
+                    <span className="num">{formatDZD(r.amount, language)}</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(r.created_at).toLocaleDateString(locale)} · {t("رقم المعاملة")} <span className="num">{r.transaction_ref}</span>
+                    {new Date(r.created_at).toLocaleDateString(locale)} · {t("رقم المعاملة")}{" "}
+                    <span className="num">{r.transaction_ref}</span>
                   </p>
                   {r.status === "rejected" && r.reject_reason && (
-                    <p className="mt-1 text-xs text-danger">{t("سبب الرفض: {reason}", { reason: r.reject_reason })}</p>
+                    <p className="mt-1 text-xs text-danger">
+                      {t("سبب الرفض: {reason}", { reason: r.reject_reason })}
+                    </p>
                   )}
                 </div>
                 {r.status === "approved" ? (
