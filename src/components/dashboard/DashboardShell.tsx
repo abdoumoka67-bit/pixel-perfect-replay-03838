@@ -67,29 +67,31 @@ function StoreLogo({
 const TONES = {
   dark: {
     body: "bg-sidebar text-sidebar-foreground",
-    item: "rounded-xl px-3 py-2.5 text-sm",
-    active: "bg-sidebar-accent text-sidebar-accent-foreground",
-    idle: "text-sidebar-muted hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
-    label: "text-sidebar-muted/80",
-    group: "space-y-7",
-    divider: "",
-    card: "bg-sidebar-accent/70",
-    name: "text-sidebar-foreground",
-    sub: "text-sidebar-muted",
-    link: "border-sidebar-border text-sidebar-muted hover:text-sidebar-foreground",
+    item: "rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150",
+    active:
+      "scale-[1.01] border border-[#E5E7EB] bg-white font-medium text-sidebar-foreground shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)]",
+    idle: "text-[#6B7280] hover:bg-black/[0.03] hover:text-sidebar-foreground",
+    label: "mb-2.5 px-3 text-[11px] font-medium uppercase tracking-wider text-[#8C9196]",
+    group: "space-y-6",
+    divider: "border-t border-[#E9EBEF] pt-4",
+    card: "rounded-xl border border-[#E9EBEF] bg-white shadow-2xs",
+    name: "font-medium text-sidebar-foreground",
+    sub: "text-[#6B7280]",
+    link: "border-[#E9EBEF] bg-white text-[#6B7280] hover:text-sidebar-foreground shadow-2xs",
   },
   light: {
-    body: "bg-background text-foreground",
-    item: "rounded-2xl px-4 py-3.5 text-[15px]",
-    active: "bg-card text-foreground shadow-card font-medium",
-    idle: "text-foreground/80 hover:bg-card/70",
-    label: "text-muted-foreground",
-    group: "space-y-4",
-    divider: "border-t pt-4",
-    card: "bg-card shadow-card",
-    name: "text-foreground",
-    sub: "text-muted-foreground",
-    link: "border-border bg-card text-muted-foreground hover:text-foreground",
+    body: "bg-sidebar text-sidebar-foreground",
+    item: "rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150",
+    active:
+      "border border-[#E5E7EB] bg-white font-medium text-sidebar-foreground shadow-[0_1px_3px_rgba(0,0,0,0.06)]",
+    idle: "text-[#6B7280] hover:bg-black/[0.03] hover:text-sidebar-foreground",
+    label: "mb-2.5 px-3 text-[11px] font-medium uppercase tracking-wider text-[#8C9196]",
+    group: "space-y-6",
+    divider: "border-t border-[#E9EBEF] pt-4",
+    card: "rounded-xl border border-[#E9EBEF] bg-white shadow-2xs",
+    name: "font-medium text-sidebar-foreground",
+    sub: "text-[#6B7280]",
+    link: "border-[#E9EBEF] bg-white text-[#6B7280] hover:text-sidebar-foreground shadow-2xs",
   },
 } as const;
 
@@ -243,6 +245,51 @@ function NavLinks({
   );
 }
 
+function PlanUsageWidget({ tone = "dark" }: { tone?: Tone }) {
+  const { store, isPro } = useMyStore();
+  const t = useTr();
+  if (!store) return null;
+
+  const trialEnds = store.trial_ends_at ? new Date(store.trial_ends_at) : null;
+  const isTrial = trialEnds ? trialEnds > new Date() : false;
+  const daysLeft = trialEnds
+    ? Math.max(0, Math.ceil((trialEnds.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : 0;
+
+  return (
+    <div className="mx-1 rounded-xl border border-[#E9EBEF] bg-white p-3 shadow-2xs">
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-medium text-foreground">
+          {isTrial ? t("تجربة Pro مجانية") : isPro ? t("باقة Pro") : t("باقة Start")}
+        </span>
+        {isTrial && (
+          <span className="num text-[11px] font-medium text-[#EA580C]">
+            {t("بقي {n} أيام", { n: daysLeft })}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary/30">
+        <div
+          className="h-full rounded-full bg-[#111111]"
+          style={{
+            width: isTrial ? `${Math.min(100, Math.max(15, (daysLeft / 10) * 100))}%` : "100%",
+          }}
+        />
+      </div>
+
+      <Button
+        asChild
+        variant="outline"
+        size="sm"
+        className="mt-3 h-8 w-full rounded-lg border-[#E9EBEF] bg-[#F8F9FA] text-xs font-medium text-foreground shadow-2xs hover:bg-white hover:text-foreground"
+      >
+        <Link to="/dashboard/billing">{t("ترقية الباقة")}</Link>
+      </Button>
+    </div>
+  );
+}
+
 function MerchantCard({ tone = "dark" }: { tone?: Tone }) {
   const styles = TONES[tone];
   const t = useTr();
@@ -307,11 +354,7 @@ function SidebarBody({
         <LanguageMenu
           value={language}
           onChange={setLanguage}
-          className={
-            tone === "dark"
-              ? "border-sidebar-border bg-sidebar-accent/70 text-sidebar-foreground hover:bg-sidebar-accent"
-              : undefined
-          }
+          className="border-[#E9EBEF] bg-white text-sidebar-foreground shadow-2xs hover:bg-[#F8F9FA]"
         />
       </div>
       {store && (
@@ -334,6 +377,7 @@ function SidebarBody({
       <div className="flex-1 overflow-y-auto">
         <NavLinks onNavigate={onNavigate} tone={tone} />
       </div>
+      <PlanUsageWidget tone={tone} />
       <MerchantCard tone={tone} />
     </div>
   );
@@ -480,7 +524,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     <UiLanguageProvider language={language}>
       <div className="theme-forest min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
         <GuidedTour />
-        <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 lg:block">
+        <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 border-e border-[#E9EBEF] bg-sidebar lg:block">
           <SidebarBody />
         </aside>
 

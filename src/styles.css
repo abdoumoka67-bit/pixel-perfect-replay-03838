@@ -370,15 +370,15 @@ html[lang="en"] {
   --chart-4: #8a6116;
   --chart-5: #6d7175;
 
-  /* Sidebar dark graphite theme matching screenshot */
-  --sidebar: #141414;
-  --sidebar-foreground: #ffffff;
-  --sidebar-muted: #8a8a8a;
+  /* Sidebar Vocalyn-style clean light gray palette */
+  --sidebar: #f8f9fa;
+  --sidebar-foreground: #111111;
+  --sidebar-muted: #6b7280;
   --sidebar-primary: #ea580c;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #242424;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #222222;
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border: #e9ebef;
   --sidebar-ring: #ea580c;
 
   /* Shadows (Subtle, crisp Shopify-style elevation) */

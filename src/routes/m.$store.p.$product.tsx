@@ -327,38 +327,40 @@ function ProductLanding() {
 
   return (
     <StoreChrome store={store}>
-      <div className="pb-28 lg:pb-12">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-2 lg:py-10">
-          {/* Gallery */}
-          <div className="lg:sticky lg:top-6 lg:self-start">
-            <div className="relative aspect-square overflow-hidden rounded-3xl bg-card shadow-card">
+      <div className="pb-28 lg:pb-16">
+        <div className="mx-auto grid max-w-5xl items-start gap-8 px-4 py-6 lg:grid-cols-12 lg:gap-10 lg:py-10">
+          {/* Gallery (Left: 5 cols on desktop, capped width & height) */}
+          <div className="lg:col-span-5 lg:sticky lg:top-6 lg:self-start w-full max-w-[440px] mx-auto">
+            <div className="relative aspect-[4/5] sm:aspect-square max-h-[460px] overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xs">
               {product.images[active] ? (
                 <img
                   src={product.images[active]}
                   alt={product.name}
-                  className="size-full object-cover"
+                  className="size-full object-cover object-center"
                   fetchPriority="high"
                 />
               ) : (
-                <div className="flex size-full items-center justify-center bg-muted text-muted-foreground">
+                <div className="flex size-full items-center justify-center bg-muted/40 text-sm text-muted-foreground">
                   {t("لا توجد صورة")}
                 </div>
               )}
               {discount > 0 && (
-                <span className="absolute start-4 top-4 rounded-full bg-gradient-brand px-3 py-1 text-sm font-medium text-brand-foreground shadow-brand">
+                <span className="absolute start-3.5 top-3.5 rounded-full bg-[#111111] px-2.5 py-0.5 text-xs font-medium text-white shadow-xs">
                   -{discount}%
                 </span>
               )}
             </div>
             {product.images.length > 1 && (
-              <div className="mt-3 flex gap-2 overflow-x-auto">
+              <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
                 {product.images.map((src, i) => (
                   <button
                     key={src}
                     onClick={() => setActive(i)}
                     className={cn(
-                      "size-16 shrink-0 overflow-hidden rounded-xl border-2",
-                      i === active ? "border-brand" : "border-transparent opacity-70",
+                      "size-14 shrink-0 overflow-hidden rounded-xl border-2 transition-all",
+                      i === active
+                        ? "scale-105 border-[#111111] shadow-2xs"
+                        : "border-transparent opacity-60 hover:opacity-100",
                     )}
                     aria-label={t("صورة {n}", { n: i + 1 })}
                   >
@@ -369,47 +371,56 @@ function ProductLanding() {
             )}
           </div>
 
-          {/* Info + form */}
-          <div>
-            <h1 className="text-2xl font-normal leading-tight sm:text-3xl">{product.name}</h1>
-            <div className="mt-3 flex items-baseline gap-3">
-              <span className="font-display text-3xl font-medium text-brand num">
+          {/* Info + Order Form (Right: 7 cols on desktop) */}
+          <div className="lg:col-span-7 max-w-xl space-y-4">
+            <h1 className="text-xl font-medium leading-snug text-foreground sm:text-2xl">
+              {product.name}
+            </h1>
+            <div className="mt-2 flex items-baseline gap-2.5">
+              <span className="text-2xl font-medium text-foreground num">
                 {formatDZD(product.price, language)}
               </span>
               {discount > 0 && (
-                <span className="text-lg text-muted-foreground line-through num">
+                <span className="text-sm text-muted-foreground line-through num">
                   {formatDZD(product.compare_at_price!, language)}
                 </span>
               )}
             </div>
 
-            <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+            {/* Compact Trust Badges */}
+            <div className="grid grid-cols-3 gap-2 text-center text-xs">
               {[
                 { icon: Banknote, label: t("الدفع عند الاستلام") },
                 { icon: Truck, label: t("توصيل لـ 58 ولاية") },
                 { icon: ShieldCheck, label: t("تأكيد هاتفي") },
               ].map((b) => (
-                <div key={b.label} className="rounded-xl bg-card p-3 shadow-card">
-                  <b.icon className="mx-auto mb-1 size-5 text-brand" />
-                  {b.label}
+                <div
+                  key={b.label}
+                  className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-2.5 shadow-2xs"
+                >
+                  <b.icon className="mb-1 size-4 text-[#EA580C]" />
+                  <span className="text-[11px] font-medium text-foreground">{b.label}</span>
                 </div>
               ))}
             </div>
 
             {product.features.length > 0 && (
-              <ul className="mt-5 space-y-2">
+              <ul className="mt-3 space-y-1.5">
                 {product.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
-                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-success-soft text-success">
-                      <Check className="size-3" />
+                  <li
+                    key={f}
+                    className="flex items-start gap-2 text-xs text-muted-foreground sm:text-sm"
+                  >
+                    <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                      <Check className="size-2.5" />
                     </span>
-                    {f}
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
             )}
             {product.description && (
-              <p className="mt-4 whitespace-pre-line text-sm leading-7 text-muted-foreground">
+              <p className="mt-3 whitespace-pre-line text-xs leading-relaxed text-muted-foreground sm:text-sm">
                 {product.description}
               </p>
             )}
@@ -425,7 +436,7 @@ function ProductLanding() {
                 id="order"
                 onSubmit={submit}
                 onFocusCapture={onFormFocus}
-                className="mt-6 space-y-4 rounded-3xl border-2 border-brand/20 bg-card p-5 shadow-float sm:p-6"
+                className="mt-6 space-y-4 rounded-2xl border border-border bg-card p-5 shadow-xs sm:p-6"
                 style={{
                   ...formVars,
                   backgroundColor: formConfig?.bg_color,
