@@ -426,18 +426,24 @@ export function isValidDomainName(input: string): boolean {
  * Price for a plan over a duration of 1..6 months in DZD.
  * The 6-month promo is "pay 5 months, get the 6th free" (~17% off):
  * Start: 8,500 (instead of 10,200) — Pro: 17,000 (instead of 20,400).
- * Returns 0 for out-of-range durations.
+ * Returns 0 for out-of-range durations. `calculatePlanPrice` is the admin-editable
+ * variant: it applies the same rule to the monthly price stored in `plans.price`.
  */
-export function calculateSubscriptionPrice(tier: PlanTier, months: number): number {
+export function calculatePlanPrice(monthlyRate: number, months: number): number {
   if (
     !Number.isInteger(months) ||
     months < SUBSCRIPTION_MIN_MONTHS ||
-    months > SUBSCRIPTION_MAX_MONTHS
+    months > SUBSCRIPTION_MAX_MONTHS ||
+    !Number.isFinite(monthlyRate) ||
+    monthlyRate <= 0
   )
     return 0;
-  const monthly = SUBSCRIPTION_MONTHLY_RATES[tier];
-  if (months === SUBSCRIPTION_MAX_MONTHS) return monthly * 5;
-  return monthly * months;
+  if (months === SUBSCRIPTION_MAX_MONTHS) return monthlyRate * 5;
+  return monthlyRate * months;
+}
+
+export function calculateSubscriptionPrice(tier: PlanTier, months: number): number {
+  return calculatePlanPrice(SUBSCRIPTION_MONTHLY_RATES[tier], months);
 }
 
 /** Start plan: orders accepted per calendar month (Algiers time). Pro has no limit. */

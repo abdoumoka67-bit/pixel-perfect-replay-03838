@@ -5,6 +5,7 @@ import {
   ORDER_NETWORK_ERROR,
   ORDER_TECHNICAL_ERROR,
   SESSION_EXPIRED_ERROR,
+  calculatePlanPrice,
   calculateSubscriptionPrice,
   canOpen,
   cleanDomainName,
@@ -235,6 +236,13 @@ describe("Start and Pro plans", () => {
   it("the 6-month promo is pay 5, get one free", () => {
     expect(calculateSubscriptionPrice("start", 6)).toBe(8500);
     expect(calculateSubscriptionPrice("pro", 6)).toBe(17000);
+  });
+  it("uses the admin-editable monthly rate from plans.price", () => {
+    expect(calculatePlanPrice(4200, 1)).toBe(4200);
+    expect(calculatePlanPrice(4200, 3)).toBe(12600);
+    expect(calculatePlanPrice(4200, 6)).toBe(21000);
+    expect(calculatePlanPrice(2500, 2)).toBe(5000);
+    expect(calculatePlanPrice(0, 3)).toBe(0);
   });
   it("rejects out-of-range durations", () => {
     expect(calculateSubscriptionPrice("start", 0)).toBe(0);

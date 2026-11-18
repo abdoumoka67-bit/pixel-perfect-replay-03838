@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useMyStore } from "@/hooks/use-my-store";
 import { RECEIPT_BUCKET, fileExt } from "@/lib/images";
-import { calculateSubscriptionPrice, formatDZD, whatsappLink } from "@/lib/commerce";
+import { calculatePlanPrice, formatDZD, whatsappLink } from "@/lib/commerce";
 import { PlanCards } from "@/components/PlanCards";
 import { cn } from "@/lib/utils";
 import { useTr, useUiLanguage } from "@/lib/ui-i18n";
@@ -211,8 +211,9 @@ function Billing() {
   const planId = picked ?? defaultPlan ?? "";
   const setPlanId = setPicked;
   const selectedPlan = plans.data?.find((p) => p.id === planId) ?? null;
-  const selectedTier: "start" | "pro" = selectedPlan?.tier === "pro" ? "pro" : "start";
-  const amountDue = calculateSubscriptionPrice(selectedTier, months);
+  // The admin-editable plans.price is authoritative: cards, transfer amount and
+  // the receipt amount all use the same value from the database.
+  const amountDue = calculatePlanPrice(selectedPlan?.price ?? 0, months);
 
   return (
     <>
