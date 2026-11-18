@@ -665,28 +665,104 @@ function ProductLanding() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between">
-                  <Label>{t("الكمية")}</Label>
-                  <div className="flex items-center gap-1 rounded-xl border p-1">
-                    <Button
+                {/* Visual Quantity Bundles */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium text-foreground">
+                      {t("اختر الكمية والعرض:")}
+                    </Label>
+                    {qty > 3 && (
+                      <span className="num text-xs text-muted-foreground">
+                        {t("الكمية المحددة: {qty}", { qty })}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Bundle 1 */}
+                    <button
                       type="button"
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => setQty(Math.max(1, qty - 1))}
-                      aria-label={t("إنقاص")}
+                      onClick={() => setQty(1)}
+                      className={cn(
+                        "relative flex flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all duration-150",
+                        qty === 1
+                          ? "border-[#111111] bg-card ring-2 ring-[#111111]/15 shadow-xs"
+                          : "border-border bg-card/60 hover:border-zinc-300 hover:bg-card",
+                      )}
                     >
-                      <Minus />
-                    </Button>
-                    <span className="w-8 text-center font-medium num">{qty}</span>
-                    <Button
+                      <span className="text-xs font-bold text-foreground">{t("قطعة واحدة")}</span>
+                      <span className="num mt-1 text-[11px] font-medium text-muted-foreground">
+                        {formatDZD(product.price * 1, language)}
+                      </span>
+                    </button>
+
+                    {/* Bundle 2 (Most Popular) */}
+                    <button
                       type="button"
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => setQty(Math.min(20, qty + 1))}
-                      aria-label={t("زيادة")}
+                      onClick={() => setQty(2)}
+                      className={cn(
+                        "relative flex flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all duration-150",
+                        qty === 2
+                          ? "border-[#111111] bg-card ring-2 ring-[#111111]/15 shadow-xs"
+                          : "border-border bg-card/60 hover:border-zinc-300 hover:bg-card",
+                      )}
                     >
-                      <Plus />
-                    </Button>
+                      <span className="absolute -top-2 rounded-full bg-[#111111] px-1.5 py-0.5 text-[9px] font-medium text-white shadow-2xs">
+                        {t("الأكثر طلباً")}
+                      </span>
+                      <span className="text-xs font-bold text-foreground">{t("قطعتان (2)")}</span>
+                      <span className="num mt-1 text-[11px] font-medium text-foreground">
+                        {formatDZD(product.price * 2, language)}
+                      </span>
+                    </button>
+
+                    {/* Bundle 3 (Best Value) */}
+                    <button
+                      type="button"
+                      onClick={() => setQty(3)}
+                      className={cn(
+                        "relative flex flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all duration-150",
+                        qty === 3
+                          ? "border-[#111111] bg-card ring-2 ring-[#111111]/15 shadow-xs"
+                          : "border-border bg-card/60 hover:border-zinc-300 hover:bg-card",
+                      )}
+                    >
+                      <span className="absolute -top-2 rounded-full bg-[#EA580C] px-1.5 py-0.5 text-[9px] font-medium text-white shadow-2xs">
+                        {t("أفضل قيمة")}
+                      </span>
+                      <span className="text-xs font-bold text-foreground">{t("3 قطع")}</span>
+                      <span className="num mt-1 text-[11px] font-medium text-foreground">
+                        {formatDZD(product.price * 3, language)}
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Custom quantity stepper */}
+                  <div className="flex items-center justify-between rounded-lg border border-border/80 bg-secondary/15 px-3 py-1.5 text-xs text-muted-foreground">
+                    <span>{t("أو حدد كمية مخصصة:")}</span>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        className="size-7 rounded-md bg-white shadow-2xs"
+                        onClick={() => setQty(Math.max(1, qty - 1))}
+                        aria-label={t("إنقاص")}
+                      >
+                        <Minus className="size-3" />
+                      </Button>
+                      <span className="num w-7 text-center font-bold text-foreground">{qty}</span>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        className="size-7 rounded-md bg-white shadow-2xs"
+                        onClick={() => setQty(Math.min(20, qty + 1))}
+                        aria-label={t("زيادة")}
+                      >
+                        <Plus className="size-3" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
