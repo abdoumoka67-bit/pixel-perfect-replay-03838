@@ -377,7 +377,6 @@ function SidebarBody({
       <div className="flex-1 overflow-y-auto">
         <NavLinks onNavigate={onNavigate} tone={tone} />
       </div>
-      <PlanUsageWidget tone={tone} />
       <MerchantCard tone={tone} />
     </div>
   );
