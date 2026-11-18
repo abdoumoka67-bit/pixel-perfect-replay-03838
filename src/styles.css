@@ -370,15 +370,15 @@ html[lang="en"] {
   --chart-4: #8a6116;
   --chart-5: #6d7175;
 
-  /* Sidebar Vocalyn-style clean light gray palette */
-  --sidebar: #f8f9fa;
+  /* Clean White Sidebar */
+  --sidebar: #ffffff;
   --sidebar-foreground: #111111;
   --sidebar-muted: #6b7280;
   --sidebar-primary: #ea580c;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ffffff;
+  --sidebar-accent: #f4f4f5;
   --sidebar-accent-foreground: #111111;
-  --sidebar-border: #e9ebef;
+  --sidebar-border: #eeeeee;
   --sidebar-ring: #ea580c;
 
   /* Shadows (Subtle, crisp Shopify-style elevation) */

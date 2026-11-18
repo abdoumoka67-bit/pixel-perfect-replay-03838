@@ -67,31 +67,29 @@ function StoreLogo({
 const TONES = {
   dark: {
     body: "bg-sidebar text-sidebar-foreground",
-    item: "rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150",
-    active:
-      "scale-[1.01] border border-[#E5E7EB] bg-white font-medium text-sidebar-foreground shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)]",
-    idle: "text-[#6B7280] hover:bg-black/[0.03] hover:text-sidebar-foreground",
-    label: "mb-2.5 px-3 text-[11px] font-medium uppercase tracking-wider text-[#8C9196]",
-    group: "space-y-6",
-    divider: "border-t border-[#E9EBEF] pt-4",
-    card: "rounded-xl border border-[#E9EBEF] bg-white shadow-2xs",
-    name: "font-medium text-sidebar-foreground",
-    sub: "text-[#6B7280]",
-    link: "border-[#E9EBEF] bg-white text-[#6B7280] hover:text-sidebar-foreground shadow-2xs",
+    item: "rounded-xl px-3 py-2.5 text-sm transition-colors",
+    active: "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
+    idle: "text-sidebar-muted hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+    label: "text-sidebar-muted/80",
+    group: "space-y-7",
+    divider: "",
+    card: "bg-sidebar-accent/70",
+    name: "text-sidebar-foreground font-medium",
+    sub: "text-sidebar-muted",
+    link: "border-sidebar-border text-sidebar-muted hover:text-sidebar-foreground",
   },
   light: {
-    body: "bg-sidebar text-sidebar-foreground",
-    item: "rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150",
-    active:
-      "border border-[#E5E7EB] bg-white font-medium text-sidebar-foreground shadow-[0_1px_3px_rgba(0,0,0,0.06)]",
-    idle: "text-[#6B7280] hover:bg-black/[0.03] hover:text-sidebar-foreground",
-    label: "mb-2.5 px-3 text-[11px] font-medium uppercase tracking-wider text-[#8C9196]",
-    group: "space-y-6",
-    divider: "border-t border-[#E9EBEF] pt-4",
-    card: "rounded-xl border border-[#E9EBEF] bg-white shadow-2xs",
-    name: "font-medium text-sidebar-foreground",
-    sub: "text-[#6B7280]",
-    link: "border-[#E9EBEF] bg-white text-[#6B7280] hover:text-sidebar-foreground shadow-2xs",
+    body: "bg-background text-foreground",
+    item: "rounded-2xl px-4 py-3.5 text-[15px]",
+    active: "bg-card text-foreground shadow-card font-medium",
+    idle: "text-foreground/80 hover:bg-card/70",
+    label: "text-muted-foreground",
+    group: "space-y-4",
+    divider: "border-t pt-4",
+    card: "bg-card shadow-card",
+    name: "text-foreground",
+    sub: "text-muted-foreground",
+    link: "border-border bg-card text-muted-foreground hover:text-foreground",
   },
 } as const;
 
@@ -354,7 +352,7 @@ function SidebarBody({
         <LanguageMenu
           value={language}
           onChange={setLanguage}
-          className="border-[#E9EBEF] bg-white text-sidebar-foreground shadow-2xs hover:bg-[#F8F9FA]"
+          className="border-sidebar-border bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent"
         />
       </div>
       {store && (
@@ -523,7 +521,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     <UiLanguageProvider language={language}>
       <div className="theme-forest min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
         <GuidedTour />
-        <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 border-e border-[#E9EBEF] bg-sidebar lg:block">
+        <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 border-e border-sidebar-border bg-sidebar lg:block">
           <SidebarBody />
         </aside>
 
